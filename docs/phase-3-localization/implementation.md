@@ -11,18 +11,19 @@
 > instance. Runs and their raw output live in
 > [`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/).
 >
-> What the evidence supports is split, and section 5 below is the detail:
+> What the evidence supports is split by problem, and section 5 below is the detail:
 >
-> * **P1, position tracking: the EKF passes, MCL does not.** Read
+> * **P1, position tracking: EKF and MCL pass.** Read
 >   `normal-verdict.yaml` and `normal-verdict-mcl.yaml` of
->   [`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) for
+>   [`2026-10-10T144153-final-global-reset`](../../evidence/phase-3-correctness/2026-10-10T144153-final-global-reset) for
 >   both verdicts from one simulation session.
 > * **P2, kidnap recovery: MCL recovers, the EKF does not.** Read
->   `kidnap-verdict-mcl.yaml` and `kidnap-verdict-ekf.yaml` of the same directory, which
+>   `kidnap-verdict-mcl.yaml` and `kidnap-verdict-ekf.yaml` of
+>   [`2026-10-10T143418-mcl-global-reset`](../../evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset), which
 >   grade both estimators against one teleport at one simulated instant.
 >
 > Still absent: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing (the
-> fixed-count, fixed-fraction simplification actually built is justified in `mcl.rs`),
+> fixed-count, sustained-trigger global-reset simplification is justified in `mcl.rs`),
 > dominant-cluster pose extraction, the grid localization debugging mode, `/particle_cloud`,
 > `/amcl_pose` and `/initialpose`, and every benchmark row. Sections 2 and 3 below name
 > some paths that were planned rather than built; where they differ, the parenthetical says
@@ -121,15 +122,15 @@ measurement, not with an opinion:
    worse than none; the edge is now verified, by checks F1 to F10 of
    [`scripts/verify_phase3_localization.sh`](../../scripts/verify_phase3_localization.sh),
    which resolve it and compose the whole chain down to the sensor frames.
-4. **Partly settled, and the unsettled part is a measured defect.** What the node does
+4. **Settled for the measured normal and kidnapped scenarios.** What the node does
    when the chi-square gate rejects everything for several seconds: report degraded on
    `/diagnostics`, trigger injection, or both. `mcl_node` does both: a sustained low-fit
    streak injects particles and the node reports the injection on `/diagnostics`. The
    number of consecutive scans required and the fraction injected are
-   `MclConfig::recovery_sustained_updates` and `recovery_injection_fraction`, each justified
-   in `mcl.rs` against the EKF's own gate rather than tuned until a demo looked right. What
-   is **not** settled is the statistic the trigger watches, which section 5 shows firing on
-   a run with no kidnap in it at all.
+   `MclConfig::recovery_sustained_updates` and `recovery_injection_fraction`. The trigger
+   watches the best upper median of raw per-observation likelihoods from one particle for
+   20 consecutive scans. It then resets all 6000 particles across the room. Section 5 shows
+   why this statistic and reset replaced the earlier mean and partial injection.
 5. Particle count floor and ceiling, and what gets published on `/particle_cloud` at what
    rate, so visualization does not dominate the measured cost.
 
@@ -138,19 +139,27 @@ measurement, not with an opinion:
 Nothing in this file quotes a measurement. The runs live under
 [`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/), one directory
 each, and [benchmark.md](benchmark.md) section 6 lists them and says what each is for. The
-verdict on criterion P1 is a file in the run directory, `<scenario>-verdict.yaml`, written
-by [`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py) from the CSV and
-the JSON the run produced.
+verdict on criterion P1 is a file in the run directory, `<scenario>-verdict.yaml` for the
+EKF and `<scenario>-verdict-mcl.yaml` for MCL, written by
+[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py) from the CSV and the
+JSON the run produced. A kidnap run is graded instead by
+[`../../scripts/phase3_kidnap_verdict.py`](../../scripts/phase3_kidnap_verdict.py) into
+`kidnap-verdict-ekf.yaml` and `kidnap-verdict-mcl.yaml`, because P1 asks whether tracking
+error stays bounded and P2 asks whether an invalidated belief finds its way back; the two
+questions need different numbers, and what "recovered" means is defined, with its three
+constants, in that script's docstring and repeated into every file it writes.
 
 The integration test keeps its own evidence, under
 [`../../evidence/phase-3-localization-runtime/`](../../evidence/phase-3-localization-runtime/):
 the full check list as `verify.log`, the launch log, the node and topic listings, the TF
-dump, the diagnostics and a `summary.yaml` with the counts and the verdict.
+dump, the diagnostics and a `summary.yaml` with the counts and the verdict. The final run,
+[`2026-10-10T145912-mcl-final`](../../evidence/phase-3-localization-runtime/2026-10-10T145912-mcl-final),
+passes all 83 checks with the installed 6000-particle default.
 
 ## 5. Two defects this phase found, and what was done about each
 
 Kept because the reasoning is the material: both were found by a measurement disagreeing
-with an expectation, and one of them is still open.
+with an expectation, and both fixes were checked on the normal and kidnapped scenarios.
 
 ### 5.1 MCL diverged for want of a per-observation gate (fixed, and measured)
 
@@ -173,9 +182,9 @@ became its largest error source.
 The fix is [`McLocalizer::gated_log_likelihood`](../../crates/robotics_localization/src/mcl.rs):
 reweighting scores an observation only if its best landmark clears the same threshold the
 EKF's gate uses, and an observation that fails contributes nothing instead of its
-arbitrarily negative raw value. The recovery trigger deliberately keeps reading the raw,
-ungated `total_log_likelihood`, so that gating cannot blind the filter to a real kidnapping.
-Both functions and the reason they have to be two different numbers are documented at their
+arbitrarily negative raw value. The recovery trigger deliberately keeps reading raw,
+ungated per-observation likelihoods, so that gating cannot blind the filter to a real
+kidnapping. Both paths and the reason they have to be separate are documented at their
 definitions. Compare `normal-verdict-mcl.yaml` of
 [`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) against
 the pre-fix directory above for the size of the improvement.
@@ -185,7 +194,7 @@ spread. It is not in the code. The spread was a real bug of its own, which is wh
 `MclConfig::initial_sigma_xy` exists and says so, but fixing it did not fix the divergence,
 because the divergence was never about the prior.
 
-### 5.2 The recovery trigger still misfires on a healthy run (open)
+### 5.2 The recovery trigger misfired on a healthy run (fixed, and measured)
 
 The gate above fixed reweighting and did not fix everything. On a normal run with no
 teleport anywhere in it, `mcl_node` still logs sustained-low-fit injections, and
@@ -204,15 +213,23 @@ the scan fits. Five such scans in a row fire an injection. This is the raw, unga
 by design, for the reason 5.1 gives, so the defect is not that it is ungated; it is that the
 mean is the wrong summary of an ungated score.
 
-The fix this points at, not yet implemented or measured, is to keep the trigger ungated but
-make its summary robust: judge a scan by how many of its observations the best particle can
-explain, or take a median rather than a mean, so that a kidnapping (where *no* observation
-fits *any* particle) still fires while one bad detection in an otherwise good scan does not.
-That is a change to the trigger statistic alone and leaves `gated_log_likelihood` as it is.
+The implemented fix keeps the recovery signal raw but computes an upper median across the
+observations for each particle, then selects the best such median across particles. Every
+observation in a median comes from the same particle, so a scan cannot look consistent by
+matching each observation to a different pose. One bad detection cannot dominate four good
+ones, while a kidnapping still produces a low median when the existing cloud explains fewer
+than half of the detections. Empty scans do not advance the low-fit streak. With one
+observation, that observation alone decides it. Nonfinite model evaluations become negative
+infinity in the raw statistic and cannot make a bad scan look good.
 
-Until it is made, the honest reading of the two verdicts is the one at the top of this file:
-MCL earns the P2 claim the EKF structurally cannot, and does not yet earn the P1 claim the
-EKF already holds.
+The retained attempts show why the other two defaults matter. With 300 particles the median
+still left nine injections and failed P1. With 3000 particles and a 20-scan streak there
+were no injections, but MCL narrowly failed to beat odometry. With 6000 particles it passed
+P1. Shortening the streak to five scans recovered from the kidnap but caused seven false
+injections and failed the next normal run. Keeping 20 scans while replacing only 20 per cent
+of the cloud did not recover. The final configuration keeps 6000 particles and 20 scans,
+then performs one full global reset. It caused zero injections in the final normal run and
+recovered in 6.92 s in the final kidnap run. The paired EKF did not recover.
 
 ### 5.3 Evidence kept being destroyed by the build mirror (fixed)
 

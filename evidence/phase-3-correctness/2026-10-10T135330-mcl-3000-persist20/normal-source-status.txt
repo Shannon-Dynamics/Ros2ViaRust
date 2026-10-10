@@ -1,0 +1,7 @@
+ M crates/robotics_localization/src/mcl.rs
+ M ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+ M scripts/run_phase3_correctness.sh
+?? evidence/phase-3-correctness/2026-10-10T133620-mcl-median/
+?? evidence/phase-3-correctness/2026-10-10T133711-mcl-median/
+?? evidence/phase-3-correctness/2026-10-10T134509-mcl-median-built/
+?? evidence/phase-3-correctness/2026-10-10T135330-mcl-3000-persist20/

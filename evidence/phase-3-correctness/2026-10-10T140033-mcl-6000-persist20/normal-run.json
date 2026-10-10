@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T140033-mcl-6000-persist20/normal-run.csv",
+  "estimates_received": 5911,
+  "rows": 5911,
+  "unpaired_estimates": 0,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 5911, "rmse_position_m": 0.009121, "rmse_yaw_rad": 0.021722, "max_position_error_m": 0.029549, "final_position_error_m": 0.006362, "odom_only_rmse_position_m": 0.015790},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}

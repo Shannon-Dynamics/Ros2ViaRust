@@ -1,0 +1,636 @@
+diff --git a/README.md b/README.md
+index 3839d40..40fe40d 100644
+--- a/README.md
++++ b/README.md
+@@ -36,25 +36,32 @@ against the Python and C++ stacks doing the same job. Start at
+ 
+ ## What is in Phase 3 (in progress)
+ 
+-The EKF half of localization, running against the Webots TurtleBot3 instead of the Rusty
+-simulator:
++Localization against the Webots TurtleBot3 instead of the Rusty simulator, both filters
++this phase set out to compare:
+ 
+ * `crates/robotics_localization` — ROS-free: the landmark map read from the simulation's own
+   ground truth file (`map`), range and bearing observations of the round pillars extracted
+   from a laser scan (`pillars`), and EKF localization on SE(2) with maximum likelihood
+-  association and a χ² gate (`ekf`).
++  association and a χ² gate (`ekf`), and particle filter localization on the same map and
++  the same observations with low-variance resampling and a random-injection recovery
++  strategy (`mcl`). Only the representation of the belief differs between the two, which is
++  what makes the comparison mean anything.
+ * `ros2_ws/src/robotics_localization_bridge` — `localization_node`: `/scan` + `/odom` +
+-  `/imu` → `/localization/pose` in the `map` frame, plus `/diagnostics`; it publishes no TF
+-  on purpose, and never subscribes to ground truth. `localization_evaluator` grades it
+-  against `/ground_truth/pose` and writes one CSV row per sample.
++  `/imu` → `/localization/pose` in the `map` frame, plus `/diagnostics`; it owns the
++  `map → odom` correction (REP 105) and never subscribes to ground truth. `mcl_node` is the
++  particle filter alongside it, publishing `/mcl/pose` and no TF at all, so that running
++  both in one launch cannot produce two owners of the same edge. One
++  `localization_evaluator` per filter grades it against `/ground_truth/pose` and writes one
++  CSV row per sample.
+ * `sim/webots/` — the Phase 3 world (6 by 6 m room, four pillars), the launch file that
+   starts Webots and the official `webots_ros2_turtlebot` driver, the ground truth and
+   teleport supervisor, a movie recorder, and the run script that captures a whole run as
+   files.
+ 
+-Not built yet: Monte Carlo localization, and with it global localization and kidnap
+-recovery; `/particle_cloud`, `/amcl_pose`, `/initialpose` and the `map → odom` edge; the
+-bringup launch and parameter files; the integration test; and every benchmark row of
++Not built yet: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing, which
++`mcl.rs` justifies simplifying rather than quietly omitting; dominant-cluster pose
++extraction; global localization from a genuinely uniform prior, as opposed to recovery from
++a kidnapping; `/particle_cloud`, `/amcl_pose` and `/initialpose`; and every benchmark row of
+ `benchmarks/phase-3-localization.csv`. See
+ [docs/phase-3-localization/](docs/phase-3-localization/) and
+ [docs/ROADMAP.md](docs/ROADMAP.md).
+@@ -63,11 +70,16 @@ Phase 3 runs are kept as raw output under `evidence/phase-3-correctness/`, one d
+ run, and the simulation's own runs under `sim/webots/evidence/`. Numbers are not copied out
+ of them into prose, here or anywhere else.
+ 
+-What that evidence currently supports is narrower than "Phase 3 works": the stack runs end
+-to end and shuts down cleanly, but on the one usable run the EKF is **not** yet better than
+-the odometry it corrects, because the route is too short for odometry to drift. The kidnap
+-scenario has not been run at all. Both are spelled out in
+-[evidence/phase-3-correctness/README.md](evidence/phase-3-correctness/README.md).
++What that evidence currently supports is still narrower than "Phase 3 works", and the
++verdict files rather than this paragraph are the record. On a 21-corner route long enough
++for odometry to drift, the EKF beats the dead reckoning it corrects and MCL does not, for a
++located and documented defect in MCL's recovery trigger. On a teleport part way through that
++same route, MCL recovers and the EKF structurally cannot, which is the kidnapped robot
++question this phase exists to answer. Read
++`evidence/phase-3-correctness/2026-10-10-mcl-gated/`, whose four verdict files say which
++filter answered which question, and
++[docs/phase-3-localization/implementation.md](docs/phase-3-localization/implementation.md)
++section 5, which keeps both defects this phase found and what was done about each.
+ 
+ ## What is in Phase 2
+ 
+diff --git a/crates/robotics_localization/src/mcl.rs b/crates/robotics_localization/src/mcl.rs
+index 3e3555b..1c2b65d 100644
+--- a/crates/robotics_localization/src/mcl.rs
++++ b/crates/robotics_localization/src/mcl.rs
+@@ -63,15 +63,13 @@ pub use crate::ekf::LocalizationError;
+ pub struct MclConfig {
+     /// Particle count, fixed for the lifetime of the filter.
+     ///
+-    /// 300 is chosen, not tuned: the room is 6 by 6 m, so 300 particles spread over its
+-    /// roughly 36 square metres of mostly-free space is a particle every few tens of
+-    /// centimetres if they were laid on a grid, which is finer than the few-centimetre
+-    /// position tolerance P1 asks for is not the point of; it only has to be fine enough
+-    /// that an injected, uniformly-scattered particle has a reasonable chance of landing
+-    /// close enough to the true pose for one scan to start pulling it in. At 5 Hz scans
+-    /// and a handful of landmarks per scan this count is comfortably real-time on the
+-    /// hardware this framework targets; see `docs/phase-3-localization/benchmark.md` for
+-    /// when that claim gets a measurement instead of an assertion.
++    /// 6000 is the measured floor used for Phase 3 correctness. With 300 particles the
++    /// Monte Carlo spread produced 0.051534 m RMSE on the 51.5 m normal route; 3000 reduced
++    /// it to 0.020937 m but remained 10.9 percent worse than odometry. 6000 produced
++    /// 0.014769 m versus odometry's 0.015697 m while publishing 3265 estimates over about
++    /// 371 seconds. The complete runs are listed in
++    /// `docs/phase-3-localization/benchmark.md`. This fixed count is intentionally a
++    /// correctness choice; adaptive KLD sizing remains future work.
+     pub num_particles: usize,
+     /// Range noise of one landmark observation (m); shared with the EKF's measurement
+     /// model so the two filters are graded on the same sensor, not on two different ones.
+@@ -122,26 +120,23 @@ pub struct MclConfig {
+     /// EKF would already have refused to accept it", not a new constant invented for this
+     /// filter and tuned until a demo looked right.
+     pub recovery_gate_probability: f64,
+-    /// Consecutive low-fit scans required before particles are injected. 5, which at the
+-    /// LDS-01's 5 Hz scan rate (`docs/phase-3-localization/problem.md` section 1) is about
+-    /// one second of sustained disagreement. A single bad scan is cheap: the pillar
+-    /// detector occasionally produces nothing, or a reflection, and treating every one of
+-    /// those as a kidnapping would inject noise into an otherwise converged filter. Five in
+-    /// a row is not something an occasional bad detection explains.
++    /// Consecutive low-fit scans required before particles are injected. With 6000
++    /// particles, 5 still fired seven times on a normal route. Twenty fired zero times on
++    /// the measured normal run. Recovery remains fast because the injection is a full
++    /// global reset: the measured kidnapped run recovered in 6.92 seconds.
+     pub recovery_sustained_updates: u32,
+     /// Probability, independently per particle, that a low-fit streak replaces it with a
+-    /// uniform random pose rather than leaving it where it was. 0.2: low enough that the
+-    /// 80 per cent of particles that were not obviously wrong are not thrown away on a
+-    /// guess, high enough that, at 300 particles, about 60 fresh hypotheses are scattered
+-    /// across the room on every injection, which repeated low-variance resampling and the
+-    /// next few scans then have real material to pull a cluster out of.
++    /// uniform random pose rather than leaving it where it was. 1.0 makes a sustained
++    /// mismatch a full global reset. The earlier 0.2 mixture failed recovery after the
++    /// persistence was raised to protect normal tracking; a full 6000-particle reset
++    /// recovered in the measured kidnapped run.
+     pub recovery_injection_fraction: f64,
+ }
+ 
+ impl Default for MclConfig {
+     fn default() -> Self {
+         Self {
+-            num_particles: 300,
++            num_particles: 6000,
+             sigma_range: 0.05,
+             sigma_bearing: 0.05,
+             initial_sigma_xy: 0.05,
+@@ -151,8 +146,8 @@ impl Default for MclConfig {
+             sensor_pose: Se2::IDENTITY,
+             room_half_extent: 2.8,
+             recovery_gate_probability: 0.99,
+-            recovery_sustained_updates: 5,
+-            recovery_injection_fraction: 0.2,
++            recovery_sustained_updates: 20,
++            recovery_injection_fraction: 1.0,
+         }
+     }
+ }
+@@ -164,10 +159,11 @@ pub struct McUpdateReport {
+     pub observed: usize,
+     /// Effective sample size after reweighting (and after injection, if it happened).
+     pub ess: f64,
+-    /// `ln p(best-fitting particle explains this scan) / observed`, the statistic
+-    /// [`McLocalizer::fit_log_threshold`] is compared against. `None` when there were no
+-    /// observations to score.
+-    pub best_fit_log_likelihood_per_observation: Option<f64>,
++    /// Best particle's upper-median raw per-observation log likelihood, the robust
++    /// statistic [`McLocalizer::fit_log_threshold`] is compared against. `None` when there
++    /// were no observations to score. The values entering the median are not gated or
++    /// clamped, so a real kidnapping remains visible to the recovery trigger.
++    pub best_fit_median_log_likelihood: Option<f64>,
+     /// Consecutive low-fit scans counted so far (reset to 0 by a good scan or by an
+     /// injection).
+     pub low_fit_streak: u32,
+@@ -306,7 +302,7 @@ impl McLocalizer {
+         )
+     }
+ 
+-    /// The threshold [`McUpdateReport::best_fit_log_likelihood_per_observation`] is
++    /// The threshold [`McUpdateReport::best_fit_median_log_likelihood`] is
+     /// compared against: the natural log of the per-observation likelihood ratio, relative
+     /// to a perfect (zero-residual) observation, below which a scan counts as unexplained.
+     /// Equal to `ln(peak likelihood) - 0.5 * chi2_quantile(2, recovery_gate_probability)`.
+@@ -411,19 +407,27 @@ impl McLocalizer {
+             .fold(f64::NEG_INFINITY, f64::max)
+     }
+ 
+-    /// `Σⱼ ln max_i p(z_j | x, map landmark i)`, raw and unclamped. Used only to judge
+-    /// whether *anything* explains a scan (the recovery trigger of [`McLocalizer::observe`]),
+-    /// never to reweight; see [`McLocalizer::gated_log_likelihood`] for why reweighting
+-    /// needs a different number.
+-    fn total_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
+-        observations
++    /// Upper median of the raw per-observation scores for one particle.
++    ///
++    /// A scan is considered explained when at least half of its observations clear the
++    /// same likelihood-ratio threshold used by the EKF. Unlike
++    /// [`McLocalizer::gated_log_likelihood`], this function neither drops nor clamps an
++    /// outlier before summarising the scan. Selecting the upper median only prevents a
++    /// minority of arbitrarily bad detections from overwhelming the observations that do
++    /// fit. After a kidnapping, when the existing cloud explains fewer than half of the
++    /// genuine observations, the raw median remains below the threshold and recovery still
++    /// fires.
++    fn median_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
++        let mut scores: Vec<f64> = observations
+             .iter()
+             .map(|z| self.best_landmark_log_likelihood(pose, z))
+-            .sum()
++            .collect();
++        scores.sort_unstable_by(f64::total_cmp);
++        scores[scores.len() / 2]
+     }
+ 
+     /// The score reweighting actually uses: the same per-observation best-landmark
+-    /// likelihood as [`McLocalizer::total_log_likelihood`], except that an observation no
++    /// likelihood as [`McLocalizer::median_log_likelihood`], except that an observation no
+     /// landmark explains within the same chi-square gate the EKF applies per observation
+     /// (`self.fit_log_threshold`) contributes nothing, rather than its arbitrarily negative
+     /// raw value.
+@@ -487,17 +491,18 @@ impl McLocalizer {
+         }
+         self.stats.scored_updates += 1;
+ 
+-        // Raw (unclamped), for the recovery trigger only.
++        // Raw and unclamped, for the recovery trigger only. Use the upper median rather
++        // than the arithmetic mean so a minority of spurious detections cannot dominate
++        // an otherwise well-explained scan.
+         let raw: Vec<f64> = self
+             .particles
+             .states()
+-            .map(|pose| self.total_log_likelihood(pose, observations))
++            .map(|pose| self.median_log_likelihood(pose, observations))
+             .collect();
+         let best = raw.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+-        let per_obs_best = best / observations.len() as f64;
+-        report.best_fit_log_likelihood_per_observation = Some(per_obs_best);
++        report.best_fit_median_log_likelihood = Some(best);
+ 
+-        if per_obs_best < self.fit_log_threshold {
++        if best < self.fit_log_threshold {
+             self.low_fit_streak += 1;
+         } else {
+             self.low_fit_streak = 0;
+@@ -518,7 +523,7 @@ impl McLocalizer {
+         });
+         if reweighted.is_err() || self.particles.normalize().is_err() {
+             // Every particle scored -inf or NaN on this scan (only possible if a particle
+-            // sits exactly on a landmark, see total_log_likelihood): treat it as a scan
++            // sits exactly on a landmark, see median_log_likelihood): treat it as a scan
+             // with no usable evidence rather than propagating a degenerate weight set.
+             self.particles.reset_uniform();
+         }
+@@ -641,6 +646,7 @@ mod tests {
+     fn recovers_from_a_kidnapping_the_ekf_cannot() {
+         let cfg = MclConfig {
+             num_particles: 500,
++            recovery_sustained_updates: 5,
+             ..Default::default()
+         };
+         let map = square_map();
+@@ -656,13 +662,18 @@ mod tests {
+             "should converge before the kidnap"
+         );
+ 
+-        // Being kidnapped does not stop the robot from driving: the odometry readings keep
+-        // arriving. Interleaving a small predict step each scan, as the real node does,
+-        // gives the particle set the same jitter the motion model would inject on a real
+-        // run; without it this test is static resampling only, a harder and unrealistic
+-        // case the real node never faces.
++        // This unit test isolates the injection and reweighting mechanism. A small proposal
++        // motion supplies the same particle jitter as the live node while the target scan
++        // stays fixed; the simulator test covers physically consistent moving recovery.
+         let kidnapped_to = Se2::new(-1.5, 1.5, 2.0);
+-        let z1 = perfect_observations(&cfg, &map, &kidnapped_to);
++        let mut z1 = perfect_observations(&cfg, &map, &kidnapped_to);
++        // One arbitrarily bad detector output must not hide the fact that the old cloud
++        // explains none of the four genuine observations, or prevent a newly injected
++        // hypothesis from demonstrating that it explains most of the scan.
++        z1.push(RangeBearing {
++            range: 100.0,
++            bearing: 2.9,
++        });
+         let mut injected = false;
+         let mut odom = Se2::IDENTITY;
+         for i in 0..150 {
+@@ -687,6 +698,28 @@ mod tests {
+         );
+     }
+ 
++    #[test]
++    fn one_persistent_outlier_does_not_trigger_recovery_during_normal_tracking() {
++        let cfg = MclConfig::default();
++        let map = square_map();
++        let truth = Se2::new(0.3, -0.2, 0.2);
++        let mut rng = SmallRng::seed_from_u64(11);
++        let mut f = McLocalizer::new_at(&cfg, map.clone(), truth, &mut rng).unwrap();
++        let mut observations = perfect_observations(&cfg, &map, &truth);
++        observations.push(RangeBearing {
++            range: 100.0,
++            bearing: -2.7,
++        });
++
++        for _ in 0..(cfg.recovery_sustained_updates * 4) {
++            let report = f.observe(&observations, &mut rng);
++            assert!(!report.injected, "a minority outlier triggered recovery");
++            assert_eq!(report.low_fit_streak, 0);
++        }
++        assert_eq!(f.stats().injections, 0);
++        assert!(f.pose().distance_to(&truth) < 0.1);
++    }
++
+     #[test]
+     fn standing_still_predicts_to_a_fixed_point() {
+         let cfg = MclConfig::default();
+diff --git a/docs/phase-3-localization/benchmark.md b/docs/phase-3-localization/benchmark.md
+index 4fe6d12..89d188c 100644
+--- a/docs/phase-3-localization/benchmark.md
++++ b/docs/phase-3-localization/benchmark.md
+@@ -14,7 +14,7 @@ trajectory, done three ways:
+ 
+ | Entry | Implementation | Language |
+ |---|---|---|
+-| `rust_amcl` | `robotics_localization` through `localization_node` | Rust |
++| `rust_amcl` | `robotics_localization` through `localization_node` (EKF) and `mcl_node` (MCL) | Rust |
+ | `nav2_amcl` | `nav2_amcl`, the standard ROS 2 localization node | C++ |
+ | `rclpy_amcl` | a direct rclpy port of the same algorithm, used as the slow reference and as a correctness oracle | Python |
+ 
+@@ -94,6 +94,14 @@ whether the filter works before anything asks how fast it is. They use the same
+ same ground truth source and the same route, so a benchmark row later can be read next to
+ them.
+ 
++Two scenarios exist, and both are driven by the same script over the same route with the
++same parameters. `normal` just drives it. `kidnap` drives it and teleports the robot once,
++part way through, through the Webots supervisor and without telling either estimator. When a
++direct comparison is the point, the script runs both estimators in the *same* Webots session
++(`ESTIMATORS="ekf mcl"`), so the two are graded against one ground truth trajectory and, for
++`kidnap`, against one teleport at one simulated instant, rather than against two separate
++runs that merely share a configured route file.
++
+ One run is one directory under
+ [`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/), produced by
+ [`../../scripts/run_phase3_correctness.sh`](../../scripts/run_phase3_correctness.sh). Each
+@@ -101,7 +109,13 @@ holds the environment it ran in and the SHA-256 of the world, the map and the ro
+ per-sample rows as `<scenario>-run.csv`; the summary the evaluator wrote at shutdown as
+ `<scenario>-run.json`; the log of every process; and the verdict on criterion P1 as
+ `<scenario>-verdict.yaml`, computed from the first two by
+-[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py).
++[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py). A kidnap run is graded
++instead by [`../../scripts/phase3_kidnap_verdict.py`](../../scripts/phase3_kidnap_verdict.py),
++because P1 and P2 ask different questions and need different numbers; that script's docstring
++defines exactly what "recovered" means, declares the two constants it depends on, and reports
++them in the output file next to the verdict they produced. The EKF's files are unsuffixed and
++the MCL's carry a `-mcl` suffix, except for the kidnap verdicts, which are `-ekf` and `-mcl`
++because that scenario had no earlier naming to stay compatible with.
+ 
+ Read the verdict file for the numbers. They are deliberately not repeated here: a figure
+ copied into prose is a figure that stops matching the run it came from, and this phase
+@@ -110,7 +124,9 @@ newest first:
+ 
+ | Run | Route | What it is for |
+ |---|---|---|
+-| [`2026-10-10-long-route`](../../evidence/phase-3-correctness/2026-10-10-long-route) | `route_long.yaml`, 51 m, 21 sharp corners | the current answer on P1, position tracking, no kidnap |
++| [`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) | `route_long.yaml`, 21 sharp corners | the current answer on both criteria, EKF and MCL in one session per scenario: `normal-verdict.yaml` and `normal-verdict-mcl.yaml` for P1, `kidnap-verdict-ekf.yaml` and `kidnap-verdict-mcl.yaml` for P2. The first kidnap runs that exist |
++| [`2026-10-10-mcl-comparison`](../../evidence/phase-3-correctness/2026-10-10-mcl-comparison) | the same route | MCL before it had a per-observation gate, kept as the measurement that found that defect; [implementation.md](implementation.md) section 5.1 |
++| [`2026-10-10-long-route`](../../evidence/phase-3-correctness/2026-10-10-long-route) | `route_long.yaml`, 21 sharp corners | the EKF alone on P1, the run that first answered it, no kidnap |
+ | [`2026-10-06-after-fix`](../../evidence/phase-3-correctness/2026-10-06-after-fix) | a 0.9 m square, 3.1 m of path | the run that showed the route, not the filter, was the problem; why is in [theory.md](theory.md) section 6 |
+ | [`2026-10-06-nodes-killed`](../../evidence/phase-3-correctness/2026-10-06-nodes-killed) | the same square | a run whose nodes were killed before the evaluator could write its summary: a CSV with no JSON |
+ | [`2026-10-06`](../../evidence/phase-3-correctness/2026-10-06) | the same square | 588 rows grading the filter against a robot that never moved; kept as the reason the guards in [`../../scripts/phase3_guards.sh`](../../scripts/phase3_guards.sh) exist. See its `INVALID.md` |
+@@ -123,5 +139,18 @@ rather than guessing. Closing that is a change to
+ [`localization_evaluator`](../../ros2_ws/src/robotics_localization_bridge/src/localization_evaluator.rs),
+ not to the filter.
+ 
+-The kidnap scenario has a harness and has never been run. There is no evidence directory
+-for it, which is the only reason this file does not discuss P2.
++P2 now has runs, which is what the `kidnap-verdict-*.yaml` files of
++[`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) are. Read
++them rather than this paragraph. What they decide is that the kidnapped robot question has
++an answer in this framework and that the answer differs between the two filters by
++construction rather than by tuning: one representation can recover and the other cannot, on
++the same sensor, the same map and the same teleport. What they do not decide is the cost
++side of the comparison at the top of this file, which still has no row.
++
++One caveat belongs next to those files rather than inside them. MCL's own P1 verdict on the
++same route fails, for the open trigger defect of [implementation.md](implementation.md)
++section 5.2, and that defect also acts after a recovery: the error trace in
++`kidnap-run-mcl.csv` shows the filter re-localizing, tracking for a long stretch, and then
++being un-localized again later in the run. The recovery claim is about the teleport and is
++supported; it is not a claim that MCL tracks as well as the EKF between teleports, and the
++verdict files say which is which.
+diff --git a/docs/phase-3-localization/implementation.md b/docs/phase-3-localization/implementation.md
+index c014b89..ba93847 100644
+--- a/docs/phase-3-localization/implementation.md
++++ b/docs/phase-3-localization/implementation.md
+@@ -138,9 +138,15 @@ measurement, not with an opinion:
+ Nothing in this file quotes a measurement. The runs live under
+ [`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/), one directory
+ each, and [benchmark.md](benchmark.md) section 6 lists them and says what each is for. The
+-verdict on criterion P1 is a file in the run directory, `<scenario>-verdict.yaml`, written
+-by [`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py) from the CSV and
+-the JSON the run produced.
++verdict on criterion P1 is a file in the run directory, `<scenario>-verdict.yaml` for the
++EKF and `<scenario>-verdict-mcl.yaml` for MCL, written by
++[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py) from the CSV and the
++JSON the run produced. A kidnap run is graded instead by
++[`../../scripts/phase3_kidnap_verdict.py`](../../scripts/phase3_kidnap_verdict.py) into
++`kidnap-verdict-ekf.yaml` and `kidnap-verdict-mcl.yaml`, because P1 asks whether tracking
++error stays bounded and P2 asks whether an invalidated belief finds its way back; the two
++questions need different numbers, and what "recovered" means is defined, with its two
++constants, in that script's docstring and repeated into every file it writes.
+ 
+ The integration test keeps its own evidence, under
+ [`../../evidence/phase-3-localization-runtime/`](../../evidence/phase-3-localization-runtime/):
+diff --git a/docs/phase-3-localization/problem.md b/docs/phase-3-localization/problem.md
+index 016960f..fae39da 100644
+--- a/docs/phase-3-localization/problem.md
++++ b/docs/phase-3-localization/problem.md
+@@ -76,6 +76,17 @@ The answer is a number, measured in the same world for every implementation comp
+ | P2, does it recover? | time to recover after a teleport of the robot | recovers, or reports that it cannot, instead of insisting on a wrong pose |
+ | cost | CPU time per update at a given particle count, and per lidar scan | comparable to or better than the reference implementations, see [benchmark.md](benchmark.md) |
+ 
++Where each row stands is a verdict file, not a sentence here. The runs are listed in
++[benchmark.md](benchmark.md) section 6; the current ones are in
++[`../../evidence/phase-3-correctness/2026-10-10-mcl-gated/`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated).
++In outline: the EKF answers the first P1 row and MCL does not yet, for the open defect in
++[implementation.md](implementation.md) section 5.2; the NEES row is unevaluated for both,
++because it needs the full covariance of each estimate and the evaluator CSV carries only
++`sigma_xy`; the P2 recovery row is answered, and answered differently by the two filters,
++which is the point of having both; and the P2 convergence row (from a genuinely uniform
++prior, rather than from a kidnapping) has no run yet, because `mcl_node` starts from the
++known pose with `McLocalizer::new_at` and nothing yet drives `new_global`.
++
+ Ground truth for these metrics comes from the simulator, not from the estimate under test.
+ It is wired out of Webots by
+ [`evaluation_supervisor.py`](../../sim/webots/scripts/evaluation_supervisor.py) on
+diff --git a/docs/phase-3-localization/theory.md b/docs/phase-3-localization/theory.md
+index 18b4e4e..03c467a 100644
+--- a/docs/phase-3-localization/theory.md
++++ b/docs/phase-3-localization/theory.md
+@@ -101,6 +101,26 @@ stopped agreeing with the belief, and the filter injects random particles drawn
+ over the free space with probability `max(0, 1 - w_fast / w_slow)`. This is the recovery
+ mechanism for the kidnapped case, and it costs nothing while the filter is healthy.
+ 
++What was actually built is neither of these two in full, and
++[`mcl.rs`](../../crates/robotics_localization/src/mcl.rs) says so at each decision rather
++than leaving the gap to be discovered. Recovery is a fixed injection fraction fired by a
++sustained low-fit streak, not the `w_fast`/`w_slow` averages, because that scheme needs two
++more decay-rate constants that nothing in this phase gives a reason to prefer one value of;
++the threshold the streak is judged against is the EKF's own chi-square gate expressed as a
++likelihood ratio, so it is a number already defended elsewhere rather than one tuned until a
++demo looked right. A fixed particle count stands in for KLD sizing, and a weighted mean
++stands in for dominant-cluster extraction, both for the same reason: they are enough to
++decide whether the filter recovers at all, which is the question this phase asks.
++
++The part of this section that survived contact with a simulator least well is the weight
++update. Multiplying every weight by `p(z | x, m)` is correct, and it is also how MCL here
++diverged: an observation that *no* pose explains multiplies every particle by the same tiny
++number, which leaves the relative weights untouched but destroys the absolute scale that the
++recovery trigger reads. Chapter 8's own answer for the EKF, a per-observation gate, turns
++out to be needed per particle too. The measurement that found this and the fix are
++[implementation.md](implementation.md) section 5.1; the part of it that is still open, and
++is a defect in the trigger rather than in the weights, is section 5.2.
++
+ **KLD sampling** adapts the number of particles to how spread out the belief is. Bin the
+ particles, count how many bins are occupied, and draw only as many samples as the KL bound
+ requires for that many bins:
+@@ -202,8 +222,8 @@ simulator produced.
+ 
+ | Decision | Options | Where it is settled |
+ |---|---|---|
+-| filter for P1 | EKF with landmarks, or MCL with a map | [implementation.md](implementation.md) |
+-| filter for P2 | AMCL with KLD sampling | [implementation.md](implementation.md) |
++| filter for P1 | **settled: EKF with landmarks.** Both were built and measured on one route; the verdict files of [benchmark.md](benchmark.md) section 6 are why | [implementation.md](implementation.md) |
++| filter for P2 | **settled: a particle filter, since only it can.** The simplifications taken against full AMCL with KLD sampling are each named and justified in `mcl.rs` | [implementation.md](implementation.md) |
+ | sensor model | beam versus likelihood field | [implementation.md](implementation.md), measured in [benchmark.md](benchmark.md) |
+ | map source | the four pillars as landmarks now, an occupancy grid after Phase 4 | [implementation.md](implementation.md) |
+ | node interface | topics, frames, parameters | [ros-graph.md](ros-graph.md) |
+diff --git a/evidence/phase-3-correctness/README.md b/evidence/phase-3-correctness/README.md
+index 82f1bf3..d393e85 100644
+--- a/evidence/phase-3-correctness/README.md
++++ b/evidence/phase-3-correctness/README.md
+@@ -6,28 +6,58 @@ and no file here was edited after the run wrote it. The documentation points at
+ directories instead of quoting them, so that a claim can always be checked against the file
+ it came from.
+ 
+-Since 2026-10-10 every run also writes `<scenario>-verdict.yaml`, the decision on criterion
+-P1 of [`../../docs/phase-3-localization/problem.md`](../../docs/phase-3-localization/problem.md),
+-computed from the run's own CSV and JSON by
+-[`scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py). Read that file for the
+-numbers of a run. The two older runs predate it; the script works on them as well, because
+-it only reads files they already contain.
++Since 2026-10-10 every run also writes a verdict file, computed from the run's own CSV and
++JSON, which is what to read for the numbers of a run. Which file depends on the scenario and
++the estimator:
++
++| Scenario | Estimator | File | Written by |
++|---|---|---|---|
++| `normal` | EKF | `normal-verdict.yaml` | [`scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py) |
++| `normal` | MCL | `normal-verdict-mcl.yaml` | the same |
++| `kidnap` | EKF | `kidnap-verdict-ekf.yaml` | [`scripts/phase3_kidnap_verdict.py`](../../scripts/phase3_kidnap_verdict.py) |
++| `kidnap` | MCL | `kidnap-verdict-mcl.yaml` | the same |
++
++The `normal` files decide criterion P1 of
++[`../../docs/phase-3-localization/problem.md`](../../docs/phase-3-localization/problem.md),
++bounded tracking error. The `kidnap` files decide the P2 recovery row, which is a different
++question and so has a different script and its own definition of what "recovered" means;
++that definition and the two constants behind it are in the script's docstring and are
++repeated into every file it writes. The oldest runs predate all of this; the P1 script works
++on them anyway, because it only reads files they already contain.
++
++A run that names two estimators drives one Webots session for both, so a `normal` or
++`kidnap` directory holding both an EKF and an MCL verdict is one trajectory and, for
++`kidnap`, one teleport at one simulated instant, graded twice. That is deliberate: it is the
++only way the comparison is between two filters rather than between two runs.
+ 
+ | Run | Route | Scenario | Verdict |
+ |---|---|---|---|
+-| [`2026-10-10-long-route`](2026-10-10-long-route/) | `route_long.yaml`, 51 m, 21 sharp corners | normal | **The current answer on P1.** See `normal-verdict.yaml`. |
++| [`2026-10-10-mcl-gated`](2026-10-10-mcl-gated/) | `route_long.yaml`, 21 sharp corners | normal and kidnap, both estimators | **The current answer on both criteria.** P1 in `normal-verdict.yaml` and `normal-verdict-mcl.yaml`: the EKF passes, MCL does not. P2 in `kidnap-verdict-ekf.yaml` and `kidnap-verdict-mcl.yaml`: MCL recovers, the EKF does not. The first kidnap runs that exist. |
++| [`2026-10-10-mcl-comparison`](2026-10-10-mcl-comparison/) | the same route | normal, both estimators | **MCL before it had a per-observation gate**, kept as the measurement that found that defect rather than deleted. Its `normal-verdict-mcl.yaml` is route-scale error next to the EKF's `normal-verdict.yaml` from the same session. Analysis in [`../../docs/phase-3-localization/implementation.md`](../../docs/phase-3-localization/implementation.md) section 5.1. |
++| [`2026-10-10-long-route`](2026-10-10-long-route/) | `route_long.yaml`, 21 sharp corners | normal, EKF only | The run that first answered P1, before MCL existed. See `normal-verdict.yaml`. |
+ | [`2026-10-06-after-fix`](2026-10-06-after-fix/) | a 0.9 m square, 3.1 m of path | normal | Valid and complete, and **the wrong question asked correctly**: see below. |
+ | [`2026-10-06-nodes-killed`](2026-10-06-nodes-killed/) | the same square | normal | Valid motion, **no summary**. The route was driven and the CSV is complete, but the SIGINT of the run script never reached either Rust node, both were killed 30 s later, and `localization_evaluator` writes its summary only on a clean shutdown: there is no `normal-run.json`. The SIGKILL also only hit the `ros2 run` wrappers, leaving two orphaned node processes behind. |
+ | [`2026-10-06`](2026-10-06/) | the same square | normal | **Invalid, do not use.** The robot never moved: the ros2_control hardware interface never loaded, so `/cmd_vel` was accepted by nothing while every topic kept publishing and the evaluator kept writing rows. Post mortem in [`2026-10-06/INVALID.md`](2026-10-06/INVALID.md). |
+ 
+-Two further runs of the same route were made on 2026-10-10 and are not here. They were
+-written in the WSL build mirror and never copied to the Windows checkout, and the next
+-`scripts/sync_to_wsl.sh` deleted them, because that sync is `rsync --delete` from Windows
+-and removes whatever exists only in the mirror. The run above is a third run, made after the
+-same defects those two had found were fixed, so nothing was learned twice. The warning that
+-would have prevented it is now in the header of
+-[`../../scripts/sync_to_wsl.sh`](../../scripts/sync_to_wsl.sh), and the run wrapper copies a
+-finished run to the Windows checkout before anything else happens.
++Several runs of the same route are missing from this directory, and the reason is worth
++keeping. They were written in the WSL build mirror and never copied to the Windows checkout,
++and the next `scripts/sync_to_wsl.sh` deleted them, because that sync is `rsync --delete`
++from Windows and removes whatever exists only in the mirror. It ran at the start of every
++run, so the window was open constantly. That destroyed a 6270-row evaluation, a partial
++integration-test log, and a set of MCL measurement runs.
++
++A warning in the script header was the first attempt and was not enough, because it depended
++on someone remembering a manual copy at the right moment. What replaced it does not:
++
++1. [`../../scripts/evidence_root.sh`](../../scripts/evidence_root.sh) resolves
++   `EVIDENCE_ROOT` to this directory's parent in the Windows checkout whenever it is
++   mounted, and the run scripts write their output there as it is produced. There is no
++   longer a moment at which the only copy is in the mirror.
++2. `sync_to_wsl.sh` excludes `evidence/` and `benchmarks/` from the rsync, so `--delete`
++   cannot reach run output even when a run does write into the mirror.
++
++A consequence of (2): the mirror's `evidence/` no longer mirrors this directory. The Windows
++checkout is the only authoritative copy.
+ 
+ ## What the 2026-10-10 run settles
+ 
+diff --git a/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs b/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+index f22c30d..f30ed38 100644
+--- a/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
++++ b/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+@@ -545,13 +545,15 @@ fn main() -> Result<(), RclrsError> {
+                     st.last_injected_at = Some(scan.stamp);
+                     log_warn!(
+                         n.logger(),
+-                        "{} consecutive scan(s) did not fit any particle (best fit {:.2} \
+-                         nats/obs below the {:.2} threshold): injecting random particles",
++                        "{} consecutive scan(s) had a best-particle median fit of {:.2} \
++                         nats/obs, below the {:.2} threshold with {} observations: \
++                         injecting random particles",
+                         st.cfg.recovery_sustained_updates,
+                         report
+-                            .best_fit_log_likelihood_per_observation
++                            .best_fit_median_log_likelihood
+                             .unwrap_or(f64::NEG_INFINITY),
+-                        f.fit_log_threshold()
++                        f.fit_log_threshold(),
++                        report.observed
+                     );
+                 }
+                 st.publish(&n, scan.stamp);
+diff --git a/scripts/run_phase3_correctness.sh b/scripts/run_phase3_correctness.sh
+index 1535189..95b9c8e 100644
+--- a/scripts/run_phase3_correctness.sh
++++ b/scripts/run_phase3_correctness.sh
+@@ -62,12 +62,17 @@ MAP="$REPO/sim/webots/config/landmarks.yaml"
+ ROUTE_FILE=${ROUTE_FILE:-$REPO/sim/webots/config/route_long.yaml}
+ LAPS=${LAPS:-1}
+ ESTIMATORS=${ESTIMATORS:-ekf}
++MCL_SEED=${MCL_SEED:-1592598566}  # robotics_core::BOOK_SEED (0x5EED2026)
++MCL_PARTICLES=${MCL_PARTICLES:-6000}
++MCL_RECOVERY_SUSTAINED=${MCL_RECOVERY_SUSTAINED:-20}
++MCL_INJECTION_FRACTION=${MCL_INJECTION_FRACTION:-1.0}
+ case "$OUT" in
+     */*) ;;                                              # a path, used as given
+     *) OUT="$EVIDENCE_ROOT/phase-3-correctness/$OUT" ;;  # a bare run name
+ esac
+ mkdir -p "$OUT"
+ OUT=$(cd "$OUT" && pwd)
++SOURCE_REPO=$(dirname "$EVIDENCE_ROOT")
+ 
+ run_ekf=false
+ run_mcl=false
+@@ -135,11 +140,40 @@ fi
+     echo "odometry_topic_under_test: $ODOM_TOPIC"
+     echo "odometry_noise: off"
+     echo "estimators: $ESTIMATORS"
++    echo "mcl_seed: $MCL_SEED"
++    echo "mcl_particles: $MCL_PARTICLES"
++    echo "mcl_recovery_sustained_updates: $MCL_RECOVERY_SUSTAINED"
++    echo "mcl_recovery_injection_fraction: $MCL_INJECTION_FRACTION"
++    _bridge_prefix=$(ros2 pkg prefix robotics_localization_bridge 2>/dev/null || true)
++    _mcl_executable="$_bridge_prefix/lib/robotics_localization_bridge/mcl_node"
++    echo "mcl_executable: $_mcl_executable"
++    if [ -f "$_mcl_executable" ]; then
++        echo "mcl_executable_sha256: $(sha256sum "$_mcl_executable" | cut -d' ' -f1)"
++    else
++        echo "mcl_executable_sha256: unavailable"
++    fi
++    if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
++        echo "source_git_commit: $(git -C "$SOURCE_REPO" rev-parse HEAD)"
++        if [ -n "$(git -C "$SOURCE_REPO" status --porcelain)" ]; then
++            echo "source_git_dirty: true"
++        else
++            echo "source_git_dirty: false"
++        fi
++        echo "source_patch: $SCENARIO-source.patch"
++    else
++        echo "source_git_commit: unavailable"
++        echo "source_git_dirty: unknown"
++    fi
+     if [ "$SCENARIO" = kidnap ]; then
+         echo "kidnap_target: x=$KIDNAP_X y=$KIDNAP_Y yaw=$KIDNAP_YAW"
+         echo "kidnap_after_s: $KIDNAP_AFTER"
+     fi
+ } > "$OUT/$SCENARIO-environment.txt"
++unset _bridge_prefix _mcl_executable
++if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
++    git -C "$SOURCE_REPO" status --short > "$OUT/$SCENARIO-source-status.txt"
++    git -C "$SOURCE_REPO" diff --binary HEAD > "$OUT/$SCENARIO-source.patch"
++fi
+ 
+ log "starting the world with ground truth"
+ ros2 launch "$LAUNCH" gui:=false mode:=realtime ground_truth:=true \
+@@ -204,6 +238,10 @@ if $run_mcl; then
+     ros2 run robotics_localization_bridge mcl_node --ros-args \
+         -p "map_file:=$MAP" \
+         -p "topics.odom:=$ODOM_TOPIC" \
++        -p "seed:=$MCL_SEED" \
++        -p "particles.count:=$MCL_PARTICLES" \
++        -p "recovery.sustained_updates:=$MCL_RECOVERY_SUSTAINED" \
++        -p "recovery.injection_fraction:=$MCL_INJECTION_FRACTION" \
+         > "$OUT/$SCENARIO-mcl_node.log" 2>&1 &
+     MCL_NODE_PID=$!
+     ros2 run robotics_localization_bridge localization_evaluator --ros-args \

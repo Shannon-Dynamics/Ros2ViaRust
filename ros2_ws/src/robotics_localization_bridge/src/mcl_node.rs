@@ -545,13 +545,15 @@ fn main() -> Result<(), RclrsError> {
                     st.last_injected_at = Some(scan.stamp);
                     log_warn!(
                         n.logger(),
-                        "{} consecutive scan(s) did not fit any particle (best fit {:.2} \
-                         nats/obs below the {:.2} threshold): injecting random particles",
+                        "{} consecutive scan(s) had a best-particle median fit of {:.2} \
+                         nats/obs, below the {:.2} threshold with {} observations: \
+                         injecting random particles",
                         st.cfg.recovery_sustained_updates,
                         report
-                            .best_fit_log_likelihood_per_observation
+                            .best_fit_median_log_likelihood
                             .unwrap_or(f64::NEG_INFINITY),
-                        f.fit_log_threshold()
+                        f.fit_log_threshold(),
+                        report.observed
                     );
                 }
                 st.publish(&n, scan.stamp);

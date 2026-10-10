@@ -62,12 +62,17 @@ MAP="$REPO/sim/webots/config/landmarks.yaml"
 ROUTE_FILE=${ROUTE_FILE:-$REPO/sim/webots/config/route_long.yaml}
 LAPS=${LAPS:-1}
 ESTIMATORS=${ESTIMATORS:-ekf}
+MCL_SEED=${MCL_SEED:-1592598566}  # robotics_core::BOOK_SEED (0x5EED2026)
+MCL_PARTICLES=${MCL_PARTICLES:-6000}
+MCL_RECOVERY_SUSTAINED=${MCL_RECOVERY_SUSTAINED:-20}
+MCL_INJECTION_FRACTION=${MCL_INJECTION_FRACTION:-1.0}
 case "$OUT" in
     */*) ;;                                              # a path, used as given
     *) OUT="$EVIDENCE_ROOT/phase-3-correctness/$OUT" ;;  # a bare run name
 esac
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
+SOURCE_REPO=$(dirname "$EVIDENCE_ROOT")
 
 run_ekf=false
 run_mcl=false
@@ -135,11 +140,40 @@ fi
     echo "odometry_topic_under_test: $ODOM_TOPIC"
     echo "odometry_noise: off"
     echo "estimators: $ESTIMATORS"
+    echo "mcl_seed: $MCL_SEED"
+    echo "mcl_particles: $MCL_PARTICLES"
+    echo "mcl_recovery_sustained_updates: $MCL_RECOVERY_SUSTAINED"
+    echo "mcl_recovery_injection_fraction: $MCL_INJECTION_FRACTION"
+    _bridge_prefix=$(ros2 pkg prefix robotics_localization_bridge 2>/dev/null || true)
+    _mcl_executable="$_bridge_prefix/lib/robotics_localization_bridge/mcl_node"
+    echo "mcl_executable: $_mcl_executable"
+    if [ -f "$_mcl_executable" ]; then
+        echo "mcl_executable_sha256: $(sha256sum "$_mcl_executable" | cut -d' ' -f1)"
+    else
+        echo "mcl_executable_sha256: unavailable"
+    fi
+    if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+        echo "source_git_commit: $(git -C "$SOURCE_REPO" rev-parse HEAD)"
+        if [ -n "$(git -C "$SOURCE_REPO" status --porcelain)" ]; then
+            echo "source_git_dirty: true"
+        else
+            echo "source_git_dirty: false"
+        fi
+        echo "source_patch: $SCENARIO-source.patch"
+    else
+        echo "source_git_commit: unavailable"
+        echo "source_git_dirty: unknown"
+    fi
     if [ "$SCENARIO" = kidnap ]; then
         echo "kidnap_target: x=$KIDNAP_X y=$KIDNAP_Y yaw=$KIDNAP_YAW"
         echo "kidnap_after_s: $KIDNAP_AFTER"
     fi
 } > "$OUT/$SCENARIO-environment.txt"
+unset _bridge_prefix _mcl_executable
+if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    git -C "$SOURCE_REPO" status --short > "$OUT/$SCENARIO-source-status.txt"
+    git -C "$SOURCE_REPO" diff --binary HEAD > "$OUT/$SCENARIO-source.patch"
+fi
 
 log "starting the world with ground truth"
 ros2 launch "$LAUNCH" gui:=false mode:=realtime ground_truth:=true \
@@ -204,6 +238,10 @@ if $run_mcl; then
     ros2 run robotics_localization_bridge mcl_node --ros-args \
         -p "map_file:=$MAP" \
         -p "topics.odom:=$ODOM_TOPIC" \
+        -p "seed:=$MCL_SEED" \
+        -p "particles.count:=$MCL_PARTICLES" \
+        -p "recovery.sustained_updates:=$MCL_RECOVERY_SUSTAINED" \
+        -p "recovery.injection_fraction:=$MCL_INJECTION_FRACTION" \
         > "$OUT/$SCENARIO-mcl_node.log" 2>&1 &
     MCL_NODE_PID=$!
     ros2 run robotics_localization_bridge localization_evaluator --ros-args \

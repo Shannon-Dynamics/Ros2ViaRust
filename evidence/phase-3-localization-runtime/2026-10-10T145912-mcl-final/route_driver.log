@@ -1,0 +1,8 @@
+[INFO] [1791619449.701919777] [route_driver]: route "smoke-triangle" from /home/genta/ros2-rust-robotics/sim/webots/config/route_smoke.yaml: 3 waypoint(s) x 1 lap(s)
+[INFO] [1791619449.705142797] [route_driver]: route_driver up: ground_truth/pose -> cmd_vel at 20 Hz, 17 parameters
+[INFO] [1791619452.355232717] [route_driver]: waypoint 1/3 of lap 1 reached at (0.445, -0.000)
+[INFO] [1791619457.955224112] [route_driver]: waypoint 2/3 of lap 1 reached at (0.223, 0.453)
+[INFO] [1791619463.505230361] [route_driver]: waypoint 3/3 of lap 1 reached at (0.024, 0.050)
+[INFO] [1791619463.505858869] [route_driver]: route "smoke-triangle" finished: 1 lap(s), 3 waypoints, 1.41 m driven, 4.26 rad turned, 3 corner(s), 0 leg timeout(s)
+[INFO] [1791619466.505381031] [route_driver]: route driver done, stopping
+[INFO] [1791619466.506159185] [route_driver]: route_driver shutting down after 1.41 m and 4.26 rad on route "smoke-triangle" (3 corner(s), 0 leg timeout(s))

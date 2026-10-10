@@ -76,6 +76,16 @@ The answer is a number, measured in the same world for every implementation comp
 | P2, does it recover? | time to recover after a teleport of the robot | recovers, or reports that it cannot, instead of insisting on a wrong pose |
 | cost | CPU time per update at a given particle count, and per lidar scan | comparable to or better than the reference implementations, see [benchmark.md](benchmark.md) |
 
+Where each row stands is a verdict file, not a sentence here. The runs are listed in
+[benchmark.md](benchmark.md) section 6; the current ones are in
+[`../../evidence/phase-3-correctness/2026-10-10T144153-final-global-reset/`](../../evidence/phase-3-correctness/2026-10-10T144153-final-global-reset)
+for P1 and
+[`../../evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`](../../evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset)
+for the kidnapped case. In outline: both EKF and MCL answer the first P1 row; the NEES row
+is unevaluated for both because the evaluator CSV carries only `sigma_xy`; MCL answers the
+P2 recovery row while EKF does not; and the P2 convergence row from a genuinely uniform
+initial prior still has no run because `mcl_node` starts with `McLocalizer::new_at`.
+
 Ground truth for these metrics comes from the simulator, not from the estimate under test.
 It is wired out of Webots by
 [`evaluation_supervisor.py`](../../sim/webots/scripts/evaluation_supervisor.py) on

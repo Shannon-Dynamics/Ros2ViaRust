@@ -84,27 +84,23 @@ extraction; grid localization as a debug mode; `/particle_cloud`, `/amcl_pose` a
 empty, so no Rust against rclpy against Nav2 comparison exists yet.
 
 Where the two filters stand is split, and each half is a verdict file rather than a claim
-in this paragraph. Read them in
-`evidence/phase-3-correctness/2026-10-10-mcl-gated/`:
+in this paragraph. Read the normal evidence in
+`evidence/phase-3-correctness/2026-10-10T144153-final-global-reset/` and the kidnap evidence
+in `evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`:
 
-* **P1, position tracking.** The EKF passes on the two parts a run can decide, on the
-  odometry the simulator publishes with nothing injected: its position RMSE is below the
-  dead reckoning it was given and its error is flat over distance while dead reckoning's
-  grows (`normal-verdict.yaml`). MCL on the same session fails both
-  (`normal-verdict-mcl.yaml`), and the reason is a known, located defect: its recovery
-  trigger still fires on a run with no kidnap in it, because the statistic it watches is a
-  plain mean over observations and one spurious pillar detection swamps a scan that
-  otherwise fits. `implementation.md` section 5.2 has the analysis and the fix it points at.
+* **P1, position tracking.** EKF and MCL pass the two parts a run can decide. Each beats the
+  dead reckoning it was given and keeps its error bounded over the 51.54 m route. MCL uses
+  6000 particles and records zero recovery injections in the final normal run.
 * **P2, kidnap recovery.** MCL recovers from a teleport the EKF structurally cannot
   (`kidnap-verdict-mcl.yaml` against `kidnap-verdict-ekf.yaml`, both from one teleport at
-  one simulated instant). The recovery is sustained rather than a lucky sample, and the
-  same trigger defect above also un-localizes the filter again later in that run; the
-  error trace in `kidnap-run-mcl.csv` is the record.
+  one simulated instant). The trigger uses the best upper median of raw per-observation
+  likelihoods for 20 scans, then performs one full global reset of the particle cloud. MCL
+  meets the position and yaw recovery window 6.920 s after the teleport.
 
 The NEES part of the P1 row is not evaluated for either filter, because it needs the full
-covariance of each estimate and the evaluator CSV carries only `sigma_xy`. So Phase 3 has
-answered the kidnapped robot question it set out to answer and has one open defect standing
-between MCL and the tracking claim the EKF already holds.
+covariance of each estimate and the evaluator CSV carries only `sigma_xy`. A run from a
+genuinely uniform initial prior, adaptive particle sizing, and the cross-language benchmark
+also remain. The normal tracking and kidnapped recovery work requested here is complete.
 `docs/phase-3-localization/benchmark.md` section 6 lists the runs, and `theory.md` section 6
 explains why the route had to be lengthened before the comparison meant anything. Details
 and the open decisions are in `docs/phase-3-localization/implementation.md`.

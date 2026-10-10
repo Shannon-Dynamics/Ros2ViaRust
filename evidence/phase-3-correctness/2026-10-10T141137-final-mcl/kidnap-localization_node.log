@@ -1,0 +1,57 @@
+[INFO] [1791616321.343139911] [localization_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791616321.349322556] [localization_node]: localization_node up: scan + /odom + imu -> localization/pose (frame map), map -> odom published, 38 parameters
+[INFO] [1791616321.603651577] [localization_node]: localizer started at (0.000, 0.000, 0.000) with 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, gate chi2(2) = 9.21
+[WARN] [1791616446.479356623] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616451.627306245] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616456.795838327] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616461.980113569] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616467.143101502] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616472.328796716] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616477.503796719] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616482.656818763] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616487.839541773] [localization_node]: 8 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616493.010198370] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616498.188425908] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616503.350976853] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616508.543778089] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616513.700228162] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616518.883799909] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616524.074282895] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616529.221601340] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616534.400380081] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616539.563689351] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616544.730917991] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616549.908009752] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616555.085792000] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616560.255047582] [localization_node]: 2 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616565.423269928] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616570.611438423] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616575.759798078] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616580.911178030] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616586.091777270] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616591.264264096] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616596.452397450] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616601.612725119] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616606.794859954] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616611.966743726] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616617.147361467] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616622.311532724] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616627.493471492] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616632.667986579] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616637.831644816] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616643.012777231] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616648.175112617] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616653.359585542] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616658.508874591] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616663.685951270] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616668.827810126] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616674.011470804] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616679.194554659] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616684.337808325] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616689.525774624] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616694.699803510] [localization_node]: 7 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616699.868019536] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616705.011766159] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616710.203576785] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791616715.347509296] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[INFO] [1791616719.511417638] [localization_node]: localization_node shutting down

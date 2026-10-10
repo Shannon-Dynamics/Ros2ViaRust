@@ -1,0 +1,218 @@
+diff --git a/crates/robotics_localization/src/mcl.rs b/crates/robotics_localization/src/mcl.rs
+index 3e3555b..ac0a6a1 100644
+--- a/crates/robotics_localization/src/mcl.rs
++++ b/crates/robotics_localization/src/mcl.rs
+@@ -164,10 +164,11 @@ pub struct McUpdateReport {
+     pub observed: usize,
+     /// Effective sample size after reweighting (and after injection, if it happened).
+     pub ess: f64,
+-    /// `ln p(best-fitting particle explains this scan) / observed`, the statistic
+-    /// [`McLocalizer::fit_log_threshold`] is compared against. `None` when there were no
+-    /// observations to score.
+-    pub best_fit_log_likelihood_per_observation: Option<f64>,
++    /// Best particle's upper-median raw per-observation log likelihood, the robust
++    /// statistic [`McLocalizer::fit_log_threshold`] is compared against. `None` when there
++    /// were no observations to score. The values entering the median are not gated or
++    /// clamped, so a real kidnapping remains visible to the recovery trigger.
++    pub best_fit_median_log_likelihood: Option<f64>,
+     /// Consecutive low-fit scans counted so far (reset to 0 by a good scan or by an
+     /// injection).
+     pub low_fit_streak: u32,
+@@ -306,7 +307,7 @@ impl McLocalizer {
+         )
+     }
+ 
+-    /// The threshold [`McUpdateReport::best_fit_log_likelihood_per_observation`] is
++    /// The threshold [`McUpdateReport::best_fit_median_log_likelihood`] is
+     /// compared against: the natural log of the per-observation likelihood ratio, relative
+     /// to a perfect (zero-residual) observation, below which a scan counts as unexplained.
+     /// Equal to `ln(peak likelihood) - 0.5 * chi2_quantile(2, recovery_gate_probability)`.
+@@ -411,19 +412,27 @@ impl McLocalizer {
+             .fold(f64::NEG_INFINITY, f64::max)
+     }
+ 
+-    /// `Σⱼ ln max_i p(z_j | x, map landmark i)`, raw and unclamped. Used only to judge
+-    /// whether *anything* explains a scan (the recovery trigger of [`McLocalizer::observe`]),
+-    /// never to reweight; see [`McLocalizer::gated_log_likelihood`] for why reweighting
+-    /// needs a different number.
+-    fn total_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
+-        observations
++    /// Upper median of the raw per-observation scores for one particle.
++    ///
++    /// A scan is considered explained when at least half of its observations clear the
++    /// same likelihood-ratio threshold used by the EKF. Unlike
++    /// [`McLocalizer::gated_log_likelihood`], this function neither drops nor clamps an
++    /// outlier before summarising the scan. Selecting the upper median only prevents a
++    /// minority of arbitrarily bad detections from overwhelming the observations that do
++    /// fit. After a kidnapping, when the existing cloud explains fewer than half of the
++    /// genuine observations, the raw median remains below the threshold and recovery still
++    /// fires.
++    fn median_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
++        let mut scores: Vec<f64> = observations
+             .iter()
+             .map(|z| self.best_landmark_log_likelihood(pose, z))
+-            .sum()
++            .collect();
++        scores.sort_unstable_by(f64::total_cmp);
++        scores[scores.len() / 2]
+     }
+ 
+     /// The score reweighting actually uses: the same per-observation best-landmark
+-    /// likelihood as [`McLocalizer::total_log_likelihood`], except that an observation no
++    /// likelihood as [`McLocalizer::median_log_likelihood`], except that an observation no
+     /// landmark explains within the same chi-square gate the EKF applies per observation
+     /// (`self.fit_log_threshold`) contributes nothing, rather than its arbitrarily negative
+     /// raw value.
+@@ -487,17 +496,18 @@ impl McLocalizer {
+         }
+         self.stats.scored_updates += 1;
+ 
+-        // Raw (unclamped), for the recovery trigger only.
++        // Raw and unclamped, for the recovery trigger only. Use the upper median rather
++        // than the arithmetic mean so a minority of spurious detections cannot dominate
++        // an otherwise well-explained scan.
+         let raw: Vec<f64> = self
+             .particles
+             .states()
+-            .map(|pose| self.total_log_likelihood(pose, observations))
++            .map(|pose| self.median_log_likelihood(pose, observations))
+             .collect();
+         let best = raw.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+-        let per_obs_best = best / observations.len() as f64;
+-        report.best_fit_log_likelihood_per_observation = Some(per_obs_best);
++        report.best_fit_median_log_likelihood = Some(best);
+ 
+-        if per_obs_best < self.fit_log_threshold {
++        if best < self.fit_log_threshold {
+             self.low_fit_streak += 1;
+         } else {
+             self.low_fit_streak = 0;
+@@ -518,7 +528,7 @@ impl McLocalizer {
+         });
+         if reweighted.is_err() || self.particles.normalize().is_err() {
+             // Every particle scored -inf or NaN on this scan (only possible if a particle
+-            // sits exactly on a landmark, see total_log_likelihood): treat it as a scan
++            // sits exactly on a landmark, see median_log_likelihood): treat it as a scan
+             // with no usable evidence rather than propagating a degenerate weight set.
+             self.particles.reset_uniform();
+         }
+@@ -662,7 +672,14 @@ mod tests {
+         // run; without it this test is static resampling only, a harder and unrealistic
+         // case the real node never faces.
+         let kidnapped_to = Se2::new(-1.5, 1.5, 2.0);
+-        let z1 = perfect_observations(&cfg, &map, &kidnapped_to);
++        let mut z1 = perfect_observations(&cfg, &map, &kidnapped_to);
++        // One arbitrarily bad detector output must not hide the fact that the old cloud
++        // explains none of the four genuine observations, or prevent a newly injected
++        // hypothesis from demonstrating that it explains most of the scan.
++        z1.push(RangeBearing {
++            range: 100.0,
++            bearing: 2.9,
++        });
+         let mut injected = false;
+         let mut odom = Se2::IDENTITY;
+         for i in 0..150 {
+@@ -687,6 +704,28 @@ mod tests {
+         );
+     }
+ 
++    #[test]
++    fn one_persistent_outlier_does_not_trigger_recovery_during_normal_tracking() {
++        let cfg = MclConfig::default();
++        let map = square_map();
++        let truth = Se2::new(0.3, -0.2, 0.2);
++        let mut rng = SmallRng::seed_from_u64(11);
++        let mut f = McLocalizer::new_at(&cfg, map.clone(), truth, &mut rng).unwrap();
++        let mut observations = perfect_observations(&cfg, &map, &truth);
++        observations.push(RangeBearing {
++            range: 100.0,
++            bearing: -2.7,
++        });
++
++        for _ in 0..(cfg.recovery_sustained_updates * 4) {
++            let report = f.observe(&observations, &mut rng);
++            assert!(!report.injected, "a minority outlier triggered recovery");
++            assert_eq!(report.low_fit_streak, 0);
++        }
++        assert_eq!(f.stats().injections, 0);
++        assert!(f.pose().distance_to(&truth) < 0.1);
++    }
++
+     #[test]
+     fn standing_still_predicts_to_a_fixed_point() {
+         let cfg = MclConfig::default();
+diff --git a/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs b/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+index f22c30d..c946159 100644
+--- a/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
++++ b/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+@@ -545,11 +545,11 @@ fn main() -> Result<(), RclrsError> {
+                     st.last_injected_at = Some(scan.stamp);
+                     log_warn!(
+                         n.logger(),
+-                        "{} consecutive scan(s) did not fit any particle (best fit {:.2} \
+-                         nats/obs below the {:.2} threshold): injecting random particles",
++                        "{} consecutive scan(s) had a best-particle median fit of {:.2} \
++                         nats/obs, below the {:.2} threshold: injecting random particles",
+                         st.cfg.recovery_sustained_updates,
+                         report
+-                            .best_fit_log_likelihood_per_observation
++                            .best_fit_median_log_likelihood
+                             .unwrap_or(f64::NEG_INFINITY),
+                         f.fit_log_threshold()
+                     );
+diff --git a/scripts/run_phase3_correctness.sh b/scripts/run_phase3_correctness.sh
+index 1535189..018b9c0 100644
+--- a/scripts/run_phase3_correctness.sh
++++ b/scripts/run_phase3_correctness.sh
+@@ -62,12 +62,14 @@ MAP="$REPO/sim/webots/config/landmarks.yaml"
+ ROUTE_FILE=${ROUTE_FILE:-$REPO/sim/webots/config/route_long.yaml}
+ LAPS=${LAPS:-1}
+ ESTIMATORS=${ESTIMATORS:-ekf}
++MCL_SEED=${MCL_SEED:-1592598566}  # robotics_core::BOOK_SEED (0x5EED2026)
+ case "$OUT" in
+     */*) ;;                                              # a path, used as given
+     *) OUT="$EVIDENCE_ROOT/phase-3-correctness/$OUT" ;;  # a bare run name
+ esac
+ mkdir -p "$OUT"
+ OUT=$(cd "$OUT" && pwd)
++SOURCE_REPO=$(dirname "$EVIDENCE_ROOT")
+ 
+ run_ekf=false
+ run_mcl=false
+@@ -135,11 +137,28 @@ fi
+     echo "odometry_topic_under_test: $ODOM_TOPIC"
+     echo "odometry_noise: off"
+     echo "estimators: $ESTIMATORS"
++    echo "mcl_seed: $MCL_SEED"
++    if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
++        echo "source_git_commit: $(git -C "$SOURCE_REPO" rev-parse HEAD)"
++        if [ -n "$(git -C "$SOURCE_REPO" status --porcelain)" ]; then
++            echo "source_git_dirty: true"
++        else
++            echo "source_git_dirty: false"
++        fi
++        echo "source_patch: $SCENARIO-source.patch"
++    else
++        echo "source_git_commit: unavailable"
++        echo "source_git_dirty: unknown"
++    fi
+     if [ "$SCENARIO" = kidnap ]; then
+         echo "kidnap_target: x=$KIDNAP_X y=$KIDNAP_Y yaw=$KIDNAP_YAW"
+         echo "kidnap_after_s: $KIDNAP_AFTER"
+     fi
+ } > "$OUT/$SCENARIO-environment.txt"
++if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
++    git -C "$SOURCE_REPO" status --short > "$OUT/$SCENARIO-source-status.txt"
++    git -C "$SOURCE_REPO" diff --binary HEAD > "$OUT/$SCENARIO-source.patch"
++fi
+ 
+ log "starting the world with ground truth"
+ ros2 launch "$LAUNCH" gui:=false mode:=realtime ground_truth:=true \
+@@ -204,6 +223,7 @@ if $run_mcl; then
+     ros2 run robotics_localization_bridge mcl_node --ros-args \
+         -p "map_file:=$MAP" \
+         -p "topics.odom:=$ODOM_TOPIC" \
++        -p "seed:=$MCL_SEED" \
+         > "$OUT/$SCENARIO-mcl_node.log" 2>&1 &
+     MCL_NODE_PID=$!
+     ros2 run robotics_localization_bridge localization_evaluator --ros-args \

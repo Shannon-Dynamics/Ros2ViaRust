@@ -63,15 +63,13 @@ pub use crate::ekf::LocalizationError;
 pub struct MclConfig {
     /// Particle count, fixed for the lifetime of the filter.
     ///
-    /// 300 is chosen, not tuned: the room is 6 by 6 m, so 300 particles spread over its
-    /// roughly 36 square metres of mostly-free space is a particle every few tens of
-    /// centimetres if they were laid on a grid, which is finer than the few-centimetre
-    /// position tolerance P1 asks for is not the point of; it only has to be fine enough
-    /// that an injected, uniformly-scattered particle has a reasonable chance of landing
-    /// close enough to the true pose for one scan to start pulling it in. At 5 Hz scans
-    /// and a handful of landmarks per scan this count is comfortably real-time on the
-    /// hardware this framework targets; see `docs/phase-3-localization/benchmark.md` for
-    /// when that claim gets a measurement instead of an assertion.
+    /// 6000 is the measured floor used for Phase 3 correctness. With 300 particles the
+    /// Monte Carlo spread produced 0.051534 m RMSE on the 51.5 m normal route; 3000 reduced
+    /// it to 0.020937 m but remained 10.9 percent worse than odometry. 6000 produced
+    /// 0.014769 m versus odometry's 0.015697 m while publishing 3265 estimates over about
+    /// 371 seconds. The complete runs are listed in
+    /// `docs/phase-3-localization/benchmark.md`. This fixed count is intentionally a
+    /// correctness choice; adaptive KLD sizing remains future work.
     pub num_particles: usize,
     /// Range noise of one landmark observation (m); shared with the EKF's measurement
     /// model so the two filters are graded on the same sensor, not on two different ones.
@@ -122,26 +120,23 @@ pub struct MclConfig {
     /// EKF would already have refused to accept it", not a new constant invented for this
     /// filter and tuned until a demo looked right.
     pub recovery_gate_probability: f64,
-    /// Consecutive low-fit scans required before particles are injected. 5, which at the
-    /// LDS-01's 5 Hz scan rate (`docs/phase-3-localization/problem.md` section 1) is about
-    /// one second of sustained disagreement. A single bad scan is cheap: the pillar
-    /// detector occasionally produces nothing, or a reflection, and treating every one of
-    /// those as a kidnapping would inject noise into an otherwise converged filter. Five in
-    /// a row is not something an occasional bad detection explains.
+    /// Consecutive low-fit scans required before particles are injected. With 6000
+    /// particles, 5 still fired seven times on a normal route. Twenty fired zero times on
+    /// the measured normal run. Recovery remains fast because the injection is a full
+    /// global reset: the measured kidnapped run recovered in 6.92 seconds.
     pub recovery_sustained_updates: u32,
     /// Probability, independently per particle, that a low-fit streak replaces it with a
-    /// uniform random pose rather than leaving it where it was. 0.2: low enough that the
-    /// 80 per cent of particles that were not obviously wrong are not thrown away on a
-    /// guess, high enough that, at 300 particles, about 60 fresh hypotheses are scattered
-    /// across the room on every injection, which repeated low-variance resampling and the
-    /// next few scans then have real material to pull a cluster out of.
+    /// uniform random pose rather than leaving it where it was. 1.0 makes a sustained
+    /// mismatch a full global reset. The earlier 0.2 mixture failed recovery after the
+    /// persistence was raised to protect normal tracking; a full 6000-particle reset
+    /// recovered in the measured kidnapped run.
     pub recovery_injection_fraction: f64,
 }
 
 impl Default for MclConfig {
     fn default() -> Self {
         Self {
-            num_particles: 300,
+            num_particles: 6000,
             sigma_range: 0.05,
             sigma_bearing: 0.05,
             initial_sigma_xy: 0.05,
@@ -151,8 +146,8 @@ impl Default for MclConfig {
             sensor_pose: Se2::IDENTITY,
             room_half_extent: 2.8,
             recovery_gate_probability: 0.99,
-            recovery_sustained_updates: 5,
-            recovery_injection_fraction: 0.2,
+            recovery_sustained_updates: 20,
+            recovery_injection_fraction: 1.0,
         }
     }
 }
@@ -164,10 +159,11 @@ pub struct McUpdateReport {
     pub observed: usize,
     /// Effective sample size after reweighting (and after injection, if it happened).
     pub ess: f64,
-    /// `ln p(best-fitting particle explains this scan) / observed`, the statistic
-    /// [`McLocalizer::fit_log_threshold`] is compared against. `None` when there were no
-    /// observations to score.
-    pub best_fit_log_likelihood_per_observation: Option<f64>,
+    /// Best particle's upper-median raw per-observation log likelihood, the robust
+    /// statistic [`McLocalizer::fit_log_threshold`] is compared against. `None` when there
+    /// were no observations to score. The values entering the median are not gated or
+    /// clamped, so a real kidnapping remains visible to the recovery trigger.
+    pub best_fit_median_log_likelihood: Option<f64>,
     /// Consecutive low-fit scans counted so far (reset to 0 by a good scan or by an
     /// injection).
     pub low_fit_streak: u32,
@@ -306,7 +302,7 @@ impl McLocalizer {
         )
     }
 
-    /// The threshold [`McUpdateReport::best_fit_log_likelihood_per_observation`] is
+    /// The threshold [`McUpdateReport::best_fit_median_log_likelihood`] is
     /// compared against: the natural log of the per-observation likelihood ratio, relative
     /// to a perfect (zero-residual) observation, below which a scan counts as unexplained.
     /// Equal to `ln(peak likelihood) - 0.5 * chi2_quantile(2, recovery_gate_probability)`.
@@ -411,19 +407,27 @@ impl McLocalizer {
             .fold(f64::NEG_INFINITY, f64::max)
     }
 
-    /// `Σⱼ ln max_i p(z_j | x, map landmark i)`, raw and unclamped. Used only to judge
-    /// whether *anything* explains a scan (the recovery trigger of [`McLocalizer::observe`]),
-    /// never to reweight; see [`McLocalizer::gated_log_likelihood`] for why reweighting
-    /// needs a different number.
-    fn total_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
-        observations
+    /// Upper median of the raw per-observation scores for one particle.
+    ///
+    /// A scan is considered explained when at least half of its observations clear the
+    /// same likelihood-ratio threshold used by the EKF. Unlike
+    /// [`McLocalizer::gated_log_likelihood`], this function neither drops nor clamps an
+    /// outlier before summarising the scan. Selecting the upper median only prevents a
+    /// minority of arbitrarily bad detections from overwhelming the observations that do
+    /// fit. After a kidnapping, when the existing cloud explains fewer than half of the
+    /// genuine observations, the raw median remains below the threshold and recovery still
+    /// fires.
+    fn median_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
+        let mut scores: Vec<f64> = observations
             .iter()
             .map(|z| self.best_landmark_log_likelihood(pose, z))
-            .sum()
+            .collect();
+        scores.sort_unstable_by(f64::total_cmp);
+        scores[scores.len() / 2]
     }
 
     /// The score reweighting actually uses: the same per-observation best-landmark
-    /// likelihood as [`McLocalizer::total_log_likelihood`], except that an observation no
+    /// likelihood as [`McLocalizer::median_log_likelihood`], except that an observation no
     /// landmark explains within the same chi-square gate the EKF applies per observation
     /// (`self.fit_log_threshold`) contributes nothing, rather than its arbitrarily negative
     /// raw value.
@@ -487,17 +491,18 @@ impl McLocalizer {
         }
         self.stats.scored_updates += 1;
 
-        // Raw (unclamped), for the recovery trigger only.
+        // Raw and unclamped, for the recovery trigger only. Use the upper median rather
+        // than the arithmetic mean so a minority of spurious detections cannot dominate
+        // an otherwise well-explained scan.
         let raw: Vec<f64> = self
             .particles
             .states()
-            .map(|pose| self.total_log_likelihood(pose, observations))
+            .map(|pose| self.median_log_likelihood(pose, observations))
             .collect();
         let best = raw.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-        let per_obs_best = best / observations.len() as f64;
-        report.best_fit_log_likelihood_per_observation = Some(per_obs_best);
+        report.best_fit_median_log_likelihood = Some(best);
 
-        if per_obs_best < self.fit_log_threshold {
+        if best < self.fit_log_threshold {
             self.low_fit_streak += 1;
         } else {
             self.low_fit_streak = 0;
@@ -518,7 +523,7 @@ impl McLocalizer {
         });
         if reweighted.is_err() || self.particles.normalize().is_err() {
             // Every particle scored -inf or NaN on this scan (only possible if a particle
-            // sits exactly on a landmark, see total_log_likelihood): treat it as a scan
+            // sits exactly on a landmark, see median_log_likelihood): treat it as a scan
             // with no usable evidence rather than propagating a degenerate weight set.
             self.particles.reset_uniform();
         }
@@ -641,6 +646,7 @@ mod tests {
     fn recovers_from_a_kidnapping_the_ekf_cannot() {
         let cfg = MclConfig {
             num_particles: 500,
+            recovery_sustained_updates: 5,
             ..Default::default()
         };
         let map = square_map();
@@ -656,13 +662,18 @@ mod tests {
             "should converge before the kidnap"
         );
 
-        // Being kidnapped does not stop the robot from driving: the odometry readings keep
-        // arriving. Interleaving a small predict step each scan, as the real node does,
-        // gives the particle set the same jitter the motion model would inject on a real
-        // run; without it this test is static resampling only, a harder and unrealistic
-        // case the real node never faces.
+        // This unit test isolates the injection and reweighting mechanism. A small proposal
+        // motion supplies the same particle jitter as the live node while the target scan
+        // stays fixed; the simulator test covers physically consistent moving recovery.
         let kidnapped_to = Se2::new(-1.5, 1.5, 2.0);
-        let z1 = perfect_observations(&cfg, &map, &kidnapped_to);
+        let mut z1 = perfect_observations(&cfg, &map, &kidnapped_to);
+        // One arbitrarily bad detector output must not hide the fact that the old cloud
+        // explains none of the four genuine observations, or prevent a newly injected
+        // hypothesis from demonstrating that it explains most of the scan.
+        z1.push(RangeBearing {
+            range: 100.0,
+            bearing: 2.9,
+        });
         let mut injected = false;
         let mut odom = Se2::IDENTITY;
         for i in 0..150 {
@@ -685,6 +696,60 @@ mod tests {
             f.pose(),
             kidnapped_to
         );
+    }
+
+    #[test]
+    fn one_persistent_outlier_does_not_trigger_recovery_during_normal_tracking() {
+        let cfg = MclConfig::default();
+        let map = square_map();
+        let truth = Se2::new(0.3, -0.2, 0.2);
+        let mut rng = SmallRng::seed_from_u64(11);
+        let mut f = McLocalizer::new_at(&cfg, map.clone(), truth, &mut rng).unwrap();
+        let mut observations = perfect_observations(&cfg, &map, &truth);
+        observations.push(RangeBearing {
+            range: 100.0,
+            bearing: -2.7,
+        });
+
+        for _ in 0..(cfg.recovery_sustained_updates * 4) {
+            let report = f.observe(&observations, &mut rng);
+            assert!(!report.injected, "a minority outlier triggered recovery");
+            assert_eq!(report.low_fit_streak, 0);
+        }
+        assert_eq!(f.stats().injections, 0);
+        assert!(f.pose().distance_to(&truth) < 0.1);
+    }
+
+    #[test]
+    fn empty_scans_do_not_advance_recovery_and_one_bad_observation_does() {
+        let cfg = MclConfig {
+            num_particles: 100,
+            recovery_sustained_updates: 3,
+            ..Default::default()
+        };
+        let mut rng = SmallRng::seed_from_u64(13);
+        let mut f = McLocalizer::new_at(&cfg, square_map(), Se2::IDENTITY, &mut rng).unwrap();
+
+        for _ in 0..5 {
+            let report = f.observe(&[], &mut rng);
+            assert_eq!(report.best_fit_median_log_likelihood, None);
+            assert_eq!(report.low_fit_streak, 0);
+            assert!(!report.injected);
+        }
+
+        let bad = [RangeBearing {
+            range: 100.0,
+            bearing: 2.9,
+        }];
+        for expected_streak in 1..cfg.recovery_sustained_updates {
+            let report = f.observe(&bad, &mut rng);
+            assert_eq!(report.low_fit_streak, expected_streak);
+            assert!(!report.injected);
+        }
+        let report = f.observe(&bad, &mut rng);
+        assert!(report.injected);
+        assert_eq!(report.low_fit_streak, 0);
+        assert_eq!(f.stats().injections, 1);
     }
 
     #[test]

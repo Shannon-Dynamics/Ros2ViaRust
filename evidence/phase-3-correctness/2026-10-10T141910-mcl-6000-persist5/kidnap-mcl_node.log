@@ -1,0 +1,17 @@
+[INFO] [1791616770.310588893] [mcl_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791616770.316014937] [mcl_node]: mcl_node up: scan + /odom -> mcl/pose (frame map), 36 parameters
+[INFO] [1791616770.589931134] [mcl_node]: MCL started at (0.000, 0.000, 0.000) with 6000 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[WARN] [1791616788.987551995] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -53.41 nats/obs, below the -0.45 threshold with 5 observations: injecting random particles
+[WARN] [1791616896.353515824] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -186.85 nats/obs, below the -0.45 threshold with 2 observations: injecting random particles
+[WARN] [1791616898.399793042] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -4.26 nats/obs, below the -0.45 threshold with 4 observations: injecting random particles
+[WARN] [1791616901.953731364] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -1.10 nats/obs, below the -0.45 threshold with 3 observations: injecting random particles
+[WARN] [1791616904.214650565] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -3.10 nats/obs, below the -0.45 threshold with 4 observations: injecting random particles
+[WARN] [1791616906.701728005] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -25.00 nats/obs, below the -0.45 threshold with 4 observations: injecting random particles
+[WARN] [1791616907.845351771] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -47.39 nats/obs, below the -0.45 threshold with 5 observations: injecting random particles
+[WARN] [1791616909.004577385] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -8.59 nats/obs, below the -0.45 threshold with 6 observations: injecting random particles
+[WARN] [1791616917.578001197] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -37.01 nats/obs, below the -0.45 threshold with 7 observations: injecting random particles
+[WARN] [1791616919.798132189] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -14.14 nats/obs, below the -0.45 threshold with 6 observations: injecting random particles
+[WARN] [1791617029.458051636] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -219.18 nats/obs, below the -0.45 threshold with 6 observations: injecting random particles
+[WARN] [1791617146.147651743] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -80.23 nats/obs, below the -0.45 threshold with 7 observations: injecting random particles
+[WARN] [1791617147.336416270] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -209.37 nats/obs, below the -0.45 threshold with 8 observations: injecting random particles
+[INFO] [1791617169.073764993] [mcl_node]: mcl_node shutting down

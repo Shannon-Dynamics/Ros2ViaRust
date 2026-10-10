@@ -346,7 +346,7 @@ check_block_match "H5  the laser mount came from TF, not from parameters" \
     done
 } > "$OUT/params_mcl.txt" 2>&1
 check_match "H6  particles.count matches McLocalizer's documented default" \
-    "particles.count:.*Integer value is: 300" "$OUT/params_mcl.txt"
+    "particles.count:.*Integer value is: 6000" "$OUT/params_mcl.txt"
 check_match "H7  topics.odom points at the odometry the simulator publishes" \
     "topics.odom:.*String value is: /?odom$" "$OUT/params_mcl.txt"
 

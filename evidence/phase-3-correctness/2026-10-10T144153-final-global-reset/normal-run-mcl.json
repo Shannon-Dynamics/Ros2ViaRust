@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T144153-final-global-reset/normal-run-mcl.csv",
+  "estimates_received": 6120,
+  "rows": 3604,
+  "unpaired_estimates": 2516,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 3604, "rmse_position_m": 0.013649, "rmse_yaw_rad": 0.032587, "max_position_error_m": 0.121113, "final_position_error_m": 0.004808, "odom_only_rmse_position_m": 0.015584},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}

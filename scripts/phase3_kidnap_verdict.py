@@ -23,11 +23,12 @@ error reached. None of those alone answer "did it recover": the best error could
 lucky sample in an otherwise-lost filter, and the RMSE is dragged down by the understandably
 bad samples right after the teleport even for a filter that does go on to recover.
 
-So recovery is defined as: the position error drops below RECOVERY_THRESHOLD_M and *stays*
-below it for RECOVERY_SUSTAINED_SAMPLES consecutive estimates. The first sample of the first
+So recovery is defined as: the position error drops below RECOVERY_POSITION_THRESHOLD_M,
+the absolute yaw error drops below RECOVERY_YAW_THRESHOLD_RAD, and both *stay* below their
+limits for RECOVERY_SUSTAINED_SAMPLES consecutive estimates. The first sample of the first
 such run, timed from the kidnap event, is recovery_time_s.
 
-* RECOVERY_THRESHOLD_M = 0.15 m. Chosen as roughly nine times the before-kidnap P95 position
+* RECOVERY_POSITION_THRESHOLD_M = 0.15 m. Chosen as roughly nine times the before-kidnap P95 position
   error the EKF already reached on the same route without a kidnap
   (evidence/phase-3-correctness/2026-10-10-long-route/normal-verdict.yaml:
   p95_position_error_m = 0.0169 m): generous enough that ordinary tracking noise is not
@@ -35,6 +36,9 @@ such run, timed from the kidnap event, is recovery_time_s.
   sits at immediately after a teleport to the opposite side of a 6 m room, so crossing it is
   a real claim about having found the right pose rather than merely stopped being "close" in
   a 6-metre room.
+* RECOVERY_YAW_THRESHOLD_RAD = 0.15 rad. This is 8.6 degrees: loose enough for ordinary
+  tracking noise, but tight enough to exclude a position coincidence with the robot facing
+  the wrong direction. Position and yaw must pass in the same sustained window.
 * RECOVERY_SUSTAINED_SAMPLES = 10. At the ~20 Hz the estimate is actually published (gated
   by max_publish_rate_hz, driven by 50 Hz odometry and 5 Hz scans), 10 consecutive samples
   is about half a second of staying close, long enough that a single sample passing through
@@ -51,7 +55,8 @@ verdict they produced, so a reader never has to go hunting for what "recovered" 
 import json
 import sys
 
-RECOVERY_THRESHOLD_M = 0.15
+RECOVERY_POSITION_THRESHOLD_M = 0.15
+RECOVERY_YAW_THRESHOLD_RAD = 0.15
 RECOVERY_SUSTAINED_SAMPLES = 10
 
 
@@ -69,8 +74,12 @@ def find_recovery(rows, kidnap_t):
     n = RECOVERY_SUSTAINED_SAMPLES
     for i in range(len(rows) - n + 1):
         window = rows[i : i + n]
-        if all(r["after_kidnap"] and r["position_error_m"] < RECOVERY_THRESHOLD_M
-               for r in window):
+        if all(
+            r["after_kidnap"]
+            and r["position_error_m"] < RECOVERY_POSITION_THRESHOLD_M
+            and abs(r["yaw_error_rad"]) < RECOVERY_YAW_THRESHOLD_RAD
+            for r in window
+        ):
             t = window[0]["t_s"]
             return t, t - kidnap_t
     return None, None
@@ -113,6 +122,7 @@ def main():
                 rows.append({
                     "t_s": float(parts[index["t_s"]]),
                     "position_error_m": float(parts[index["position_error_m"]]),
+                    "yaw_error_rad": float(parts[index["yaw_error_rad"]]),
                     "after_kidnap": parts[index["after_kidnap"]] == "1",
                 })
     except (OSError, ValueError, KeyError) as error:
@@ -163,7 +173,8 @@ def main():
     best_after = summary.get("after_kidnap", {}).get("best_position_error_after_kidnap")
     print(f"  best_position_error_m: {fmt(best_after)}")
     print("recovery:")
-    print(f"  threshold_m: {RECOVERY_THRESHOLD_M}")
+    print(f"  position_threshold_m: {RECOVERY_POSITION_THRESHOLD_M}")
+    print(f"  yaw_threshold_rad: {RECOVERY_YAW_THRESHOLD_RAD}")
     print(f"  sustained_samples_required: {RECOVERY_SUSTAINED_SAMPLES}")
     print(f"  recovered: {str(recovered).lower()}")
     print(f"  recovered_at_seconds_into_run: {fmt(recovery_t)}")

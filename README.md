@@ -36,25 +36,32 @@ against the Python and C++ stacks doing the same job. Start at
 
 ## What is in Phase 3 (in progress)
 
-The EKF half of localization, running against the Webots TurtleBot3 instead of the Rusty
-simulator:
+Localization against the Webots TurtleBot3 instead of the Rusty simulator, both filters
+this phase set out to compare:
 
 * `crates/robotics_localization` — ROS-free: the landmark map read from the simulation's own
   ground truth file (`map`), range and bearing observations of the round pillars extracted
   from a laser scan (`pillars`), and EKF localization on SE(2) with maximum likelihood
-  association and a χ² gate (`ekf`).
+  association and a χ² gate (`ekf`), and particle filter localization on the same map and
+  the same observations with low-variance resampling and a random-injection recovery
+  strategy (`mcl`). Only the representation of the belief differs between the two, which is
+  what makes the comparison mean anything.
 * `ros2_ws/src/robotics_localization_bridge` — `localization_node`: `/scan` + `/odom` +
-  `/imu` → `/localization/pose` in the `map` frame, plus `/diagnostics`; it publishes no TF
-  on purpose, and never subscribes to ground truth. `localization_evaluator` grades it
-  against `/ground_truth/pose` and writes one CSV row per sample.
+  `/imu` → `/localization/pose` in the `map` frame, plus `/diagnostics`; it owns the
+  `map → odom` correction (REP 105) and never subscribes to ground truth. `mcl_node` is the
+  particle filter alongside it, publishing `/mcl/pose` and no TF at all, so that running
+  both in one launch cannot produce two owners of the same edge. One
+  `localization_evaluator` per filter grades it against `/ground_truth/pose` and writes one
+  CSV row per sample.
 * `sim/webots/` — the Phase 3 world (6 by 6 m room, four pillars), the launch file that
   starts Webots and the official `webots_ros2_turtlebot` driver, the ground truth and
   teleport supervisor, a movie recorder, and the run script that captures a whole run as
   files.
 
-Not built yet: Monte Carlo localization, and with it global localization and kidnap
-recovery; `/particle_cloud`, `/amcl_pose`, `/initialpose` and the `map → odom` edge; the
-bringup launch and parameter files; the integration test; and every benchmark row of
+Not built yet: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing, which
+`mcl.rs` justifies simplifying rather than quietly omitting; dominant-cluster pose
+extraction; global localization from a genuinely uniform prior, as opposed to recovery from
+a kidnapping; `/particle_cloud`, `/amcl_pose` and `/initialpose`; and every benchmark row of
 `benchmarks/phase-3-localization.csv`. See
 [docs/phase-3-localization/](docs/phase-3-localization/) and
 [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -63,11 +70,15 @@ Phase 3 runs are kept as raw output under `evidence/phase-3-correctness/`, one d
 run, and the simulation's own runs under `sim/webots/evidence/`. Numbers are not copied out
 of them into prose, here or anywhere else.
 
-What that evidence currently supports is narrower than "Phase 3 works": the stack runs end
-to end and shuts down cleanly, but on the one usable run the EKF is **not** yet better than
-the odometry it corrects, because the route is too short for odometry to drift. The kidnap
-scenario has not been run at all. Both are spelled out in
-[evidence/phase-3-correctness/README.md](evidence/phase-3-correctness/README.md).
+What that evidence currently supports is still narrower than "Phase 3 works", and the
+verdict files rather than this paragraph are the record. On a 21-waypoint route long enough
+for odometry to drift, both EKF and MCL beat the dead reckoning they correct. On a teleport
+part way through that same route, MCL recovers and the EKF structurally cannot, which is the
+kidnapped robot question this phase exists to answer. Read the final normal evidence in
+`evidence/phase-3-correctness/2026-10-10T144153-final-global-reset/` and kidnap evidence in
+`evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`, and
+[docs/phase-3-localization/implementation.md](docs/phase-3-localization/implementation.md)
+section 5, which keeps both defects this phase found and what was done about each.
 
 ## What is in Phase 2
 

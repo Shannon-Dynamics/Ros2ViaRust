@@ -1,0 +1,320 @@
+diff --git a/crates/robotics_localization/src/mcl.rs b/crates/robotics_localization/src/mcl.rs
+index 3e3555b..cf47f24 100644
+--- a/crates/robotics_localization/src/mcl.rs
++++ b/crates/robotics_localization/src/mcl.rs
+@@ -63,15 +63,13 @@ pub use crate::ekf::LocalizationError;
+ pub struct MclConfig {
+     /// Particle count, fixed for the lifetime of the filter.
+     ///
+-    /// 300 is chosen, not tuned: the room is 6 by 6 m, so 300 particles spread over its
+-    /// roughly 36 square metres of mostly-free space is a particle every few tens of
+-    /// centimetres if they were laid on a grid, which is finer than the few-centimetre
+-    /// position tolerance P1 asks for is not the point of; it only has to be fine enough
+-    /// that an injected, uniformly-scattered particle has a reasonable chance of landing
+-    /// close enough to the true pose for one scan to start pulling it in. At 5 Hz scans
+-    /// and a handful of landmarks per scan this count is comfortably real-time on the
+-    /// hardware this framework targets; see `docs/phase-3-localization/benchmark.md` for
+-    /// when that claim gets a measurement instead of an assertion.
++    /// 6000 is the measured floor used for Phase 3 correctness. With 300 particles the
++    /// Monte Carlo spread produced 0.051534 m RMSE on the 51.5 m normal route; 3000 reduced
++    /// it to 0.020937 m but remained 10.9 percent worse than odometry. 6000 produced
++    /// 0.014769 m versus odometry's 0.015697 m while publishing 3265 estimates over about
++    /// 371 seconds. The complete runs are listed in
++    /// `docs/phase-3-localization/benchmark.md`. This fixed count is intentionally a
++    /// correctness choice; adaptive KLD sizing remains future work.
+     pub num_particles: usize,
+     /// Range noise of one landmark observation (m); shared with the EKF's measurement
+     /// model so the two filters are graded on the same sensor, not on two different ones.
+@@ -122,17 +120,17 @@ pub struct MclConfig {
+     /// EKF would already have refused to accept it", not a new constant invented for this
+     /// filter and tuned until a demo looked right.
+     pub recovery_gate_probability: f64,
+-    /// Consecutive low-fit scans required before particles are injected. 5, which at the
++    /// Consecutive low-fit scans required before particles are injected. 20, which at the
+     /// LDS-01's 5 Hz scan rate (`docs/phase-3-localization/problem.md` section 1) is about
+-    /// one second of sustained disagreement. A single bad scan is cheap: the pillar
+-    /// detector occasionally produces nothing, or a reflection, and treating every one of
+-    /// those as a kidnapping would inject noise into an otherwise converged filter. Five in
+-    /// a row is not something an occasional bad detection explains.
++    /// four seconds of sustained disagreement. Five scans still caused nine false
++    /// injections on the normal route after the robust median trigger was added. Twenty
++    /// caused none in the measured normal run, while a real kidnapping remains a persistent
++    /// mismatch and is checked separately by the kidnap verdict.
+     pub recovery_sustained_updates: u32,
+     /// Probability, independently per particle, that a low-fit streak replaces it with a
+     /// uniform random pose rather than leaving it where it was. 0.2: low enough that the
+     /// 80 per cent of particles that were not obviously wrong are not thrown away on a
+-    /// guess, high enough that, at 300 particles, about 60 fresh hypotheses are scattered
++    /// guess, high enough that, at 6000 particles, about 1200 fresh hypotheses are scattered
+     /// across the room on every injection, which repeated low-variance resampling and the
+     /// next few scans then have real material to pull a cluster out of.
+     pub recovery_injection_fraction: f64,
+@@ -141,7 +139,7 @@ pub struct MclConfig {
+ impl Default for MclConfig {
+     fn default() -> Self {
+         Self {
+-            num_particles: 300,
++            num_particles: 6000,
+             sigma_range: 0.05,
+             sigma_bearing: 0.05,
+             initial_sigma_xy: 0.05,
+@@ -151,7 +149,7 @@ impl Default for MclConfig {
+             sensor_pose: Se2::IDENTITY,
+             room_half_extent: 2.8,
+             recovery_gate_probability: 0.99,
+-            recovery_sustained_updates: 5,
++            recovery_sustained_updates: 20,
+             recovery_injection_fraction: 0.2,
+         }
+     }
+@@ -164,10 +162,11 @@ pub struct McUpdateReport {
+     pub observed: usize,
+     /// Effective sample size after reweighting (and after injection, if it happened).
+     pub ess: f64,
+-    /// `ln p(best-fitting particle explains this scan) / observed`, the statistic
+-    /// [`McLocalizer::fit_log_threshold`] is compared against. `None` when there were no
+-    /// observations to score.
+-    pub best_fit_log_likelihood_per_observation: Option<f64>,
++    /// Best particle's upper-median raw per-observation log likelihood, the robust
++    /// statistic [`McLocalizer::fit_log_threshold`] is compared against. `None` when there
++    /// were no observations to score. The values entering the median are not gated or
++    /// clamped, so a real kidnapping remains visible to the recovery trigger.
++    pub best_fit_median_log_likelihood: Option<f64>,
+     /// Consecutive low-fit scans counted so far (reset to 0 by a good scan or by an
+     /// injection).
+     pub low_fit_streak: u32,
+@@ -306,7 +305,7 @@ impl McLocalizer {
+         )
+     }
+ 
+-    /// The threshold [`McUpdateReport::best_fit_log_likelihood_per_observation`] is
++    /// The threshold [`McUpdateReport::best_fit_median_log_likelihood`] is
+     /// compared against: the natural log of the per-observation likelihood ratio, relative
+     /// to a perfect (zero-residual) observation, below which a scan counts as unexplained.
+     /// Equal to `ln(peak likelihood) - 0.5 * chi2_quantile(2, recovery_gate_probability)`.
+@@ -411,19 +410,27 @@ impl McLocalizer {
+             .fold(f64::NEG_INFINITY, f64::max)
+     }
+ 
+-    /// `Σⱼ ln max_i p(z_j | x, map landmark i)`, raw and unclamped. Used only to judge
+-    /// whether *anything* explains a scan (the recovery trigger of [`McLocalizer::observe`]),
+-    /// never to reweight; see [`McLocalizer::gated_log_likelihood`] for why reweighting
+-    /// needs a different number.
+-    fn total_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
+-        observations
++    /// Upper median of the raw per-observation scores for one particle.
++    ///
++    /// A scan is considered explained when at least half of its observations clear the
++    /// same likelihood-ratio threshold used by the EKF. Unlike
++    /// [`McLocalizer::gated_log_likelihood`], this function neither drops nor clamps an
++    /// outlier before summarising the scan. Selecting the upper median only prevents a
++    /// minority of arbitrarily bad detections from overwhelming the observations that do
++    /// fit. After a kidnapping, when the existing cloud explains fewer than half of the
++    /// genuine observations, the raw median remains below the threshold and recovery still
++    /// fires.
++    fn median_log_likelihood(&self, pose: &Se2, observations: &[RangeBearing]) -> f64 {
++        let mut scores: Vec<f64> = observations
+             .iter()
+             .map(|z| self.best_landmark_log_likelihood(pose, z))
+-            .sum()
++            .collect();
++        scores.sort_unstable_by(f64::total_cmp);
++        scores[scores.len() / 2]
+     }
+ 
+     /// The score reweighting actually uses: the same per-observation best-landmark
+-    /// likelihood as [`McLocalizer::total_log_likelihood`], except that an observation no
++    /// likelihood as [`McLocalizer::median_log_likelihood`], except that an observation no
+     /// landmark explains within the same chi-square gate the EKF applies per observation
+     /// (`self.fit_log_threshold`) contributes nothing, rather than its arbitrarily negative
+     /// raw value.
+@@ -487,17 +494,18 @@ impl McLocalizer {
+         }
+         self.stats.scored_updates += 1;
+ 
+-        // Raw (unclamped), for the recovery trigger only.
++        // Raw and unclamped, for the recovery trigger only. Use the upper median rather
++        // than the arithmetic mean so a minority of spurious detections cannot dominate
++        // an otherwise well-explained scan.
+         let raw: Vec<f64> = self
+             .particles
+             .states()
+-            .map(|pose| self.total_log_likelihood(pose, observations))
++            .map(|pose| self.median_log_likelihood(pose, observations))
+             .collect();
+         let best = raw.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+-        let per_obs_best = best / observations.len() as f64;
+-        report.best_fit_log_likelihood_per_observation = Some(per_obs_best);
++        report.best_fit_median_log_likelihood = Some(best);
+ 
+-        if per_obs_best < self.fit_log_threshold {
++        if best < self.fit_log_threshold {
+             self.low_fit_streak += 1;
+         } else {
+             self.low_fit_streak = 0;
+@@ -518,7 +526,7 @@ impl McLocalizer {
+         });
+         if reweighted.is_err() || self.particles.normalize().is_err() {
+             // Every particle scored -inf or NaN on this scan (only possible if a particle
+-            // sits exactly on a landmark, see total_log_likelihood): treat it as a scan
++            // sits exactly on a landmark, see median_log_likelihood): treat it as a scan
+             // with no usable evidence rather than propagating a degenerate weight set.
+             self.particles.reset_uniform();
+         }
+@@ -641,6 +649,7 @@ mod tests {
+     fn recovers_from_a_kidnapping_the_ekf_cannot() {
+         let cfg = MclConfig {
+             num_particles: 500,
++            recovery_sustained_updates: 5,
+             ..Default::default()
+         };
+         let map = square_map();
+@@ -656,13 +665,18 @@ mod tests {
+             "should converge before the kidnap"
+         );
+ 
+-        // Being kidnapped does not stop the robot from driving: the odometry readings keep
+-        // arriving. Interleaving a small predict step each scan, as the real node does,
+-        // gives the particle set the same jitter the motion model would inject on a real
+-        // run; without it this test is static resampling only, a harder and unrealistic
+-        // case the real node never faces.
++        // This unit test isolates the injection and reweighting mechanism. A small proposal
++        // motion supplies the same particle jitter as the live node while the target scan
++        // stays fixed; the simulator test covers physically consistent moving recovery.
+         let kidnapped_to = Se2::new(-1.5, 1.5, 2.0);
+-        let z1 = perfect_observations(&cfg, &map, &kidnapped_to);
++        let mut z1 = perfect_observations(&cfg, &map, &kidnapped_to);
++        // One arbitrarily bad detector output must not hide the fact that the old cloud
++        // explains none of the four genuine observations, or prevent a newly injected
++        // hypothesis from demonstrating that it explains most of the scan.
++        z1.push(RangeBearing {
++            range: 100.0,
++            bearing: 2.9,
++        });
+         let mut injected = false;
+         let mut odom = Se2::IDENTITY;
+         for i in 0..150 {
+@@ -687,6 +701,28 @@ mod tests {
+         );
+     }
+ 
++    #[test]
++    fn one_persistent_outlier_does_not_trigger_recovery_during_normal_tracking() {
++        let cfg = MclConfig::default();
++        let map = square_map();
++        let truth = Se2::new(0.3, -0.2, 0.2);
++        let mut rng = SmallRng::seed_from_u64(11);
++        let mut f = McLocalizer::new_at(&cfg, map.clone(), truth, &mut rng).unwrap();
++        let mut observations = perfect_observations(&cfg, &map, &truth);
++        observations.push(RangeBearing {
++            range: 100.0,
++            bearing: -2.7,
++        });
++
++        for _ in 0..(cfg.recovery_sustained_updates * 4) {
++            let report = f.observe(&observations, &mut rng);
++            assert!(!report.injected, "a minority outlier triggered recovery");
++            assert_eq!(report.low_fit_streak, 0);
++        }
++        assert_eq!(f.stats().injections, 0);
++        assert!(f.pose().distance_to(&truth) < 0.1);
++    }
++
+     #[test]
+     fn standing_still_predicts_to_a_fixed_point() {
+         let cfg = MclConfig::default();
+diff --git a/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs b/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+index f22c30d..f30ed38 100644
+--- a/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
++++ b/ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+@@ -545,13 +545,15 @@ fn main() -> Result<(), RclrsError> {
+                     st.last_injected_at = Some(scan.stamp);
+                     log_warn!(
+                         n.logger(),
+-                        "{} consecutive scan(s) did not fit any particle (best fit {:.2} \
+-                         nats/obs below the {:.2} threshold): injecting random particles",
++                        "{} consecutive scan(s) had a best-particle median fit of {:.2} \
++                         nats/obs, below the {:.2} threshold with {} observations: \
++                         injecting random particles",
+                         st.cfg.recovery_sustained_updates,
+                         report
+-                            .best_fit_log_likelihood_per_observation
++                            .best_fit_median_log_likelihood
+                             .unwrap_or(f64::NEG_INFINITY),
+-                        f.fit_log_threshold()
++                        f.fit_log_threshold(),
++                        report.observed
+                     );
+                 }
+                 st.publish(&n, scan.stamp);
+diff --git a/scripts/run_phase3_correctness.sh b/scripts/run_phase3_correctness.sh
+index 1535189..b568695 100644
+--- a/scripts/run_phase3_correctness.sh
++++ b/scripts/run_phase3_correctness.sh
+@@ -62,12 +62,16 @@ MAP="$REPO/sim/webots/config/landmarks.yaml"
+ ROUTE_FILE=${ROUTE_FILE:-$REPO/sim/webots/config/route_long.yaml}
+ LAPS=${LAPS:-1}
+ ESTIMATORS=${ESTIMATORS:-ekf}
++MCL_SEED=${MCL_SEED:-1592598566}  # robotics_core::BOOK_SEED (0x5EED2026)
++MCL_PARTICLES=${MCL_PARTICLES:-6000}
++MCL_RECOVERY_SUSTAINED=${MCL_RECOVERY_SUSTAINED:-20}
+ case "$OUT" in
+     */*) ;;                                              # a path, used as given
+     *) OUT="$EVIDENCE_ROOT/phase-3-correctness/$OUT" ;;  # a bare run name
+ esac
+ mkdir -p "$OUT"
+ OUT=$(cd "$OUT" && pwd)
++SOURCE_REPO=$(dirname "$EVIDENCE_ROOT")
+ 
+ run_ekf=false
+ run_mcl=false
+@@ -135,11 +139,39 @@ fi
+     echo "odometry_topic_under_test: $ODOM_TOPIC"
+     echo "odometry_noise: off"
+     echo "estimators: $ESTIMATORS"
++    echo "mcl_seed: $MCL_SEED"
++    echo "mcl_particles: $MCL_PARTICLES"
++    echo "mcl_recovery_sustained_updates: $MCL_RECOVERY_SUSTAINED"
++    _bridge_prefix=$(ros2 pkg prefix robotics_localization_bridge 2>/dev/null || true)
++    _mcl_executable="$_bridge_prefix/lib/robotics_localization_bridge/mcl_node"
++    echo "mcl_executable: $_mcl_executable"
++    if [ -f "$_mcl_executable" ]; then
++        echo "mcl_executable_sha256: $(sha256sum "$_mcl_executable" | cut -d' ' -f1)"
++    else
++        echo "mcl_executable_sha256: unavailable"
++    fi
++    if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
++        echo "source_git_commit: $(git -C "$SOURCE_REPO" rev-parse HEAD)"
++        if [ -n "$(git -C "$SOURCE_REPO" status --porcelain)" ]; then
++            echo "source_git_dirty: true"
++        else
++            echo "source_git_dirty: false"
++        fi
++        echo "source_patch: $SCENARIO-source.patch"
++    else
++        echo "source_git_commit: unavailable"
++        echo "source_git_dirty: unknown"
++    fi
+     if [ "$SCENARIO" = kidnap ]; then
+         echo "kidnap_target: x=$KIDNAP_X y=$KIDNAP_Y yaw=$KIDNAP_YAW"
+         echo "kidnap_after_s: $KIDNAP_AFTER"
+     fi
+ } > "$OUT/$SCENARIO-environment.txt"
++unset _bridge_prefix _mcl_executable
++if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
++    git -C "$SOURCE_REPO" status --short > "$OUT/$SCENARIO-source-status.txt"
++    git -C "$SOURCE_REPO" diff --binary HEAD > "$OUT/$SCENARIO-source.patch"
++fi
+ 
+ log "starting the world with ground truth"
+ ros2 launch "$LAUNCH" gui:=false mode:=realtime ground_truth:=true \
+@@ -204,6 +236,9 @@ if $run_mcl; then
+     ros2 run robotics_localization_bridge mcl_node --ros-args \
+         -p "map_file:=$MAP" \
+         -p "topics.odom:=$ODOM_TOPIC" \
++        -p "seed:=$MCL_SEED" \
++        -p "particles.count:=$MCL_PARTICLES" \
++        -p "recovery.sustained_updates:=$MCL_RECOVERY_SUSTAINED" \
+         > "$OUT/$SCENARIO-mcl_node.log" 2>&1 &
+     MCL_NODE_PID=$!
+     ros2 run robotics_localization_bridge localization_evaluator --ros-args \

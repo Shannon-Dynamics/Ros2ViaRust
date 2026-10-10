@@ -1,0 +1,6 @@
+localization_evaluator_ekf: exit code 0
+localization_evaluator_mcl: exit code 0
+localization_node: exit code 0
+mcl_node: exit code 0
+ros2_launch: exit code 0
+webots_bin_left: 0

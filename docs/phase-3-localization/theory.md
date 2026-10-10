@@ -101,6 +101,27 @@ stopped agreeing with the belief, and the filter injects random particles drawn 
 over the free space with probability `max(0, 1 - w_fast / w_slow)`. This is the recovery
 mechanism for the kidnapped case, and it costs nothing while the filter is healthy.
 
+What was actually built is neither of these two in full, and
+[`mcl.rs`](../../crates/robotics_localization/src/mcl.rs) says so at each decision rather
+than leaving the gap to be discovered. Recovery is a fixed injection fraction fired by a
+sustained low-fit streak, not the `w_fast`/`w_slow` averages, because that scheme needs two
+more decay-rate constants that nothing in this phase gives a reason to prefer one value of;
+the threshold the streak is judged against is the EKF's own chi-square gate expressed as a
+likelihood ratio, so it is a number already defended elsewhere rather than one tuned until a
+demo looked right. A fixed particle count stands in for KLD sizing, and a weighted mean
+stands in for dominant-cluster extraction, both for the same reason: they are enough to
+decide whether the filter recovers at all, which is the question this phase asks.
+
+The part of this section that survived contact with a simulator least well is the weight
+update. An observation that no pose explains gave every particle an unbounded penalty and
+made the recovery trigger fire during normal tracking. Reweighting now applies the EKF's
+per-observation likelihood-ratio gate. Recovery deliberately reads the raw scores, but
+summarises them with the best particle's upper median, so a minority outlier cannot hide
+the observations that still fit. Twenty consecutive low medians cause one full global
+reset. This separation preserves kidnap sensitivity while protecting normal tracking; the
+failed intermediate runs and final evidence are in
+[implementation.md](implementation.md) section 5.
+
 **KLD sampling** adapts the number of particles to how spread out the belief is. Bin the
 particles, count how many bins are occupied, and draw only as many samples as the KL bound
 requires for that many bins:
@@ -202,8 +223,8 @@ simulator produced.
 
 | Decision | Options | Where it is settled |
 |---|---|---|
-| filter for P1 | EKF with landmarks, or MCL with a map | [implementation.md](implementation.md) |
-| filter for P2 | AMCL with KLD sampling | [implementation.md](implementation.md) |
+| filter for P1 | **settled for this phase: EKF and fixed-count MCL with landmarks both pass the measured route.** The verdict files of [benchmark.md](benchmark.md) section 6 are why | [implementation.md](implementation.md) |
+| filter for P2 | **settled: a particle filter, since only it can.** The simplifications taken against full AMCL with KLD sampling are each named and justified in `mcl.rs` | [implementation.md](implementation.md) |
 | sensor model | beam versus likelihood field | [implementation.md](implementation.md), measured in [benchmark.md](benchmark.md) |
 | map source | the four pillars as landmarks now, an occupancy grid after Phase 4 | [implementation.md](implementation.md) |
 | node interface | topics, frames, parameters | [ros-graph.md](ros-graph.md) |

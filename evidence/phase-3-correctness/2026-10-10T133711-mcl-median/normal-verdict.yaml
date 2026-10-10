@@ -1,0 +1,37 @@
+# Verdict on criterion P1 of docs/phase-3-localization/problem.md, derived
+# from /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T133711-mcl-median/normal-run.json and /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T133711-mcl-median/normal-run.csv by scripts/phase3_verdict.py.
+run:
+  scenario: normal
+  date_utc: 2026-10-10T06:37:15Z
+  route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml
+  route_sha256: 25343233801bff225ac65898dfdaac2dd24ccace818b9bfa7288f4455a4d6a9b
+  route_waypoints: 21
+  laps: 1
+  odometry_topic_under_test: /odom
+  odometry_noise: off
+  samples: 5927
+  ground_truth_path_length_m: 51.532
+estimate_vs_ground_truth:
+  rmse_position_m: 0.009213
+  mean_position_error_m: 0.008105
+  p95_position_error_m: 0.016144
+  max_position_error_m: 0.025643
+  rmse_yaw_rad: 0.021978
+odometry_vs_ground_truth:
+  rmse_position_m: 0.016474
+  mean_position_error_m: 0.013819
+  p95_position_error_m: 0.033421
+  max_position_error_m: 0.040234
+growth_over_the_run:  # mean error of the last quarter over the first quarter
+  estimate_first_quarter_m: 0.007577
+  estimate_last_quarter_m: 0.008330
+  estimate_growth_factor: 1.100
+  odometry_first_quarter_m: 0.006111
+  odometry_last_quarter_m: 0.022058
+  odometry_growth_factor: 3.610
+criterion_p1:
+  estimate_over_odometry_rmse_ratio: 0.559
+  strictly_better_than_odometry: true
+  bounded_over_distance: true
+  nees_in_95_band: not_evaluated  # needs the full covariance, see the docstring
+  verdict: PASS

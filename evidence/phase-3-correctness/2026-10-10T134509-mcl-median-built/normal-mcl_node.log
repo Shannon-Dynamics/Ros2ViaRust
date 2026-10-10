@@ -1,0 +1,13 @@
+[INFO] [1791614729.849935253] [mcl_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791614729.855988996] [mcl_node]: mcl_node up: scan + /odom -> mcl/pose (frame map), 36 parameters
+[INFO] [1791614730.217362432] [mcl_node]: MCL started at (0.000, 0.000, 0.000) with 300 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[WARN] [1791614861.504625702] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -185.44 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791614970.503627126] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -237.63 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791614972.299054187] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -47.83 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791614974.106842216] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -150.98 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791615019.212264125] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -28.12 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791615084.184011491] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -78.36 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791615085.318587712] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -83.41 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791615086.446533160] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -124.44 nats/obs, below the -0.45 threshold: injecting random particles
+[WARN] [1791615088.238382287] [mcl_node]: 5 consecutive scan(s) had a best-particle median fit of -221.26 nats/obs, below the -0.45 threshold: injecting random particles
+[INFO] [1791615110.149347500] [mcl_node]: mcl_node shutting down

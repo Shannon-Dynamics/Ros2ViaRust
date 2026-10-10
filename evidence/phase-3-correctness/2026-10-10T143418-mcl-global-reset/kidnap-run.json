@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/kidnap-run.csv",
+  "estimates_received": 6229,
+  "rows": 6229,
+  "unpaired_estimates": 0,
+  "pair_tolerance_s": 0.05,
+  "kidnap": {"stamp_s": 125.280000, "seconds_into_run": 121.100000, "target": {"x": -1.500000, "y": -1.500000, "theta": 2.000000}},
+  "before_kidnap": {"samples": 1968, "rmse_position_m": 0.008385, "rmse_yaw_rad": 0.019324, "max_position_error_m": 0.024993, "final_position_error_m": 0.003990, "odom_only_rmse_position_m": 0.008180},
+  "after_kidnap": {"samples": 4261, "rmse_position_m": 3.052013, "rmse_yaw_rad": 0.178712, "max_position_error_m": 3.329230, "final_position_error_m": 2.874910, "odom_only_rmse_position_m": 3.108544, "best_position_error_after_kidnap": {"position_error_m": 2.409778, "seconds_into_run": 364.700000}}
+}

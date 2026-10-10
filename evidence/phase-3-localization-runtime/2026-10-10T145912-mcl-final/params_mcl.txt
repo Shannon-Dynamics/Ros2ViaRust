@@ -1,0 +1,42 @@
+  detector.cluster_gap
+  detector.max_chord
+  detector.max_range
+  detector.min_points
+  detector.radius
+  diagnostics_period_s
+  frames.base_link
+  frames.map
+  initial_pose.from_map_file
+  initial_pose.sigma_theta
+  initial_pose.sigma_xy
+  initial_pose.theta
+  initial_pose.x
+  initial_pose.y
+  map_file
+  max_publish_rate_hz
+  measurement.sigma_bearing
+  measurement.sigma_range
+  motion.alpha1
+  motion.alpha2
+  motion.alpha3
+  motion.alpha4
+  particles.count
+  recovery.gate_probability
+  recovery.injection_fraction
+  recovery.room_half_extent
+  recovery.sustained_updates
+  resample.threshold_ratio
+  seed
+  sensor.from_tf
+  sensor.theta
+  sensor.x
+  sensor.y
+  topics.odom
+  topics.pose
+  topics.scan
+  use_sim_time
+particles.count: Integer value is: 6000
+measurement.sigma_range: Double value is: 0.05
+recovery.sustained_updates: Integer value is: 20
+topics.odom: String value is: /odom
+map_file: String value is: /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml

@@ -14,7 +14,7 @@ trajectory, done three ways:
 
 | Entry | Implementation | Language |
 |---|---|---|
-| `rust_amcl` | `robotics_localization` through `localization_node` | Rust |
+| `rust_amcl` | `robotics_localization` through `localization_node` (EKF) and `mcl_node` (MCL) | Rust |
 | `nav2_amcl` | `nav2_amcl`, the standard ROS 2 localization node | C++ |
 | `rclpy_amcl` | a direct rclpy port of the same algorithm, used as the slow reference and as a correctness oracle | Python |
 
@@ -94,6 +94,14 @@ whether the filter works before anything asks how fast it is. They use the same 
 same ground truth source and the same route, so a benchmark row later can be read next to
 them.
 
+Two scenarios exist, and both are driven by the same script over the same route with the
+same parameters. `normal` just drives it. `kidnap` drives it and teleports the robot once,
+part way through, through the Webots supervisor and without telling either estimator. When a
+direct comparison is the point, the script runs both estimators in the *same* Webots session
+(`ESTIMATORS="ekf mcl"`), so the two are graded against one ground truth trajectory and, for
+`kidnap`, against one teleport at one simulated instant, rather than against two separate
+runs that merely share a configured route file.
+
 One run is one directory under
 [`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/), produced by
 [`../../scripts/run_phase3_correctness.sh`](../../scripts/run_phase3_correctness.sh). Each
@@ -101,7 +109,13 @@ holds the environment it ran in and the SHA-256 of the world, the map and the ro
 per-sample rows as `<scenario>-run.csv`; the summary the evaluator wrote at shutdown as
 `<scenario>-run.json`; the log of every process; and the verdict on criterion P1 as
 `<scenario>-verdict.yaml`, computed from the first two by
-[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py).
+[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py). A kidnap run is graded
+instead by [`../../scripts/phase3_kidnap_verdict.py`](../../scripts/phase3_kidnap_verdict.py),
+because P1 and P2 ask different questions and need different numbers; that script's docstring
+defines exactly what "recovered" means, declares the three constants it depends on, and reports
+them in the output file next to the verdict they produced. The EKF's files are unsuffixed and
+the MCL's carry a `-mcl` suffix, except for the kidnap verdicts, which are `-ekf` and `-mcl`
+because that scenario had no earlier naming to stay compatible with.
 
 Read the verdict file for the numbers. They are deliberately not repeated here: a figure
 copied into prose is a figure that stops matching the run it came from, and this phase
@@ -110,7 +124,19 @@ newest first:
 
 | Run | Route | What it is for |
 |---|---|---|
-| [`2026-10-10-long-route`](../../evidence/phase-3-correctness/2026-10-10-long-route) | `route_long.yaml`, 51 m, 21 sharp corners | the current answer on P1, position tracking, no kidnap |
+| [`2026-10-10T144153-final-global-reset`](../../evidence/phase-3-correctness/2026-10-10T144153-final-global-reset) | `route_long.yaml`, 51.540 m, 21 waypoints | final P1 evidence: EKF and MCL both pass in one normal session, with zero MCL recovery injections |
+| [`2026-10-10T143418-mcl-global-reset`](../../evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset) | the same route and a teleport after 120 s | final P2 evidence: MCL recovers after one full global reset; EKF does not |
+| [`2026-10-10T142643-final-default`](../../evidence/phase-3-correctness/2026-10-10T142643-final-default) | the same route | retained failed attempt: a five-scan trigger caused seven false injections and failed P1 |
+| [`2026-10-10T141910-mcl-6000-persist5`](../../evidence/phase-3-correctness/2026-10-10T141910-mcl-6000-persist5) | the same kidnap | five-scan trigger recovers in 14.120 s, retained because the next normal run shows why it is not the final setting |
+| [`2026-10-10T141137-final-mcl`](../../evidence/phase-3-correctness/2026-10-10T141137-final-mcl) | the same kidnap | retained failed attempt: a 20-scan trigger replacing 20 per cent of the cloud did not recover |
+| [`2026-10-10T140033-mcl-6000-persist20`](../../evidence/phase-3-correctness/2026-10-10T140033-mcl-6000-persist20) | the same normal route | calibration evidence: 6000 particles and a 20-scan trigger pass P1 with no injection |
+| [`2026-10-10T135330-mcl-3000-persist20`](../../evidence/phase-3-correctness/2026-10-10T135330-mcl-3000-persist20) | the same normal route | calibration evidence: no injection, but 3000 particles narrowly fail to beat odometry |
+| [`2026-10-10T134509-mcl-median-built`](../../evidence/phase-3-correctness/2026-10-10T134509-mcl-median-built) | the same normal route | first run of the median trigger from the correct build; 300 particles still fail P1 |
+| [`2026-10-10T133711-mcl-median`](../../evidence/phase-3-correctness/2026-10-10T133711-mcl-median) | the same normal route | invalid for the median change: it used the stale executable in the root install space and exposed the two-install-space mistake |
+| [`2026-10-10T133620-mcl-median`](../../evidence/phase-3-correctness/2026-10-10T133620-mcl-median) | the same normal route | interrupted by a WSL restart, retained with its partial logs and data |
+| [`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) | `route_long.yaml`, 21 sharp corners | historical evidence after the per-observation gate; MCL still fails P1 and exposes the recovery-trigger defect fixed by the timestamped runs above |
+| [`2026-10-10-mcl-comparison`](../../evidence/phase-3-correctness/2026-10-10-mcl-comparison) | the same route | MCL before it had a per-observation gate, kept as the measurement that found that defect; [implementation.md](implementation.md) section 5.1 |
+| [`2026-10-10-long-route`](../../evidence/phase-3-correctness/2026-10-10-long-route) | `route_long.yaml`, 21 sharp corners | the EKF alone on P1, the run that first answered it, no kidnap |
 | [`2026-10-06-after-fix`](../../evidence/phase-3-correctness/2026-10-06-after-fix) | a 0.9 m square, 3.1 m of path | the run that showed the route, not the filter, was the problem; why is in [theory.md](theory.md) section 6 |
 | [`2026-10-06-nodes-killed`](../../evidence/phase-3-correctness/2026-10-06-nodes-killed) | the same square | a run whose nodes were killed before the evaluator could write its summary: a CSV with no JSON |
 | [`2026-10-06`](../../evidence/phase-3-correctness/2026-10-06) | the same square | 588 rows grading the filter against a robot that never moved; kept as the reason the guards in [`../../scripts/phase3_guards.sh`](../../scripts/phase3_guards.sh) exist. See its `INVALID.md` |
@@ -123,5 +149,25 @@ rather than guessing. Closing that is a change to
 [`localization_evaluator`](../../ros2_ws/src/robotics_localization_bridge/src/localization_evaluator.rs),
 not to the filter.
 
-The kidnap scenario has a harness and has never been run. There is no evidence directory
-for it, which is the only reason this file does not discuss P2.
+P2 now has runs, which is what the `kidnap-verdict-*.yaml` files of
+[`2026-10-10T143418-mcl-global-reset`](../../evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset) are. Read
+them rather than this paragraph. What they decide is that the kidnapped robot question has
+an answer in this framework and that the answer differs between the two filters by
+construction rather than by tuning: one representation can recover and the other cannot, on
+the same sensor, the same map and the same teleport. What they do not decide is the cost
+side of the comparison at the top of this file, which still has no row.
+
+The final normal verdicts give the directly comparable P1 measurements below. RMSE, P95 and
+maximum are position errors against simulator ground truth. Growth is the mean position
+error in the last quarter of the run divided by the mean in the first quarter.
+
+| Estimator | RMSE (m) | P95 (m) | Maximum (m) | Growth factor | P1 |
+|---|---:|---:|---:|---:|---|
+| EKF | 0.008945 | 0.015877 | 0.026104 | 1.167 | PASS |
+| MCL | 0.013649 | 0.021430 | 0.121113 | 1.185 | PASS |
+
+The kidnap verdict requires position error below 0.15 m and absolute yaw error below 0.15
+rad for 10 consecutive estimator samples. The MCL recovery window begins 6.920 s after the
+teleport and its final position error is 0.004491 m. EKF never meets that window and ends at
+2.874910 m. These values are generated from the retained CSV files by
+`scripts/phase3_kidnap_verdict.py`.

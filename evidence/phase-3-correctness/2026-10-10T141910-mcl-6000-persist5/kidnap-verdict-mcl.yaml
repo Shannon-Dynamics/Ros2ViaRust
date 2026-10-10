@@ -1,0 +1,36 @@
+# Kidnap recovery verdict, derived from
+# /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T141910-mcl-6000-persist5/kidnap-run-mcl.json and /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T141910-mcl-6000-persist5/kidnap-run-mcl.csv by scripts/phase3_kidnap_verdict.py.
+# Not the P1 verdict of scripts/phase3_verdict.py; see this script's docstring
+# for why recovery needs its own definition and its own file.
+run:
+  estimator: mcl
+  scenario: kidnap
+  date_utc: 2026-10-10T07:19:15Z
+  route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml
+  route_sha256: 25343233801bff225ac65898dfdaac2dd24ccace818b9bfa7288f4455a4d6a9b
+  route_waypoints: 21
+  laps: 1
+  kidnap_after_s: 120
+  samples_total: 3840
+kidnap_event:
+  seconds_into_run: 121.120000
+  target_x: -1.500000
+  target_y: -1.500000
+  target_theta: 2.000000
+before_kidnap:
+  samples: 1203
+  rmse_position_m: 0.017162
+  final_position_error_m: 0.010303
+after_kidnap:
+  samples: 2637
+  rmse_position_m: 0.659110
+  max_position_error_m: 3.509306
+  final_position_error_m: 0.006973
+  best_position_error_m: {'position_error_m': 0.000444, 'seconds_into_run': 317.82}
+recovery:
+  threshold_m: 0.15
+  sustained_samples_required: 10
+  recovered: true
+  recovered_at_seconds_into_run: 135.240000
+  recovery_time_s: 14.120000
+  verdict: RECOVERED

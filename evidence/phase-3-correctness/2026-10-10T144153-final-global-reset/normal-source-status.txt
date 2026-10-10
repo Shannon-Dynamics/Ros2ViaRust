@@ -1,0 +1,19 @@
+ M README.md
+ M crates/robotics_localization/src/mcl.rs
+ M docs/phase-3-localization/benchmark.md
+ M docs/phase-3-localization/implementation.md
+ M docs/phase-3-localization/problem.md
+ M docs/phase-3-localization/theory.md
+ M evidence/phase-3-correctness/README.md
+ M ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs
+ M scripts/run_phase3_correctness.sh
+?? evidence/phase-3-correctness/2026-10-10T133620-mcl-median/
+?? evidence/phase-3-correctness/2026-10-10T133711-mcl-median/
+?? evidence/phase-3-correctness/2026-10-10T134509-mcl-median-built/
+?? evidence/phase-3-correctness/2026-10-10T135330-mcl-3000-persist20/
+?? evidence/phase-3-correctness/2026-10-10T140033-mcl-6000-persist20/
+?? evidence/phase-3-correctness/2026-10-10T141137-final-mcl/
+?? evidence/phase-3-correctness/2026-10-10T141910-mcl-6000-persist5/
+?? evidence/phase-3-correctness/2026-10-10T142643-final-default/
+?? evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/
+?? evidence/phase-3-correctness/2026-10-10T144153-final-global-reset/

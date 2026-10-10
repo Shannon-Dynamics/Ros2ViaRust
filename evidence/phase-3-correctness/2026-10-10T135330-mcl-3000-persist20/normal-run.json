@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T135330-mcl-3000-persist20/normal-run.csv",
+  "estimates_received": 5909,
+  "rows": 5909,
+  "unpaired_estimates": 0,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 5909, "rmse_position_m": 0.008935, "rmse_yaw_rad": 0.021191, "max_position_error_m": 0.025348, "final_position_error_m": 0.000699, "odom_only_rmse_position_m": 0.018768},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}
