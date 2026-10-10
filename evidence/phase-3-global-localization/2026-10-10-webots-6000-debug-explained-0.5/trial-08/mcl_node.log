@@ -1,0 +1,10 @@
+[WARN] [1791624421.054187912] [mcl_node]: this is a DEBUG build and global.particles is 6000: expect a scan to take longer than the 5 Hz scan period; build with scripts/build_release.sh for a search this size (observe_ms_max in /diagnostics reports what a scan actually costs)
+[INFO] [1791624421.056542764] [mcl_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791624421.062317252] [mcl_node]: mcl_node up: scan + /odom -> mcl/pose (frame map), 43 parameters
+[INFO] [1791624421.411689674] [mcl_node]: MCL started from a UNIFORM PRIOR over the free space (no initial pose) with 6000 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[INFO] [1791624421.412785558] [mcl_node]: GLOBAL_LOCALIZATION_STARTED stamp_s=437.300 particles=6000
+[INFO] [1791624432.458948042] [mcl_node]: GLOBAL_LOCALIZATION_CONVERGED stamp_s=448.020 started_stamp_s=437.300 scored_updates=50 travel_odom_m=0.995 sigma_xy=0.0093 sigma_theta=0.0086 particles_before=6000 particles_after=6000
+[WARN] [1791624460.503973395] [mcl_node]: 20 consecutive scan(s) had a best-particle median fit of -127.70 nats/obs, below the -0.45 threshold with 8 observations: injecting random particles
+[WARN] [1791624465.267635791] [mcl_node]: 20 consecutive scan(s) had a best-particle median fit of -12.83 nats/obs, below the -0.45 threshold with 8 observations: injecting random particles
+[WARN] [1791624469.582849137] [mcl_node]: 20 consecutive scan(s) had a best-particle median fit of -10.18 nats/obs, below the -0.45 threshold with 8 observations: injecting random particles
+[INFO] [1791624469.819580693] [mcl_node]: mcl_node shutting down

@@ -1,0 +1,3 @@
+[INFO] [1791624698.217763007] [localization_evaluator_mcl]: localization_evaluator up: mcl/pose vs ground_truth/pose (baseline /odom), rows -> /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-6000-debug-explained-0.5/trial-13/run.csv, summary -> /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-6000-debug-explained-0.5/trial-13/run.json
+[INFO] [1791624744.545043511] [localization_evaluator_mcl]: summary written to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-6000-debug-explained-0.5/trial-13/run.json
+[INFO] [1791624744.545924333] [localization_evaluator_mcl]: localization_evaluator shutting down

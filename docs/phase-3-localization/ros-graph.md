@@ -137,3 +137,58 @@ launch file, not silently.
 QoS presets come from
 [`robotics_ros_bridge::qos`](../../ros2_ws/src/robotics_ros_bridge/src/qos.rs), the same
 ones the Phase 1 and Phase 2 nodes use.
+
+## 5. `mcl_node` as built, and its two ways to start
+
+[`mcl_node`](../../ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs) subscribes to
+`scan` and `odom`, publishes `mcl/pose` (`geometry_msgs/PoseWithCovarianceStamped`, `map`
+frame) and `/diagnostics`, and publishes no TF: `localization_node` owns `map -> odom` and a
+second owner of an edge is the conflict section 3 describes. It starts in one of two ways,
+chosen by `initial_pose.mode`.
+
+| `initial_pose.mode` | The robot's pose is | Particles start | Used for |
+|---|---|---|---|
+| `known` (default) | known to a few centimetres | in a small Gaussian around the spawn pose or `initial_pose.{x,y,theta}` | position tracking, and kidnap recovery by the sustained low-fit trigger |
+| `uniform_prior` | not known at all | uniform over the free space of the map, drawn outside a keep-out disc around each pillar | global localization |
+
+`known` is the default so that a launch that never mentions the mode behaves as it did
+before the mode existed; the integration test asserts that (checks H8 to H10).
+
+Parameters that only matter for `uniform_prior`:
+
+| Parameter | Meaning |
+|---|---|
+| `global.particles` | particles used while the search runs; thinned to `particles.count` when it converges, if larger |
+| `global.convergence_sigma_xy` | the cloud's RMS position spread must be below this (m) |
+| `global.convergence_sigma_theta` | the cloud's circular heading spread must be below this (rad) |
+| `global.convergence_sustained_scans` | for this many consecutive scored scans |
+| `global.convergence_min_explained_fraction` | fraction of a scan's detections the cloud's mean pose must explain |
+| `global.robot_radius` | footprint radius (m); with the pillar radius from the map file it sets the keep-out |
+
+All of them are read-only parameters, like the rest of the node's. An unknown
+`initial_pose.mode` is an error at start-up, not a silent fall-back to the default.
+
+What `/diagnostics` adds, under the existing `mcl_node: particle filter` status:
+
+| Key | Meaning |
+|---|---|
+| `initial_pose_mode`, `phase` | `known` or `uniform_prior`; `tracking` or `global_search` |
+| `global_sigma_xy`, `global_sigma_theta`, `global_streak` | the quantities the convergence criterion is judged by, and how long it has held |
+| `global_travel_odom_m` | odometric distance since the search began |
+| `global_converged_at_s` | present once the search has declared convergence |
+| `observe_ms_last`, `observe_ms_max` | what one scan update cost, measured in the node |
+
+While the search runs the status message is `SEARCHING` at level WARN. The published
+covariance during a search is the real, wide one; nothing is smoothed to look converged.
+
+Two log lines are stable, because the experiments read them and a change to either is a
+change to the evidence format:
+
+```text
+GLOBAL_LOCALIZATION_STARTED   stamp_s=<first scan> particles=<n>
+GLOBAL_LOCALIZATION_CONVERGED stamp_s=<claim> started_stamp_s=<first scan> scored_updates=<n> \
+    travel_odom_m=<m> sigma_xy=<m> sigma_theta=<rad> particles_before=<n> particles_after=<n>
+```
+
+Their stamps are simulation time, from the scan headers, so they compare directly with the
+evaluator's per-sample stamps.

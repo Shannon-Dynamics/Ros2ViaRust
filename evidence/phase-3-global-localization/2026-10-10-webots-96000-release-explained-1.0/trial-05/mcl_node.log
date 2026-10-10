@@ -1,0 +1,6 @@
+[INFO] [1791626628.559203159] [mcl_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791626628.564160956] [mcl_node]: mcl_node up: scan + /odom -> mcl/pose (frame map), 43 parameters
+[INFO] [1791626628.940606387] [mcl_node]: MCL started from a UNIFORM PRIOR over the free space (no initial pose) with 96000 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[INFO] [1791626628.941767889] [mcl_node]: GLOBAL_LOCALIZATION_STARTED stamp_s=283.300 particles=96000
+[INFO] [1791626631.490641400] [mcl_node]: GLOBAL_LOCALIZATION_CONVERGED stamp_s=285.700 started_stamp_s=283.300 scored_updates=12 travel_odom_m=0.000 sigma_xy=0.0002 sigma_theta=0.0001 particles_before=96000 particles_after=6000
+[INFO] [1791626677.456785852] [mcl_node]: mcl_node shutting down

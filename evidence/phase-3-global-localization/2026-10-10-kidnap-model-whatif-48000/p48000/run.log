@@ -1,0 +1,37 @@
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial   1 ( 1.14,-0.10) -> (-1.18, 1.46) NOT_RECOVERED recovery   0.0s final err 3.888
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial   2 (-1.30,-1.71) -> (-2.20, 0.39) RECOVERED     recovery   4.6s final err 0.008
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial   4 (-2.24, 0.39) -> ( 0.39, 1.21) RECOVERED     recovery   4.6s final err 0.003
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial   5 ( 2.30,-1.04) -> (-1.14, 0.21) RECOVERED     recovery   5.2s final err 0.002
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial   9 (-0.99,-0.12) -> ( 1.92,-0.21) RECOVERED     recovery   6.6s final err 0.006
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  10 (-0.06,-0.63) -> (-0.17, 2.13) RECOVERED     recovery   6.2s final err 0.012
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  11 ( 0.45, 2.46) -> ( 1.94,-0.15) NOT_RECOVERED recovery   0.0s final err 1.232
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  14 ( 2.54,-0.93) -> (-0.80, 1.23) RECOVERED     recovery   4.4s final err 0.016
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  15 ( 0.57,-0.25) -> (-1.77,-0.22) NOT_RECOVERED recovery   0.0s final err 1.323
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  17 ( 2.01, 0.60) -> (-1.70, 0.53) RECOVERED     recovery  10.8s final err 0.010
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  18 (-0.96,-1.60) -> (-1.56, 1.45) RECOVERED     recovery   4.6s final err 0.007
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  22 (-1.20, 0.23) -> ( 1.39, 0.04) RECOVERED     recovery   8.8s final err 0.007
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  23 ( 1.25, 1.85) -> ( 1.93,-0.81) NOT_RECOVERED recovery   0.0s final err 3.223
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  24 ( 2.32,-0.80) -> (-0.26,-1.61) RECOVERED     recovery   5.4s final err 0.007
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  25 (-0.82,-2.09) -> ( 1.14, 0.41) NOT_RECOVERED recovery   0.0s final err 2.041
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  27 ( 0.76, 1.11) -> (-0.84,-2.46) RECOVERED     recovery  10.6s final err 0.012
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  29 ( 0.40,-2.15) -> ( 1.43, 1.62) RECOVERED     recovery   5.8s final err 0.010
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  30 (-0.63,-1.17) -> ( 0.73, 2.49) RECOVERED     recovery   5.8s final err 0.010
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  33 (-1.30,-0.93) -> ( 1.52,-0.10) RECOVERED     recovery   4.4s final err 0.008
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  34 (-0.71, 1.32) -> ( 1.48,-0.58) NOT_RECOVERED recovery   0.0s final err 2.482
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  37 ( 0.38,-1.04) -> (-0.52, 2.06) RECOVERED     recovery   7.6s final err 0.008
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  39 ( 1.59,-1.45) -> (-0.35, 0.46) RECOVERED     recovery   4.2s final err 0.002
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  43 (-1.32,-1.63) -> ( 1.89,-0.52) RECOVERED     recovery   6.0s final err 0.006
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  44 ( 0.09,-2.27) -> (-1.96,-0.46) RECOVERED     recovery   4.4s final err 0.009
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  45 ( 1.70,-0.50) -> (-0.28, 0.42) RECOVERED     recovery   4.4s final err 0.000
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  49 ( 0.15,-0.11) -> ( 2.45,-1.26) RECOVERED     recovery   5.0s final err 0.013
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  50 ( 1.86,-1.47) -> ( 0.41, 0.43) RECOVERED     recovery   4.4s final err 0.003
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  51 ( 1.16, 1.72) -> (-0.86, 1.59) RECOVERED     recovery   4.4s final err 0.008
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  56 (-0.45,-2.60) -> (-0.16, 2.13) RECOVERED     recovery  22.0s final err 0.003
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  58 ( 2.23, 0.52) -> (-0.87,-1.21) RECOVERED     recovery   4.4s final err 0.002
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  59 ( 1.55,-1.27) -> (-2.00,-0.43) RECOVERED     recovery   6.8s final err 0.005
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  61 (-1.72, 1.04) -> ( 0.33, 2.41) RECOVERED     recovery   4.8s final err 0.011
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  64 (-0.45, 1.59) -> (-0.41,-1.88) RECOVERED     recovery  10.6s final err 0.010
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  65 ( 1.43, 0.14) -> (-0.55,-2.11) NOT_RECOVERED recovery   0.0s final err 1.006
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  66 ( 0.75, 0.64) -> (-1.79,-0.44) RECOVERED     recovery   4.6s final err 0.015
+[2026-10-10-kidnap-model-whatif-48000-p48000] trial  67 (-2.06,-0.31) -> ( 1.33,-1.20) RECOVERED     recovery   5.6s final err 0.012
+[2026-10-10-kidnap-model-whatif-48000-p48000] 29/36 recovered, summary in /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-kidnap-model-whatif-48000/p48000/summary.yaml

@@ -1,0 +1,68 @@
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] starting the world with ground truth (debug build, 20 trials, 6000 particles)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] simulation is up, controllers are active
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 0: placing the robot at (0.7158, 1.9328, 1.7362)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 0: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 0: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 1: placing the robot at (1.3276, -1.0044, -2.4935)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 1: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 1: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 2: placing the robot at (-0.7393, 1.4004, -1.4153)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 2: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 2: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 3: placing the robot at (-0.2882, -1.5170, 1.4631)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 3: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 3: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 4: placing the robot at (0.3155, -0.0676, 2.2244)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 4: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 4: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 5: placing the robot at (-0.5354, 1.2064, 2.7129)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 5: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 5: category: SUCCESS
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 6: placing the robot at (0.6839, 1.6626, 0.0234)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 6: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 6: category: SUCCESS
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 7: placing the robot at (0.4386, 0.3537, 2.1301)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 7: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 7: category: SUCCESS
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 8: placing the robot at (-0.2391, 2.4634, 2.8068)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 8: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 8: category: LOST_AFTER_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 9: placing the robot at (0.1863, 0.6832, 0.6374)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 9: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 9: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 10: placing the robot at (-0.5000, 2.5000, 0.0000)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 10: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 10: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 11: placing the robot at (-0.5000, 2.5000, 1.5708)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 11: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 11: category: SUCCESS
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 12: placing the robot at (-0.5000, 2.5000, 3.1416)
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 12: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 12: category: WRONG_CONVERGENCE
+[2026-10-10-webots-final-seed1001-6000-debug-explained-0.5] trial 13: placing the robot at (-0.5000, 2.5000, -1.5708)

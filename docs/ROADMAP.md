@@ -75,7 +75,10 @@ low-variance resampling triggered by effective sample size and a fixed-fraction 
 injection recovery strategy, wired up as `mcl_node` publishing `/mcl/pose` and no TF. The
 kidnap scenario now has runs as well as a harness: `scripts/run_phase3_correctness.sh
 kidnap` drives the route and teleports the robot once through the Webots supervisor, and
-grades both estimators against that one event in one simulation session.
+grades both estimators against that one event in one simulation session. `mcl_node` also
+starts, opt-in, from a uniform prior over the free space (`initial_pose.mode:=uniform_prior`),
+a separate code path from the kidnap recovery (`crates/robotics_localization/src/global.rs`);
+`scripts/verify_phase3_localization.sh` checks it in its section K.
 
 Not built yet: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing, which
 `mcl.rs` justifies simplifying rather than silently omitting; dominant-cluster pose
@@ -91,16 +94,41 @@ in `evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`:
 * **P1, position tracking.** EKF and MCL pass the two parts a run can decide. Each beats the
   dead reckoning it was given and keeps its error bounded over the 51.54 m route. MCL uses
   6000 particles and records zero recovery injections in the final normal run.
-* **P2, kidnap recovery.** MCL recovers from a teleport the EKF structurally cannot
+* **P2b, kidnap recovery.** MCL recovers from a teleport the EKF structurally cannot
   (`kidnap-verdict-mcl.yaml` against `kidnap-verdict-ekf.yaml`, both from one teleport at
   one simulated instant). The trigger uses the best upper median of raw per-observation
   likelihoods for 20 scans, then performs one full global reset of the particle cloud. MCL
-  meets the position and yaw recovery window 6.920 s after the teleport.
+  meets the position and yaw recovery window 6.920 s after the teleport. That is one
+  teleport. Measured over many kidnaps as a model
+  (`evidence/phase-3-global-localization/2026-10-10-kidnap-model-existing-tuning/`), the
+  tuning as it ships recovers a minority of them, so read that recovery time as one draw and
+  not as a rate; `benchmark.md` section 7.5 has the table.
+* **P2a, global localization from a uniform prior.** Built and measured, and the honest status
+  is "works, with a cost, and is not reliable at the shipped particle count". The robot is
+  told nothing; `mcl_node -p initial_pose.mode:=uniform_prior` draws the particles over the
+  free space and declares convergence itself. At the steady-state count of 6000 particles most
+  searches end in a confident wrong pose, nearly always a copy of the true one rotated by a
+  quarter or half turn (the pillars are nearly rotationally symmetric); the success rate rises
+  with the number of particles used for the search, and the counts that do best cost more per
+  scan than the scan period on one core. A stricter convergence criterion trades confident
+  wrong answers for no answer and does not find the pose more often. The tables are
+  `docs/phase-3-localization/benchmark.md` section 7, generated from
+  `evidence/phase-3-global-localization/` and checked by the `docs` gate of `scripts/gates.sh`.
 
 The NEES part of the P1 row is not evaluated for either filter, because it needs the full
-covariance of each estimate and the evaluator CSV carries only `sigma_xy`. A run from a
-genuinely uniform initial prior, adaptive particle sizing, and the cross-language benchmark
-also remain. The normal tracking and kidnapped recovery work requested here is complete.
+covariance of each estimate and the evaluator CSV carries only `sigma_xy`.
+
+Still open in Phase 3, in the order they bear on the results above:
+
+* a restart for a search that has collapsed onto the wrong pose (the kidnap path has one,
+  after convergence; a search deliberately has none), which is the obvious next lever;
+* the search cost: linear in the particle count and independent per particle, so it
+  parallelizes, and it has not been parallelized;
+* the kidnap tuning, whose measured recovery rate is the baseline for any change to it;
+* adaptive particle sizing and the cross-language benchmark.
+
+The normal tracking and kidnapped recovery work, and global localization from a uniform
+prior as a built and measured feature, are in; the last is not solved.
 `docs/phase-3-localization/benchmark.md` section 6 lists the runs, and `theory.md` section 6
 explains why the route had to be lengthened before the comparison meant anything. Details
 and the open decisions are in `docs/phase-3-localization/implementation.md`.

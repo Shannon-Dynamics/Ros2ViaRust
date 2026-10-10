@@ -58,10 +58,17 @@ this phase set out to compare:
   teleport supervisor, a movie recorder, and the run script that captures a whole run as
   files.
 
+* Global localization from a uniform prior: `McLocalizer::new_uniform_prior` and
+  `mcl_node -p initial_pose.mode:=uniform_prior`. The robot is told nothing about where it is;
+  the particles start uniform over the free space and the filter declares convergence itself,
+  by a documented criterion (`crates/robotics_localization/src/global.rs`). It is a separate
+  code path from the kidnap recovery, which it leaves untouched. Opt-in; the default is the
+  known start.
+
 Not built yet: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing, which
 `mcl.rs` justifies simplifying rather than quietly omitting; dominant-cluster pose
-extraction; global localization from a genuinely uniform prior, as opposed to recovery from
-a kidnapping; `/particle_cloud`, `/amcl_pose` and `/initialpose`; and every benchmark row of
+extraction; a restart of a search that has collapsed onto the wrong pose; `/particle_cloud`,
+`/amcl_pose` and `/initialpose`; and every benchmark row of
 `benchmarks/phase-3-localization.csv`. See
 [docs/phase-3-localization/](docs/phase-3-localization/) and
 [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -79,6 +86,19 @@ kidnapped robot question this phase exists to answer. Read the final normal evid
 `evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`, and
 [docs/phase-3-localization/implementation.md](docs/phase-3-localization/implementation.md)
 section 5, which keeps both defects this phase found and what was done about each.
+
+Global localization from nothing is the weakest part, and the evidence says so plainly. At the
+steady-state particle count it mostly ends in a confident wrong answer, almost always a copy
+of the true pose rotated by a quarter or a half turn (the four pillars are nearly rotationally
+symmetric); success rises with the number of particles used for the search, and the counts
+that do best are not real time on one core. Read
+[docs/phase-3-localization/benchmark.md](docs/phase-3-localization/benchmark.md) section 7,
+whose tables are generated from `evidence/phase-3-global-localization/` and checked against it
+by the `docs` gate, and
+[implementation.md](docs/phase-3-localization/implementation.md) section 6, which lists every
+configuration tried, including the ones that failed, and what is still open. One result
+there bears on earlier work: measured as a model, the kidnap recovery as it ships recovers a
+minority of kidnaps, so the single recovery time recorded earlier is one draw and not a rate.
 
 ## What is in Phase 2
 

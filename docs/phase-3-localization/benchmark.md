@@ -171,3 +171,106 @@ rad for 10 consecutive estimator samples. The MCL recovery window begins 6.920 s
 teleport and its final position error is 0.004491 m. EKF never meets that window and ends at
 2.874910 m. These values are generated from the retained CSV files by
 `scripts/phase3_kidnap_verdict.py`.
+
+## 7. Global localization from a uniform prior
+
+The problem is [problem.md](problem.md) section 6, the filter and its convergence criterion
+are [theory.md](theory.md) section 8, and what was built and what was tried is
+[implementation.md](implementation.md) section 6. This section is the measurements.
+
+**Every number in this section is generated.** The tables below are written by
+[`scripts/phase3_global_tables.py`](../../scripts/phase3_global_tables.py) from the
+`summary.yaml`, `trials.csv` and per-trial verdict files under
+[`../../evidence/phase-3-global-localization/`](../../evidence/phase-3-global-localization/),
+spliced between the markers, and the `docs` gate of
+[`../../scripts/gates.sh`](../../scripts/gates.sh) fails if they drift from the evidence. Do
+not edit them by hand; add an experiment and regenerate.
+
+### 7.1 Three experiments, and what each can and cannot say
+
+| Experiment | What it is | What it cannot say |
+|---|---|---|
+| model level | the real `McLocalizer` against a simulated robot following the same exploration route, with simulated detections: ideal, noisy, no false or missed ones, exact odometry | anything about the real detector, the laser geometry or the simulator's odometry |
+| end to end in Webots | the real `mcl_node`, detector, laser and odometry, graded against the supervisor's ground truth | how a result varies over many seeds: it is a few dozen trials, not hundreds |
+| kidnap, model level | the existing tracking filter's kidnap recovery, unchanged, as a measurement | anything about a configuration other than the one that ships (the 48000 row is a labelled what-if) |
+
+The model-level experiment is cheap, so it carries the statistics; the Webots one carries the
+realism. Where they disagree, the Webots one is the answer and the disagreement is the
+finding, and there is one, in 7.4.
+
+### 7.2 Results
+
+<!-- global-localization-tables:begin -->
+<!-- global-localization-tables:end -->
+
+Reading the tables:
+
+* **Wrong, lost, no claim** are the three failures of [problem.md](problem.md) section 6. A
+  filter that is confident and wrong is the one a robot would act on.
+* **Explained fraction** is `global.convergence_min_explained_fraction`: 0.5 is the
+  upper-median rule, 1.0 requires the cloud's mean to explain every detection of the scan.
+* The **development** poses are the ones the explained fraction was chosen on; the **fresh**
+  poses played no part in any choice. Compare the two to see how much choosing on a set
+  flatters it.
+* **Time** and **distance** are from the first scan to the claim, among the successes only,
+  and distance is the ground-truth path length. They include the delay a criterion judged on
+  spread suffers at turns (theory.md section 8).
+* Timings in the model-level sweeps were taken with several processes sharing the machine and
+  are inflated; the **single-process** table is the one to read for cost.
+
+### 7.3 What the results say
+
+The statements here are about the shape of the tables and are meant to be checked against
+them, not read as numbers.
+
+1. **Particle count is the lever.** At every step up in the global particle count the success
+   rate goes up, at both criteria, on both start sets. 6000, the steady-state count, is not
+   enough; this is particle deprivation (theory.md section 8) and not a bug.
+2. **The strict criterion trades a confident wrong claim for no claim.** The same trials
+   succeed at every count; the wrong claims fall and the no-claim count rises by about the
+   same amount. It does not find the pose more often. It makes the filter safer to trust,
+   and it is not a substitute for particles.
+3. **The wrong claims are rotated twins.** In the model-level trials the yaw error at a wrong
+   claim is, almost every time, close to half a turn or a quarter turn (`err_yaw_at_conv_rad`
+   in `trials.csv`), which is the map's near rotational symmetry
+   ([`map-symmetry.yaml`](../../evidence/phase-3-global-localization/2026-10-10-ambiguity/map-symmetry.yaml)).
+4. **The counts that find the pose best are not real time.** The single-process cost table
+   gives the cost per scan against the 200 ms scan period.
+
+### 7.4 Where Webots and the model disagree
+
+See the per-start table and the detector columns above. The ideal detector of the model-level
+experiment never reports a detection that is not a pillar. The real one does, near walls, and
+the tracking filter's kidnap trigger, which a converged search hands over to, reads a scan
+with more spurious detections than genuine ones as a kidnapping and wipes out a correct pose.
+That is `LOST_AFTER_CONVERGENCE`, which the model never produces and Webots does. It is a
+property of the inherited trigger meeting the real detector and not of the search, and it is
+not changed here (the kidnap tuning is out of scope), but it bounds what any search from
+the middle of the room's edge can promise.
+
+### 7.5 The kidnap tuning, measured
+
+The tracking filter's kidnap recovery, exactly as it ships, is the model-level kidnap
+experiment, and it is also a global localization from a uniform reset (implementation.md
+section 6.4). Its recovery rate over many kidnaps is in the file below, with the what-if at a
+larger count next to it.
+
+<!-- kidnap-model-tables:begin -->
+<!-- kidnap-model-tables:end -->
+
+### 7.6 The runs
+
+| Run | What it is for |
+|---|---|
+| `2026-10-10-smoke-6000-first-look` | the first look at 6000 particles, ten trials, by hand; why the sweep exists |
+| `2026-10-10-sweep-particles-default-criterion` | 6000 to 96000 particles, upper-median criterion, 40 development poses |
+| `2026-10-10-sweep-particles-large-default-criterion` | 192000 and 384000, same |
+| `2026-10-10-sweep-particles-explained-0.51`, `...-explained-1.0` | the stricter criterion, 6000 to 96000, same poses |
+| `2026-10-10-sweep-particles-large-explained-1.0` | 192000 and 384000, strict |
+| `2026-10-10-confirm-fresh-starts-explained-0.5`, `...-1.0` | 100 poses that played no part in choosing anything |
+| `2026-10-10-ambiguity` | the static ambiguity ranking and the map symmetry |
+| `2026-10-10-starts` | every start pose set used, as files |
+| `2026-10-10-webots-*` | end to end in Webots, three configurations, the same 20 poses |
+| `2026-10-10-webots-smoke-1-trial` | the one-trial smoke test of the Webots runner, kept |
+| `2026-10-10-kidnap-model-*` | the existing kidnap recovery as a model-level measurement |
+| `phase-3-localization-runtime/*global-localization*` | the integration test, including one run that hung and was invalid, with its note |

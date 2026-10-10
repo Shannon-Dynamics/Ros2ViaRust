@@ -1,0 +1,54 @@
+# Summary of /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-smoke-final-harness/trial-*, by scripts/phase3_global_verdict.py; no number is typed.
+run:
+  run: 2026-10-10-webots-smoke-final-harness
+  date_utc: 2026-10-10T11:52:20Z
+  build: debug
+  global_particles: 6000
+  steady_state_particles: 6000
+  convergence_min_explained_fraction: 0.5
+  seed_of_trial_0: 901
+  laps: 1
+  git_head: 7acd838
+  mcl_node_sha256: 62156f34207bee07a98a72fd915fdb64e49719a44a43c98961bd7422f3393d40
+  starts_sha256: 88d2b757d305f704d48782bb78275ca29c60b2d635f4ee5e2973fbaafb030fa9
+  odometry_noise: off
+  success_position_tolerance_m: 0.15
+  success_yaw_tolerance_rad: 0.15
+trials_total: 2
+trials_graded: 2
+trials_skipped_no_route: 0
+trials_invalid: 0
+outcomes:
+  SUCCESS: 0
+  WRONG_CONVERGENCE: 1
+  LOST_AFTER_CONVERGENCE: 0
+  NO_CONVERGENCE: 1
+correct_at_end_of_route:
+  total: 0
+  among_SUCCESS: 0
+  among_WRONG_CONVERGENCE: 0
+  among_LOST_AFTER_CONVERGENCE: 0
+  among_NO_CONVERGENCE: 0
+success_rate: 0.0000
+success_rate_wilson95: [0.0000, 0.6576]
+among_successes:
+  convergence_time_s: {mean: nan, median: nan}
+  convergence_distance_m: {mean: nan, median: nan}
+  rmse_position_after_convergence_m: {mean: nan, median: nan}
+detector:
+  trials_with_a_diagnostics_reading: 2
+  detections_per_scan_median_over_those_trials: 4.58
+  trials_averaging_more_than_4_detections_per_scan: 2
+trials_where_the_kidnap_trigger_fired: 0
+kidnap_injections:
+  total: 0
+  false_estimate_was_already_correct: 0
+  true_estimate_was_wrong: 0
+  ungraded_log_has_no_stamp: 0
+  trials_with_a_false_injection: 0
+cost:
+  observe_ms_max_over_trials: 117.35
+  observe_ms_max_median_over_trials: 117.35
+per_trial:
+  trial-00: {start: [0.72, 1.93, 1.74], category: NO_CONVERGENCE, correct_at_end_of_route: False, final_position_error_m: 2.995, observe_ms_max: 117.3}
+  trial-01: {start: [1.33, -1.00, -2.49], category: WRONG_CONVERGENCE, correct_at_end_of_route: False, convergence_time_s: 33.4, convergence_travel_true_m: 4.34, position_error_at_convergence_m: 4.836, yaw_error_at_convergence_rad: 1.726, final_position_error_m: 5.052, observe_ms_max: 109.2}

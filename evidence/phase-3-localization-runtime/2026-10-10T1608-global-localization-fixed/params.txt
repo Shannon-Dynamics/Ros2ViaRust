@@ -1,0 +1,46 @@
+  detector.cluster_gap
+  detector.max_chord
+  detector.max_range
+  detector.min_points
+  detector.radius
+  diagnostics_period_s
+  frames.base_link
+  frames.map
+  frames.odom
+  imu_timeout
+  initial_pose.from_map_file
+  initial_pose.sigma_theta
+  initial_pose.sigma_xy
+  initial_pose.theta
+  initial_pose.x
+  initial_pose.y
+  map_file
+  max_publish_rate_hz
+  measurement.gate_probability
+  measurement.sigma_bearing
+  measurement.sigma_range
+  motion.alpha1
+  motion.alpha2
+  motion.alpha3
+  motion.alpha4
+  motion.lateral_fraction
+  motion.min_rotation_sigma
+  motion.min_translation_sigma
+  publish_tf
+  sensor.from_tf
+  sensor.theta
+  sensor.x
+  sensor.y
+  topics.imu
+  topics.odom
+  topics.pose
+  topics.scan
+  use_gyro_heading
+  use_sim_time
+publish_tf: Boolean value is: True
+frames.map: String value is: map
+frames.odom: String value is: odom
+topics.odom: String value is: /odom
+map_file: String value is: /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml
+--- param set publish_tf false, expected to be rejected (read-only) ---
+Setting parameter failed: Parameter is read only

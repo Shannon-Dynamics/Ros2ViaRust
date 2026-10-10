@@ -19,6 +19,11 @@
 //!   about as well, and can recover from a kidnapping because losing a wrong hypothesis
 //!   costs it nothing.
 //!
+//! * [`global`]: the pieces of global localization from a uniform prior (no initial
+//!   estimate at all): free-space sampling, the cloud-spread measure and the convergence
+//!   detector. A different problem from the kidnapped robot, with its own code path; see the
+//!   module for the comparison.
+//!
 //! Both read the same map and the same sensor model; only the representation of the
 //! belief, and what each can do with it, differs. That comparison is Phase 3's answer to
 //! the kidnapped robot problem (Thrun and Fox), and it is measured, not asserted, in
@@ -28,6 +33,7 @@
 #![warn(missing_docs)]
 
 pub mod ekf;
+pub mod global;
 pub mod map;
 pub mod mcl;
 pub mod pillars;
@@ -36,6 +42,10 @@ pub use ekf::{
     EkfLocalizer, LandmarkMeasurement, LocalizationError, LocalizerConfig, LocalizerStats,
     OdometryMotion, UpdateReport,
 };
+pub use global::{
+    cloud_spread, sample_free_pose, ConvergenceDetector, GlobalLocalizationConfig,
+    LocalizationPhase, Spread,
+};
 pub use map::{LandmarkEntry, MapError, MapFile};
-pub use mcl::{McLocalizer, McUpdateReport, MclConfig, MclStats};
+pub use mcl::{GlobalConvergence, GlobalStatus, McLocalizer, McUpdateReport, MclConfig, MclStats};
 pub use pillars::{detect, Detection, PillarDetector};

@@ -1,0 +1,6 @@
+[WARN] [1791634043.094310997] [mcl_node]: this is a DEBUG build and global.particles is 6000: expect a scan to take longer than the 5 Hz scan period; build with scripts/build_release.sh for a search this size (observe_ms_max in /diagnostics reports what a scan actually costs)
+[INFO] [1791634043.096413081] [mcl_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791634043.102688661] [mcl_node]: mcl_node up: scan + /odom -> mcl/pose (frame map), 43 parameters
+[INFO] [1791634043.505285576] [mcl_node]: MCL started from a UNIFORM PRIOR over the free space (no initial pose) with 6000 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[INFO] [1791634043.506439805] [mcl_node]: GLOBAL_LOCALIZATION_STARTED stamp_s=711.460 particles=6000
+[WARN] [1791634055.572602152] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)

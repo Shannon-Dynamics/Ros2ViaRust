@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-96000-release-explained-1.0/trial-07/run.csv",
+  "estimates_received": 746,
+  "rows": 729,
+  "unpaired_estimates": 17,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 729, "rmse_position_m": 0.026303, "rmse_yaw_rad": 0.039467, "max_position_error_m": 0.138838, "final_position_error_m": 0.013415, "odom_only_rmse_position_m": 1.743510},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}

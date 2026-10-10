@@ -1,0 +1,16 @@
+# Summary of /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-kidnap-model-existing-tuning/p6000/kidnap_trials.csv, written by global_trials.rs; no number here is typed.
+label: 2026-10-10-kidnap-model-existing-tuning-p6000
+config:
+  steady_state_particles: 6000
+  recovery_sustained_updates: 20
+  recovery_injection_fraction: 1
+  tracked_before_kidnap_s: 12
+  detection_noise_range_m: 0.05
+  detection_noise_bearing_rad: 0.05
+  seed: 1
+  starts_seed: 3000
+trials: 102
+recovered: 40
+recovery_rate: 0.3922
+recovery_rate_wilson95: [0.3030, 0.4892]
+recovery_time_s: {median: 5.20}

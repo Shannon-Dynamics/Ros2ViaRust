@@ -1,0 +1,36 @@
+    Blocking waiting for file lock on package cache
+warning: patch `robotics_estimation v0.1.0 (/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_estimation/share/robotics_estimation/rust)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	/home/genta/ros2-rust-robotics/ros2_ws/src/robotics_estimation
+warning: patch `robotics_examples v0.1.0 (/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_examples/share/robotics_examples/rust)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	/home/genta/ros2-rust-robotics/ros2_ws/src/robotics_examples
+warning: patch `robotics_integration v0.1.0 (/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_integration/share/robotics_integration/rust)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	/home/genta/ros2-rust-robotics/ros2_ws/src/robotics_integration
+warning: patch `robotics_localization_bridge v0.1.0 (/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_localization_bridge/share/robotics_localization_bridge/rust)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	/home/genta/ros2-rust-robotics/ros2_ws/src/robotics_localization_bridge
+warning: patch `robotics_ros_bridge v0.1.0 (/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_ros_bridge/share/robotics_ros_bridge/rust)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	/home/genta/ros2-rust-robotics/ros2_ws/src/robotics_ros_bridge
+warning: patch `robotics_sim_bridge v0.1.0 (/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_sim_bridge/share/robotics_sim_bridge/rust)` was not used in the crate graph
+  |
+  = help: perhaps you meant one of the following:
+          	/home/genta/ros2-rust-robotics/ros2_ws/src/robotics_sim_bridge
+warning: patch `control_msgs v5.9.0 (/opt/ros/jazzy/share/control_msgs/rust)` was not used in the crate graph
+warning: patch `moveit_msgs v2.6.0 (/opt/ros/jazzy/share/moveit_msgs/rust)` was not used in the crate graph
+warning: patch `object_recognition_msgs v2.0.0 (/opt/ros/jazzy/share/object_recognition_msgs/rust)` was not used in the crate graph
+warning: patch `octomap_msgs v2.0.1 (/opt/ros/jazzy/share/octomap_msgs/rust)` was not used in the crate graph
+warning: patch `trajectory_msgs v5.3.7 (/opt/ros/jazzy/share/trajectory_msgs/rust)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+    Blocking waiting for file lock on package cache
+    Finished `release` profile [optimized + debuginfo] target(s) in 0.11s

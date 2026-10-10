@@ -1,0 +1,616 @@
+header:
+  stamp:
+    sec: 1791628059
+    nanosec: 2763949
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '208'
+  - key: detections
+    value: '888'
+  - key: published
+    value: '759'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.388'
+  - key: y
+    value: '0.325'
+  - key: theta
+    value: '0.5201'
+  - key: sigma_xy
+    value: '0.0041'
+  - key: sigma_theta
+    value: '0.0033'
+  - key: ess
+    value: '4336.2'
+  - key: predictions
+    value: '1561'
+  - key: scored_updates
+    value: '208'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '114.51'
+  - key: observe_ms_max
+    value: '279.30'
+  - key: global_sigma_xy
+    value: '0.0000'
+  - key: global_sigma_theta
+    value: '0.0000'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.000'
+  - key: global_converged_at_s
+    value: '430.080'
+---
+header:
+  stamp:
+    sec: 474
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 66.52 [5.50 - 304652.40] us, StdDev: 2063.10'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.87 [10.66 - 2240.96] us, StdDev: 43.92'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791628060
+    nanosec: 103718585
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '213'
+  - key: detections
+    value: '908'
+  - key: published
+    value: '775'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.388'
+  - key: y
+    value: '0.326'
+  - key: theta
+    value: '0.5200'
+  - key: sigma_xy
+    value: '0.0040'
+  - key: sigma_theta
+    value: '0.0032'
+  - key: ess
+    value: '3983.7'
+  - key: predictions
+    value: '1561'
+  - key: scored_updates
+    value: '213'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '113.09'
+  - key: observe_ms_max
+    value: '279.30'
+  - key: global_sigma_xy
+    value: '0.0000'
+  - key: global_sigma_theta
+    value: '0.0000'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.000'
+  - key: global_converged_at_s
+    value: '430.080'
+---
+header:
+  stamp:
+    sec: 475
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 66.48 [5.50 - 304652.40] us, StdDev: 2060.92'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.86 [10.66 - 2240.96] us, StdDev: 43.88'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791628061
+    nanosec: 2731690
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '217'
+  - key: detections
+    value: '924'
+  - key: published
+    value: '791'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.388'
+  - key: y
+    value: '0.326'
+  - key: theta
+    value: '0.5199'
+  - key: sigma_xy
+    value: '0.0039'
+  - key: sigma_theta
+    value: '0.0031'
+  - key: ess
+    value: '3724.9'
+  - key: predictions
+    value: '1561'
+  - key: scored_updates
+    value: '217'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '113.05'
+  - key: observe_ms_max
+    value: '279.30'
+  - key: global_sigma_xy
+    value: '0.0000'
+  - key: global_sigma_theta
+    value: '0.0000'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.000'
+  - key: global_converged_at_s
+    value: '430.080'
+---
+header:
+  stamp:
+    sec: 476
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 66.44 [5.50 - 304652.40] us, StdDev: 2058.74'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.86 [10.66 - 2240.96] us, StdDev: 43.83'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791628062
+    nanosec: 2638658
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '221'
+  - key: detections
+    value: '940'
+  - key: published
+    value: '807'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.388'
+  - key: y
+    value: '0.326'
+  - key: theta
+    value: '0.5198'
+  - key: sigma_xy
+    value: '0.0038'
+  - key: sigma_theta
+    value: '0.0030'
+  - key: ess
+    value: '3486.4'
+  - key: predictions
+    value: '1561'
+  - key: scored_updates
+    value: '221'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '124.07'
+  - key: observe_ms_max
+    value: '279.30'
+  - key: global_sigma_xy
+    value: '0.0000'
+  - key: global_sigma_theta
+    value: '0.0000'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.000'
+  - key: global_converged_at_s
+    value: '430.080'
+---
+header:
+  stamp:
+    sec: 477
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 66.40 [5.50 - 304652.40] us, StdDev: 2056.57'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.85 [10.66 - 2240.96] us, StdDev: 43.79'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791628063
+    nanosec: 32852592
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '226'
+  - key: detections
+    value: '960'
+  - key: published
+    value: '822'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.388'
+  - key: y
+    value: '0.326'
+  - key: theta
+    value: '0.5197'
+  - key: sigma_xy
+    value: '0.0037'
+  - key: sigma_theta
+    value: '0.0029'
+  - key: ess
+    value: '3215.6'
+  - key: predictions
+    value: '1561'
+  - key: scored_updates
+    value: '226'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '122.91'
+  - key: observe_ms_max
+    value: '279.30'
+  - key: global_sigma_xy
+    value: '0.0000'
+  - key: global_sigma_theta
+    value: '0.0000'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.000'
+  - key: global_converged_at_s
+    value: '430.080'
+---
+header:
+  stamp:
+    sec: 478
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 66.37 [5.50 - 304652.40] us, StdDev: 2054.41'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.85 [10.66 - 2240.96] us, StdDev: 43.74'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791628064
+    nanosec: 2845984
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '230'
+  - key: detections
+    value: '976'
+  - key: published
+    value: '840'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.388'
+  - key: y
+    value: '0.326'
+  - key: theta
+    value: '0.5197'
+  - key: sigma_xy
+    value: '0.0036'
+  - key: sigma_theta
+    value: '0.0028'
+  - key: ess
+    value: '3019.1'
+  - key: predictions
+    value: '1561'
+  - key: scored_updates
+    value: '230'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '120.38'
+  - key: observe_ms_max
+    value: '279.30'
+  - key: global_sigma_xy
+    value: '0.0000'
+  - key: global_sigma_theta
+    value: '0.0000'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.000'
+  - key: global_converged_at_s
+    value: '430.080'
+---

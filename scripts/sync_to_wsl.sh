@@ -33,6 +33,8 @@ rsync -a --delete \
     --exclude 'target/' \
     --exclude 'ros2_ws/build/' \
     --exclude 'ros2_ws/install/' \
+    --exclude 'ros2_ws/build_release/' \
+    --exclude 'ros2_ws/install_release/' \
     --exclude 'ros2_ws/log/' \
     --exclude 'ros2_ws/.cargo/' \
     --exclude 'evidence/' \

@@ -51,12 +51,14 @@ use robotics_core::angle::{angle_diff, normalize_angle};
 use robotics_core::prob::stats::chi2_quantile;
 use robotics_core::types::Cov3;
 use robotics_core::{Gaussian, Se2};
-use robotics_filters::particle::ParticleSet;
+use robotics_filters::particle::{multinomial_indices, ParticleSet};
 use robotics_models::motion::{OdomAlphas, OdomDelta, OdometryMotionModel};
 use robotics_models::sensor::landmark::{LandmarkMap, LandmarkModel, RangeBearing};
 use std::f64::consts::PI;
 
 pub use crate::ekf::LocalizationError;
+use crate::global::{cloud_spread, sample_free_pose};
+pub use crate::global::{ConvergenceDetector, GlobalLocalizationConfig, LocalizationPhase, Spread};
 
 /// Configuration of [`McLocalizer`].
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -173,6 +175,51 @@ pub struct McUpdateReport {
     /// injected set is already fresh and uniform, so resampling it immediately would throw
     /// away the particles just added for no reason).
     pub resampled: bool,
+    /// The phase this update *started* in. A search that converges during this update still
+    /// reports [`LocalizationPhase::GlobalSearch`] here and sets `converged_now`.
+    pub phase: LocalizationPhase,
+    /// Spread of the cloud after this update, while a global search is running, else
+    /// `None`. See [`crate::global`] for the definition.
+    pub global_spread: Option<Spread>,
+    /// Whether this update is the one at which a global search was declared converged.
+    pub converged_now: bool,
+}
+
+/// What a global search had achieved at the moment it was declared converged.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct GlobalConvergence {
+    /// Scored scans (scans with at least one observation) since the search began.
+    pub scored_updates: u64,
+    /// Odometric distance travelled since the search began (m): the sum of the translation
+    /// of each odometry step handed to [`McLocalizer::predict`].
+    pub travel_m: f64,
+    /// Spread of the cloud on the converging scan.
+    pub spread: Spread,
+    /// Particle count during the search.
+    pub particles_before: usize,
+    /// Particle count after shrinking to the steady-state size.
+    pub particles_after: usize,
+}
+
+/// Progress of a global search, running or finished.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct GlobalStatus {
+    /// Spread of the cloud after the latest scored scan.
+    pub spread: Spread,
+    /// Consecutive scans the convergence criterion has held for.
+    pub streak: u32,
+    /// Scored scans since the search began.
+    pub scored_updates: u64,
+    /// Odometric distance travelled since the search began (m), frozen at convergence.
+    pub travel_m: f64,
+    /// `Some` once the search has been declared converged.
+    pub converged: Option<GlobalConvergence>,
+}
+
+/// Search state carried by a filter that was started from a uniform prior.
+struct GlobalState {
+    detector: ConvergenceDetector,
+    status: GlobalStatus,
 }
 
 /// Counters over the lifetime of the filter.
@@ -202,11 +249,16 @@ pub struct McLocalizer {
     fit_log_threshold: f64,
     low_fit_streak: u32,
     stats: MclStats,
+    phase: LocalizationPhase,
+    global: Option<GlobalState>,
 }
 
 impl McLocalizer {
-    /// Build a filter with particles drawn uniformly over the whole configured room, for
-    /// global localization (P2) or as the starting belief of a kidnap recovery test.
+    /// Build a filter with particles drawn uniformly over the whole configured square, with
+    /// no keep-out around the pillars and no convergence logic: a bare starting belief, kept
+    /// for tests that need one. It is **not** global localization; that is
+    /// [`McLocalizer::new_uniform_prior`], which draws only free poses and runs a search that
+    /// ends in a declared convergence.
     pub fn new_global<R: Rng + ?Sized>(
         cfg: &MclConfig,
         map: LandmarkMap,
@@ -217,6 +269,63 @@ impl McLocalizer {
             .map(|_| Self::uniform_pose(half, rng))
             .collect();
         Self::new_from_states(cfg, map, states)
+    }
+
+    /// Build a filter for **global localization**: the robot has no estimate of its pose, so
+    /// `global.num_particles` particles are drawn uniformly over the free space of the map
+    /// (see [`crate::global`]) and the filter starts in [`LocalizationPhase::GlobalSearch`].
+    ///
+    /// This is a different code path from the kidnap recovery of this file. There is no
+    /// trigger here: the cloud starts as wide as it can be and narrows through the ordinary
+    /// reweight and resample steps of [`McLocalizer::observe`], and the filter itself says
+    /// when it has narrowed enough ([`crate::global::ConvergenceDetector`]). On the scan that
+    /// declares it, the cloud is thinned to `cfg.num_particles` (when the search used more)
+    /// and the filter becomes an ordinary tracking filter, kidnap trigger armed with its
+    /// unchanged tuning.
+    pub fn new_uniform_prior<R: Rng + ?Sized>(
+        cfg: &MclConfig,
+        global: &GlobalLocalizationConfig,
+        map: LandmarkMap,
+        rng: &mut R,
+    ) -> Result<Self, LocalizationError> {
+        global.validate().map_err(LocalizationError::Config)?;
+        let mut states = Vec::with_capacity(global.num_particles);
+        for _ in 0..global.num_particles {
+            let pose = sample_free_pose(&map, cfg.room_half_extent, global.landmark_keepout_m, rng)
+                .ok_or_else(|| {
+                    LocalizationError::Config(
+                        "no free pose: the landmark keep-out covers the room".into(),
+                    )
+                })?;
+            states.push(pose);
+        }
+        let mut filter = Self::new_from_states(cfg, map, states)?;
+        filter.phase = LocalizationPhase::GlobalSearch;
+        filter.global = Some(GlobalState {
+            detector: ConvergenceDetector::new(*global),
+            status: GlobalStatus {
+                spread: Spread {
+                    sigma_xy: f64::INFINITY,
+                    sigma_theta: f64::INFINITY,
+                },
+                streak: 0,
+                scored_updates: 0,
+                travel_m: 0.0,
+                converged: None,
+            },
+        });
+        Ok(filter)
+    }
+
+    /// The regime the filter is in.
+    pub fn phase(&self) -> LocalizationPhase {
+        self.phase
+    }
+
+    /// Progress of the global search, or `None` for a filter that was not started from a
+    /// uniform prior. Stays available after convergence, with `converged` filled in.
+    pub fn global_status(&self) -> Option<GlobalStatus> {
+        self.global.as_ref().map(|g| g.status)
     }
 
     /// Build a filter with particles spread as `N(initial_pose, diag(initial_sigma_xy²,
@@ -291,6 +400,8 @@ impl McLocalizer {
             fit_log_threshold,
             low_fit_streak: 0,
             stats: MclStats::default(),
+            phase: LocalizationPhase::Tracking,
+            global: None,
         })
     }
 
@@ -352,13 +463,14 @@ impl McLocalizer {
         self.particles.effective_sample_size()
     }
 
-    /// Particle count (constant for the filter's lifetime; validated non-zero in
-    /// [`McLocalizer::new_at`]).
+    /// Particle count. Constant for the filter's lifetime except at the one moment a global
+    /// search converges with more particles than the steady-state count, when it drops to
+    /// `cfg.num_particles`.
     pub fn len(&self) -> usize {
         self.particles.len()
     }
 
-    /// Always `false`: [`McLocalizer::new_at`] rejects `num_particles == 0`.
+    /// Always `false`: the constructors reject a zero particle count.
     pub fn is_empty(&self) -> bool {
         self.particles.len() == 0
     }
@@ -384,6 +496,11 @@ impl McLocalizer {
         let delta = OdomDelta::from_poses(previous_odom, current_odom);
         if delta.trans.abs() < 1e-9 && delta.rot1.abs() < 1e-9 && delta.rot2.abs() < 1e-9 {
             return; // standing still: nothing to predict, and no noise to add
+        }
+        if self.phase == LocalizationPhase::GlobalSearch {
+            if let Some(g) = self.global.as_mut() {
+                g.status.travel_m += delta.trans.abs();
+            }
         }
         let motion = self.motion;
         self.particles.map_states(|state| {
@@ -483,6 +600,7 @@ impl McLocalizer {
         let mut report = McUpdateReport {
             observed: observations.len(),
             ess: self.particles.effective_sample_size(),
+            phase: self.phase,
             ..Default::default()
         };
         if observations.is_empty() {
@@ -494,16 +612,26 @@ impl McLocalizer {
         // Raw and unclamped, for the recovery trigger only. Use the upper median rather
         // than the arithmetic mean so a minority of spurious detections cannot dominate
         // an otherwise well-explained scan.
-        let raw: Vec<f64> = self
-            .particles
-            .states()
-            .map(|pose| self.median_log_likelihood(pose, observations))
-            .collect();
-        let best = raw.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
-        report.best_fit_median_log_likelihood = Some(best);
+        //
+        // During a global search from a uniform prior the trigger is inert (see
+        // crate::global), so neither the statistic nor the streak is computed: the first is
+        // an O(particles) pass that a search with tens of thousands of particles should not
+        // pay for a number nothing reads, and `best_fit_median_log_likelihood` is `None`
+        // for those updates. The Tracking branch is unchanged.
+        if self.phase == LocalizationPhase::Tracking {
+            let raw: Vec<f64> = self
+                .particles
+                .states()
+                .map(|pose| self.median_log_likelihood(pose, observations))
+                .collect();
+            let best = raw.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+            report.best_fit_median_log_likelihood = Some(best);
 
-        if best < self.fit_log_threshold {
-            self.low_fit_streak += 1;
+            if best < self.fit_log_threshold {
+                self.low_fit_streak += 1;
+            } else {
+                self.low_fit_streak = 0;
+            }
         } else {
             self.low_fit_streak = 0;
         }
@@ -542,9 +670,74 @@ impl McLocalizer {
             report.resampled = true;
         }
 
+        if self.phase == LocalizationPhase::GlobalSearch {
+            self.advance_global_search(observations, rng, &mut report);
+        }
+
         report.low_fit_streak = self.low_fit_streak;
         report.ess = self.particles.effective_sample_size();
         report
+    }
+
+    /// Global search bookkeeping after one scored update: measure the cloud, ask the
+    /// detector whether the search has converged, and if it has, thin the cloud to the
+    /// steady-state size and hand over to tracking. Reached only in
+    /// [`LocalizationPhase::GlobalSearch`], so the tracking path never executes any of it.
+    fn advance_global_search<R: Rng + ?Sized>(
+        &mut self,
+        observations: &[RangeBearing],
+        rng: &mut R,
+        report: &mut McUpdateReport,
+    ) {
+        let weights = self.particles.weights();
+        let spread = cloud_spread(self.particles.states(), &weights);
+        // Does the cloud's own mean explain this scan? One evaluation per detection at one
+        // pose, not one per particle.
+        let mean = self.pose();
+        let explained = observations
+            .iter()
+            .filter(|z| self.best_landmark_log_likelihood(&mean, z) >= self.fit_log_threshold)
+            .count();
+        report.global_spread = Some(spread);
+
+        let particles_before = self.particles.len();
+        let steady = self.cfg.num_particles;
+        let Some(g) = self.global.as_mut() else {
+            return;
+        };
+        let explains = explained >= g.detector.config().explained_needed(observations.len());
+        g.status.spread = spread;
+        g.status.scored_updates += 1;
+        let converged_now = g.detector.observe(spread, explains);
+        g.status.streak = g.detector.streak();
+        if !converged_now {
+            return;
+        }
+        let travel_m = g.status.travel_m;
+        let scored_updates = g.status.scored_updates;
+
+        if particles_before > steady {
+            if let Ok(idx) = multinomial_indices(&weights, steady, rng) {
+                let states: Vec<Se2> = idx
+                    .into_iter()
+                    .map(|i| self.particles.particles()[i].state)
+                    .collect();
+                // Cannot error: `states` is non-empty.
+                let _ = self.particles.replace_uniform(states);
+            }
+        }
+        self.phase = LocalizationPhase::Tracking;
+        self.low_fit_streak = 0;
+        report.converged_now = true;
+        if let Some(g) = self.global.as_mut() {
+            g.status.converged = Some(GlobalConvergence {
+                scored_updates,
+                travel_m,
+                spread,
+                particles_before,
+                particles_after: self.particles.len(),
+            });
+        }
     }
 
     /// The simplified kidnap recovery strategy this filter uses: each particle
@@ -750,6 +943,183 @@ mod tests {
         assert!(report.injected);
         assert_eq!(report.low_fit_streak, 0);
         assert_eq!(f.stats().injections, 1);
+    }
+
+    fn unexplainable_scan() -> Vec<RangeBearing> {
+        // Three detections at ranges and bearings no pose in the map can all produce.
+        vec![
+            RangeBearing {
+                range: 0.4,
+                bearing: 0.1,
+            },
+            RangeBearing {
+                range: 0.4,
+                bearing: 2.0,
+            },
+            RangeBearing {
+                range: 0.4,
+                bearing: -2.0,
+            },
+        ]
+    }
+
+    fn global_cfg(particles: usize) -> GlobalLocalizationConfig {
+        GlobalLocalizationConfig {
+            num_particles: particles,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn a_uniform_prior_is_free_space_and_starts_a_search() {
+        let cfg = MclConfig::default();
+        let map = square_map();
+        let mut rng = SmallRng::seed_from_u64(11);
+        let f =
+            McLocalizer::new_uniform_prior(&cfg, &global_cfg(3000), map.clone(), &mut rng).unwrap();
+        assert_eq!(f.phase(), LocalizationPhase::GlobalSearch);
+        assert_eq!(f.len(), 3000, "the search count, not the steady-state one");
+        assert_eq!(f.global_status().unwrap().converged, None);
+        let keepout = GlobalLocalizationConfig::default().landmark_keepout_m;
+        for p in f.particles.states() {
+            for l in map.landmarks() {
+                assert!((l.position.x - p.x()).hypot(l.position.y - p.y()) >= keepout);
+            }
+        }
+        // And it is a prior, not a point: the cloud covers the room.
+        let spread = f.global_status().unwrap().spread;
+        assert!(spread.sigma_xy.is_infinite(), "no scan has measured it yet");
+        let w = f.particles.weights();
+        let s = cloud_spread(f.particles.states(), &w);
+        assert!(s.sigma_xy > 1.5 && s.sigma_theta > 3.0, "{s:?}");
+    }
+
+    #[test]
+    fn an_invalid_global_configuration_is_an_error_not_a_panic() {
+        let mut rng = SmallRng::seed_from_u64(1);
+        let bad = GlobalLocalizationConfig {
+            num_particles: 0,
+            ..Default::default()
+        };
+        assert!(McLocalizer::new_uniform_prior(
+            &MclConfig::default(),
+            &bad,
+            square_map(),
+            &mut rng
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn the_kidnap_trigger_is_inert_while_searching_and_no_false_convergence_on_nonsense() {
+        let cfg = MclConfig {
+            recovery_sustained_updates: 3, // would fire quickly if it were armed
+            ..Default::default()
+        };
+        let mut rng = SmallRng::seed_from_u64(5);
+        let mut f = McLocalizer::new_uniform_prior(&cfg, &global_cfg(2000), square_map(), &mut rng)
+            .unwrap();
+        for _ in 0..60 {
+            let r = f.observe(&unexplainable_scan(), &mut rng);
+            assert!(
+                !r.injected,
+                "a search must never be reset by the kidnap trigger"
+            );
+            assert!(!r.converged_now);
+            assert_eq!(r.phase, LocalizationPhase::GlobalSearch);
+            assert_eq!(r.best_fit_median_log_likelihood, None);
+        }
+        assert_eq!(f.stats().injections, 0);
+        assert_eq!(f.phase(), LocalizationPhase::GlobalSearch);
+    }
+
+    #[test]
+    fn empty_scans_do_not_advance_a_search() {
+        let mut rng = SmallRng::seed_from_u64(5);
+        let mut f = McLocalizer::new_uniform_prior(
+            &MclConfig::default(),
+            &global_cfg(1000),
+            square_map(),
+            &mut rng,
+        )
+        .unwrap();
+        for _ in 0..50 {
+            f.observe(&[], &mut rng);
+        }
+        assert_eq!(f.global_status().unwrap().scored_updates, 0);
+        assert_eq!(f.phase(), LocalizationPhase::GlobalSearch);
+    }
+
+    /// A robot driving a circle through the middle of the four pillars, observed without
+    /// noise by every pillar at every scan. This is the easiest search there is, so what it
+    /// pins down is the plumbing (declaration, shrink, handover, the armed trigger), not how
+    /// reliable a search is; the reliability is measured by `examples/global_trials.rs`.
+    #[test]
+    fn a_search_converges_hands_over_and_re_arms_the_kidnap_trigger() {
+        let cfg = MclConfig {
+            num_particles: 1000,
+            recovery_sustained_updates: 5,
+            ..Default::default()
+        };
+        let map = square_map();
+        let mut rng = SmallRng::seed_from_u64(21);
+        let mut f =
+            McLocalizer::new_uniform_prior(&cfg, &global_cfg(6000), map.clone(), &mut rng).unwrap();
+
+        let (cx, cy, radius, step) = (0.0_f64, 0.0_f64, 0.6_f64, 0.05_f64);
+        let pose_at = |k: usize| {
+            let a = k as f64 * step / radius;
+            Se2::new(
+                cx + radius * a.cos(),
+                cy + radius * a.sin(),
+                a + std::f64::consts::FRAC_PI_2,
+            )
+        };
+        let mut previous = pose_at(0);
+        let mut converged_at = None;
+        for k in 1..400 {
+            let truth = pose_at(k);
+            f.predict(&previous, &truth, &mut rng);
+            previous = truth;
+            let z = perfect_observations(&cfg, &map, &truth);
+            let r = f.observe(&z, &mut rng);
+            if r.converged_now {
+                converged_at = Some((k, truth));
+                break;
+            }
+        }
+        let (k, truth) = converged_at.expect("the easy search should have converged");
+        assert_eq!(f.phase(), LocalizationPhase::Tracking);
+        assert_eq!(
+            f.len(),
+            cfg.num_particles,
+            "thinned to the steady-state count"
+        );
+        let conv = f.global_status().unwrap().converged.unwrap();
+        assert_eq!(conv.particles_before, 6000);
+        assert_eq!(conv.particles_after, 1000);
+        assert!(conv.travel_m > 0.0 && conv.scored_updates as usize <= k);
+        assert!(
+            f.pose().distance_to(&truth) < 0.15,
+            "converged to {:?}, truth {:?} after {k} scans",
+            f.pose(),
+            truth
+        );
+
+        // Travel is the distance of the search, so it stops counting when the search ends.
+        let frozen = f.global_status().unwrap().travel_m;
+        f.predict(&Se2::IDENTITY, &Se2::new(1.0, 0.0, 0.0), &mut rng);
+        assert_eq!(f.global_status().unwrap().travel_m, frozen);
+
+        // The kidnap trigger is armed again, with the configured persistence.
+        let mut injected = false;
+        for _ in 0..(cfg.recovery_sustained_updates + 2) {
+            injected |= f.observe(&unexplainable_scan(), &mut rng).injected;
+        }
+        assert!(
+            injected,
+            "after convergence the kidnap trigger must be live"
+        );
     }
 
     #[test]

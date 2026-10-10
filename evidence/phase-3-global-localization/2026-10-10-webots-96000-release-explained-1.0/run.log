@@ -1,0 +1,165 @@
+[2026-10-10-webots-96000-release-explained-1.0] starting the world with ground truth (release build, 20 trials, 96000 particles)
+[2026-10-10-webots-96000-release-explained-1.0] simulation is up, controllers are active
+[2026-10-10-webots-96000-release-explained-1.0] trial 0: placing the robot at (0.7158, 1.9328, 1.7362)
+[2026-10-10-webots-96000-release-explained-1.0] trial 0: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 0: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 1: placing the robot at (1.3276, -1.0044, -2.4935)
+[2026-10-10-webots-96000-release-explained-1.0] trial 1: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 1: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 2: placing the robot at (-0.7393, 1.4004, -1.4153)
+[2026-10-10-webots-96000-release-explained-1.0] trial 2: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 2: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 3: placing the robot at (-0.2882, -1.5170, 1.4631)
+[2026-10-10-webots-96000-release-explained-1.0] trial 3: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 3: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 4: placing the robot at (0.3155, -0.0676, 2.2244)
+[2026-10-10-webots-96000-release-explained-1.0] trial 4: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 4: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 5: placing the robot at (-0.5354, 1.2064, 2.7129)
+[2026-10-10-webots-96000-release-explained-1.0] trial 5: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 5: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 6: placing the robot at (0.6839, 1.6626, 0.0234)
+[2026-10-10-webots-96000-release-explained-1.0] trial 6: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 6: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 7: placing the robot at (0.4386, 0.3537, 2.1301)
+[2026-10-10-webots-96000-release-explained-1.0] trial 7: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 7: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 8: placing the robot at (-0.2391, 2.4634, 2.8068)
+[2026-10-10-webots-96000-release-explained-1.0] trial 8: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 8: category: LOST_AFTER_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 9: placing the robot at (0.1863, 0.6832, 0.6374)
+[2026-10-10-webots-96000-release-explained-1.0] trial 9: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 9: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 10: placing the robot at (-0.5000, 2.5000, 0.0000)
+[2026-10-10-webots-96000-release-explained-1.0] trial 10: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 10: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 11: placing the robot at (-0.5000, 2.5000, 1.5708)
+[2026-10-10-webots-96000-release-explained-1.0] trial 11: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 11: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 12: placing the robot at (-0.5000, 2.5000, 3.1416)
+[2026-10-10-webots-96000-release-explained-1.0] trial 12: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 12: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 13: placing the robot at (-0.5000, 2.5000, -1.5708)
+[2026-10-10-webots-96000-release-explained-1.0] trial 13: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 13: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 14: placing the robot at (0.0000, 2.5000, 0.0000)
+[2026-10-10-webots-96000-release-explained-1.0] trial 14: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 14: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 15: placing the robot at (0.0000, 2.5000, 1.5708)
+[2026-10-10-webots-96000-release-explained-1.0] trial 15: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 15: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 16: placing the robot at (0.5000, 1.5000, 0.0000)
+[2026-10-10-webots-96000-release-explained-1.0] trial 16: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 16: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 17: placing the robot at (0.5000, 2.0000, 0.0000)
+[2026-10-10-webots-96000-release-explained-1.0] trial 17: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 17: category: NO_CONVERGENCE
+[2026-10-10-webots-96000-release-explained-1.0] trial 18: placing the robot at (0.0000, 0.0000, 0.0000)
+[2026-10-10-webots-96000-release-explained-1.0] trial 18: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 18: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] trial 19: placing the robot at (0.0000, 0.0000, 3.1416)
+[2026-10-10-webots-96000-release-explained-1.0] trial 19: route_driver exited with code 0
+localization_evaluator: exit code 0
+mcl_node: exit code 0
+[2026-10-10-webots-96000-release-explained-1.0] trial 19: category: SUCCESS
+[2026-10-10-webots-96000-release-explained-1.0] all trials done, stopping the world
+ros2_launch: still alive 30 s after SIGINT
+webots_bin_left: 0
+# Summary of /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-96000-release-explained-1.0/trial-*, by scripts/phase3_global_verdict.py; no number is typed.
+run:
+  run: 2026-10-10-webots-96000-release-explained-1.0
+  date_utc: 2026-10-10T09:58:12Z
+  build: release
+  global_particles: 96000
+  steady_state_particles: 6000
+  convergence_min_explained_fraction: 1.0
+  seed_of_trial_0: 1
+  laps: 1
+  git_head: 7acd838
+  mcl_node_sha256: fa8fe386168bbff60dcdfdc4a249ef84ab773081f1d9a65d3a1d5a3a181e49d8
+  starts_sha256: 88d2b757d305f704d48782bb78275ca29c60b2d635f4ee5e2973fbaafb030fa9
+  odometry_noise: off
+  success_position_tolerance_m: 0.15
+  success_yaw_tolerance_rad: 0.15
+trials_total: 20
+trials_graded: 20
+trials_skipped_no_route: 0
+trials_invalid: 0
+outcomes:
+  SUCCESS: 11
+  WRONG_CONVERGENCE: 0
+  LOST_AFTER_CONVERGENCE: 1
+  NO_CONVERGENCE: 8
+success_rate: 0.5500
+success_rate_wilson95: [0.3421, 0.7418]
+among_successes:
+  convergence_time_s: {mean: 15.56, median: 8.08}
+  convergence_distance_m: {mean: 1.497, median: 0.643}
+  rmse_position_after_convergence_m: {mean: 0.0304, median: 0.0178}
+detector:
+  detections_per_scan_median_over_trials: 4.26
+  trials_averaging_more_than_4_detections_per_scan: 5
+trials_where_the_kidnap_trigger_fired: 2
+cost:
+  observe_ms_max_over_trials: 266.66
+  observe_ms_max_median_over_trials: 237.75
+per_trial:
+  trial-00: {start: [0.72, 1.93, 1.74], category: SUCCESS, convergence_time_s: 19.8, convergence_travel_true_m: 0.44, position_error_at_convergence_m: 0.018, yaw_error_at_convergence_rad: 0.016, final_position_error_m: 0.016}
+  trial-01: {start: [1.33, -1.00, -2.49], category: NO_CONVERGENCE, final_position_error_m: 1.042, observe_ms_max: 266.7}
+  trial-02: {start: [-0.74, 1.40, -1.42], category: SUCCESS, convergence_time_s: 24.1, convergence_travel_true_m: 3.00, position_error_at_convergence_m: 0.006, yaw_error_at_convergence_rad: 0.001, final_position_error_m: 0.010}
+  trial-03: {start: [-0.29, -1.52, 1.46], category: SUCCESS, convergence_time_s: 7.0, convergence_travel_true_m: 0.64, position_error_at_convergence_m: 0.040, yaw_error_at_convergence_rad: 0.027, final_position_error_m: 0.002, observe_ms_max: 149.6}
+  trial-04: {start: [0.32, -0.07, 2.22], category: SUCCESS, convergence_time_s: 7.2, convergence_travel_true_m: 0.24, position_error_at_convergence_m: 0.042, yaw_error_at_convergence_rad: 0.038, final_position_error_m: 0.012}
+  trial-05: {start: [-0.54, 1.21, 2.71], category: SUCCESS, convergence_time_s: 2.4, convergence_travel_true_m: 0.00, position_error_at_convergence_m: 0.055, yaw_error_at_convergence_rad: 0.020, final_position_error_m: 0.020, observe_ms_max: 105.8}
+  trial-06: {start: [0.68, 1.66, 0.02], category: SUCCESS, convergence_time_s: 35.7, convergence_travel_true_m: 4.05, position_error_at_convergence_m: 0.017, yaw_error_at_convergence_rad: 0.013, final_position_error_m: 0.002}
+  trial-07: {start: [0.44, 0.35, 2.13], category: SUCCESS, convergence_time_s: 2.2, convergence_travel_true_m: 0.00, position_error_at_convergence_m: 0.037, yaw_error_at_convergence_rad: 0.068, final_position_error_m: 0.013}
+  trial-08: {start: [-0.24, 2.46, 2.81], category: LOST_AFTER_CONVERGENCE, convergence_time_s: 11.4, convergence_travel_true_m: 0.09, position_error_at_convergence_m: 0.023, yaw_error_at_convergence_rad: 0.000, final_position_error_m: 2.470}
+  trial-09: {start: [0.19, 0.68, 0.64], category: SUCCESS, convergence_time_s: 8.1, convergence_travel_true_m: 0.85, position_error_at_convergence_m: 0.004, yaw_error_at_convergence_rad: 0.001, final_position_error_m: 0.012}
+  trial-10: {start: [-0.50, 2.50, 0.00], category: NO_CONVERGENCE, final_position_error_m: 2.218}
+  trial-11: {start: [-0.50, 2.50, 1.57], category: NO_CONVERGENCE, final_position_error_m: 2.220, observe_ms_max: 237.8}
+  trial-12: {start: [-0.50, 2.50, 3.14], category: NO_CONVERGENCE, final_position_error_m: 0.023}
+  trial-13: {start: [-0.50, 2.50, -1.57], category: NO_CONVERGENCE, final_position_error_m: 3.568}
+  trial-14: {start: [0.00, 2.50, 0.00], category: NO_CONVERGENCE, final_position_error_m: 1.776}
+  trial-15: {start: [0.00, 2.50, 1.57], category: NO_CONVERGENCE, final_position_error_m: 1.837, observe_ms_max: 258.8}
+  trial-16: {start: [0.50, 1.50, 0.00], category: SUCCESS, convergence_time_s: 29.2, convergence_travel_true_m: 2.90, position_error_at_convergence_m: 0.022, yaw_error_at_convergence_rad: 0.006, final_position_error_m: 0.002}
+  trial-17: {start: [0.50, 2.00, 0.00], category: NO_CONVERGENCE, final_position_error_m: 5.535}
+  trial-18: {start: [0.00, 0.00, 0.00], category: SUCCESS, convergence_time_s: 33.5, convergence_travel_true_m: 4.34, position_error_at_convergence_m: 0.013, yaw_error_at_convergence_rad: 0.001, final_position_error_m: 0.006, observe_ms_max: 184.9}
+  trial-19: {start: [0.00, 0.00, 3.14], category: SUCCESS, convergence_time_s: 2.0, convergence_travel_true_m: 0.00, position_error_at_convergence_m: 0.058, yaw_error_at_convergence_rad: 0.000, final_position_error_m: 0.008}
+[2026-10-10-webots-96000-release-explained-1.0] done, evidence in /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-96000-release-explained-1.0

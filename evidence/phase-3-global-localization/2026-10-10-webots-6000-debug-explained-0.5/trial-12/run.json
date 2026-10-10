@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-6000-debug-explained-0.5/trial-12/run.csv",
+  "estimates_received": 778,
+  "rows": 576,
+  "unpaired_estimates": 202,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 576, "rmse_position_m": 2.908436, "rmse_yaw_rad": 1.533499, "max_position_error_m": 3.753159, "final_position_error_m": 3.679036, "odom_only_rmse_position_m": 2.076069},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}

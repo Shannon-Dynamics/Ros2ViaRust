@@ -1,0 +1,742 @@
+header:
+  stamp:
+    sec: 232
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.71 [5.50 - 7097.10] us, StdDev: 73.59'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.94 [11.92 - 1709.83] us, StdDev: 28.95'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627806
+    nanosec: 941697692
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '205'
+  - key: detections
+    value: '753'
+  - key: published
+    value: '746'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.844'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9329'
+  - key: sigma_xy
+    value: '0.1442'
+  - key: sigma_theta
+    value: '0.0857'
+  - key: ess
+    value: '5547.2'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '205'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '25.93'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1483'
+  - key: global_sigma_theta
+    value: '0.0844'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 233
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.70 [5.50 - 7097.10] us, StdDev: 73.44'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.93 [11.92 - 1709.83] us, StdDev: 28.89'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627807
+    nanosec: 941641605
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '209'
+  - key: detections
+    value: '761'
+  - key: published
+    value: '762'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.845'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9332'
+  - key: sigma_xy
+    value: '0.1428'
+  - key: sigma_theta
+    value: '0.0849'
+  - key: ess
+    value: '5365.0'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '209'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '25.70'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1469'
+  - key: global_sigma_theta
+    value: '0.0836'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 1791627808
+    nanosec: 941658218
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '214'
+  - key: detections
+    value: '771'
+  - key: published
+    value: '779'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.845'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9335'
+  - key: sigma_xy
+    value: '0.1414'
+  - key: sigma_theta
+    value: '0.0840'
+  - key: ess
+    value: '5134.0'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '214'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '25.92'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1455'
+  - key: global_sigma_theta
+    value: '0.0828'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 234
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.69 [5.50 - 7097.10] us, StdDev: 73.28'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.92 [11.92 - 1709.83] us, StdDev: 28.83'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627809
+    nanosec: 941711719
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '218'
+  - key: detections
+    value: '779'
+  - key: published
+    value: '795'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.846'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9337'
+  - key: sigma_xy
+    value: '0.1405'
+  - key: sigma_theta
+    value: '0.0835'
+  - key: ess
+    value: '4951.9'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '218'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '25.52'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1446'
+  - key: global_sigma_theta
+    value: '0.0823'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 235
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.68 [5.50 - 7097.10] us, StdDev: 73.13'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.90 [11.92 - 1709.83] us, StdDev: 28.77'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627810
+    nanosec: 941675506
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '223'
+  - key: detections
+    value: '789'
+  - key: published
+    value: '811'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.846'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9340'
+  - key: sigma_xy
+    value: '0.1396'
+  - key: sigma_theta
+    value: '0.0829'
+  - key: ess
+    value: '4731.2'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '223'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '25.52'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1437'
+  - key: global_sigma_theta
+    value: '0.0817'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 236
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.67 [5.50 - 7097.10] us, StdDev: 72.98'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.89 [11.92 - 1709.83] us, StdDev: 28.71'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627811
+    nanosec: 941694498
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '227'
+  - key: detections
+    value: '797'
+  - key: published
+    value: '828'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.847'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9341'
+  - key: sigma_xy
+    value: '0.1391'
+  - key: sigma_theta
+    value: '0.0826'
+  - key: ess
+    value: '4562.9'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '227'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '25.83'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1431'
+  - key: global_sigma_theta
+    value: '0.0814'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 237
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.66 [5.50 - 7097.10] us, StdDev: 72.82'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.88 [10.94 - 1709.83] us, StdDev: 28.65'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627812
+    nanosec: 941713452
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '232'
+  - key: detections
+    value: '807'
+  - key: published
+    value: '844'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-2.847'
+  - key: y
+    value: '-2.547'
+  - key: theta
+    value: '-1.9342'
+  - key: sigma_xy
+    value: '0.1385'
+  - key: sigma_theta
+    value: '0.0823'
+  - key: ess
+    value: '4362.3'
+  - key: predictions
+    value: '1567'
+  - key: scored_updates
+    value: '232'
+  - key: resamples
+    value: '44'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '24.85'
+  - key: observe_ms_max
+    value: '102.17'
+  - key: global_sigma_xy
+    value: '0.1426'
+  - key: global_sigma_theta
+    value: '0.0811'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.595'
+---
+header:
+  stamp:
+    sec: 238
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 46.65 [5.50 - 7097.10] us, StdDev: 72.68'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 31.87 [10.94 - 1709.83] us, StdDev: 28.59'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---

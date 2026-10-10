@@ -1,0 +1,29 @@
+# Global localization trial verdict for /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-seed101-6000-debug-explained-0.5/trial-06, by scripts/phase3_global_verdict.py.
+trial:
+  directory: trial-06
+  start: [0.684, 1.663, 0.023]
+  injections: 1
+  global_particles: 6000
+  robot_displacement_m: 1.6614
+  samples: 782
+  final_position_error_m: 1.6947
+  final_yaw_error_rad: 1.5538
+  diagnostics_captured: True
+  observe_ms_last: 73.2000
+  observe_ms_max: 136.5200
+  scans: 248
+  detections: 1088
+  particles: 6000
+  convergence_time_s: 26.7000
+  convergence_scored_updates: 123
+  convergence_travel_odom_m: 2.7720
+  convergence_sigma_xy_m: 0.0186
+  convergence_sigma_theta_rad: 0.0108
+  particles_before: 6000
+  particles_after: 6000
+  convergence_travel_true_m: 2.7680
+  position_error_at_convergence_m: 2.3360
+  yaw_error_at_convergence_rad: 3.1301
+  rmse_position_after_convergence_m: 1.8219
+  max_position_error_after_convergence_m: 2.4748
+  category: WRONG_CONVERGENCE

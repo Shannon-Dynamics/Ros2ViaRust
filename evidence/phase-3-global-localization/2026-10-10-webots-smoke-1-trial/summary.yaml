@@ -1,0 +1,53 @@
+# Summary of /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-smoke-1-trial/trial-*, by scripts/phase3_global_verdict.py; no number is typed.
+run:
+  run: 2026-10-10-webots-smoke-1-trial
+  date_utc: 2026-10-10T09:16:35Z
+  build: debug
+  global_particles: 6000
+  steady_state_particles: 6000
+  convergence_min_explained_fraction: 0.5
+  seed_of_trial_0: 1
+  laps: 1
+  git_head: unknown
+  mcl_node_sha256: 32c8017a6bc52a159df6498cf5a112b67bb9c2d9b37c6a59251f7a6b4f30e409
+  starts_sha256: ec60c68b2e1f191b2edb6dfea69589a0c33cad235e6e8fba42d9e6d17ef4ade6
+  odometry_noise: off
+  success_position_tolerance_m: 0.15
+  success_yaw_tolerance_rad: 0.15
+trials_total: 1
+trials_graded: 1
+trials_skipped_no_route: 0
+trials_invalid: 0
+outcomes:
+  SUCCESS: 1
+  WRONG_CONVERGENCE: 0
+  LOST_AFTER_CONVERGENCE: 0
+  NO_CONVERGENCE: 0
+correct_at_end_of_route:
+  total: 1
+  among_SUCCESS: 1
+  among_WRONG_CONVERGENCE: 0
+  among_LOST_AFTER_CONVERGENCE: 0
+  among_NO_CONVERGENCE: 0
+success_rate: 1.0000
+success_rate_wilson95: [0.2065, 1.0000]
+among_successes:
+  convergence_time_s: {mean: 16.18, median: 16.18}
+  convergence_distance_m: {mean: 1.590, median: 1.590}
+  rmse_position_after_convergence_m: {mean: 0.0265, median: 0.0265}
+detector:
+  trials_with_a_diagnostics_reading: 1
+  detections_per_scan_median_over_those_trials: 4.64
+  trials_averaging_more_than_4_detections_per_scan: 1
+trials_where_the_kidnap_trigger_fired: 0
+kidnap_injections:
+  total: 0
+  false_estimate_was_already_correct: 0
+  true_estimate_was_wrong: 0
+  ungraded_log_has_no_stamp: 0
+  trials_with_a_false_injection: 0
+cost:
+  observe_ms_max_over_trials: 200.50
+  observe_ms_max_median_over_trials: 200.50
+per_trial:
+  trial-00: {start: [0.72, 1.93, 1.74], category: SUCCESS, correct_at_end_of_route: True, convergence_time_s: 16.2, convergence_travel_true_m: 1.59, position_error_at_convergence_m: 0.055, yaw_error_at_convergence_rad: 0.028, final_position_error_m: 0.023, observe_ms_max: 200.5}

@@ -1,0 +1,22 @@
+# Rotational symmetry of sim/webots/config/landmarks.yaml, by scripts/phase3_map_symmetry.py.
+# worst_m is the largest distance a rotated landmark lands from the landmark it is
+# matched to; compare it with the association gate (about 0.15 m at sigma 0.05 m).
+landmarks:
+  landmark_a: [1.8, 1.2]
+  landmark_b: [-1.4, 2.0]
+  landmark_c: [-2.0, -1.0]
+  landmark_d: [0.9, -2.1]
+landmark_centroid: [-0.1750, 0.0250]
+rotations:
+  90:
+    about_origin: {worst_m: 0.424, rms_m: 0.332}
+    about_landmark_centroid: {worst_m: 0.304, rms_m: 0.218}
+    best_centre: {x: -0.13, y: 0.03, worst_m: 0.260, rms_m: 0.227, matching: ['landmark_b', 'landmark_c', 'landmark_d', 'landmark_a']}
+  180:
+    about_origin: {worst_m: 0.510, rms_m: 0.412}
+    about_landmark_centroid: {worst_m: 0.212, rms_m: 0.212}
+    best_centre: {x: -0.18, y: 0.03, worst_m: 0.213, rms_m: 0.213, matching: ['landmark_c', 'landmark_d', 'landmark_a', 'landmark_b']}
+  270:
+    about_origin: {worst_m: 0.424, rms_m: 0.332}
+    about_landmark_centroid: {worst_m: 0.304, rms_m: 0.218}
+    best_centre: {x: -0.13, y: 0.03, worst_m: 0.260, rms_m: 0.227, matching: ['landmark_d', 'landmark_a', 'landmark_b', 'landmark_c']}

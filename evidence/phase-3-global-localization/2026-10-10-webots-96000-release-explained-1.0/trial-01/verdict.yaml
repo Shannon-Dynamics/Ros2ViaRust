@@ -1,0 +1,21 @@
+# Global localization trial verdict for /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-96000-release-explained-1.0/trial-01, by scripts/phase3_global_verdict.py.
+trial:
+  directory: trial-01
+  start: [1.328, -1.004, -2.494]
+  injections: 0
+  global_particles: 96000
+  robot_displacement_m: 1.1628
+  samples: 161
+  final_position_error_m: 1.0416
+  final_yaw_error_rad: 3.1385
+  diagnostics_captured: True
+  observe_ms_last: 86.0600
+  observe_ms_max: 266.6600
+  scans: 211
+  detections: 866
+  particles: 96000
+  correct_at_end_of_route: False
+  injections_false: 0
+  injections_true: 0
+  injections_ungraded: 0
+  category: NO_CONVERGENCE

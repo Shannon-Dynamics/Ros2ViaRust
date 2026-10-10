@@ -1,0 +1,21 @@
+# Global localization trial verdict for /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-smoke-final-harness/trial-00, by scripts/phase3_global_verdict.py.
+trial:
+  directory: trial-00
+  start: [0.716, 1.933, 1.736]
+  injections: 0
+  global_particles: 6000
+  robot_displacement_m: 1.6637
+  samples: 739
+  final_position_error_m: 2.9949
+  final_yaw_error_rad: 1.5418
+  diagnostics_captured: True
+  observe_ms_last: 62.6300
+  observe_ms_max: 117.3500
+  scans: 218
+  detections: 998
+  particles: 6000
+  correct_at_end_of_route: False
+  injections_false: 0
+  injections_true: 0
+  injections_ungraded: 0
+  category: NO_CONVERGENCE

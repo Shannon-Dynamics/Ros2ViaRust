@@ -1,0 +1,12 @@
+date_utc: 2026-10-10T09:09:36Z
+host: LAPTOP-HJL1R3P6
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+binary_sha256: 7a1253f52264afeabb0b8a8c1a89e5902499945cc41cb06c1e0c0d9ec1d27736
+map_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+git_head: unknown
+PARTICLES: 6000 48000 96000
+TRIALS: 100
+SEED: 1
+STARTS: random
+extra_flags: --starts-seed 2000 --explained-fraction 1.0

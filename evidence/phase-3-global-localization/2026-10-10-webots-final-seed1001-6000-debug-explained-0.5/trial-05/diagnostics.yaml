@@ -1,0 +1,66 @@
+header:
+  stamp:
+    sec: 1791633633
+    nanosec: 638241615
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '213'
+  - key: detections
+    value: '901'
+  - key: published
+    value: '777'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-0.489'
+  - key: y
+    value: '1.189'
+  - key: theta
+    value: '2.6649'
+  - key: sigma_xy
+    value: '0.0043'
+  - key: sigma_theta
+    value: '0.0034'
+  - key: ess
+    value: '5876.0'
+  - key: predictions
+    value: '1664'
+  - key: scored_updates
+    value: '213'
+  - key: resamples
+    value: '67'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '106.52'
+  - key: observe_ms_max
+    value: '176.72'
+  - key: global_sigma_xy
+    value: '0.0114'
+  - key: global_sigma_theta
+    value: '0.0067'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.700'
+  - key: global_converged_at_s
+    value: '284.180'
+---

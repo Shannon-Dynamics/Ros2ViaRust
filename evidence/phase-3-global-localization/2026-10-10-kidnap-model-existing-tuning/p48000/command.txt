@@ -1,0 +1,1 @@
+/home/genta/ros2-rust-robotics/target/release/examples/global_trials kidnap --map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml --steady 48000 --trials 200 --seed 1 --label 2026-10-10-kidnap-model-existing-tuning-p48000 --out /mnt/d/shannon/ROS2\ via\ RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-kidnap-model-existing-tuning/p48000 

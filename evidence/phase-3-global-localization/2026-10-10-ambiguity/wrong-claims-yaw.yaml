@@ -1,0 +1,24 @@
+# By scripts/phase3_wrong_claim_analysis.py; no number here is typed.
+tolerance_rad: 0.3
+model_level:
+  wrong_claims_pooled: 338
+  within_tolerance_of_a_half_turn: 200
+  within_tolerance_of_a_quarter_turn: 134
+  neither: 4
+  fraction_rotated_twins: 0.9882
+  runs_contributing:
+    2026-10-10-confirm-fresh-starts-explained-0.5: 111
+    2026-10-10-confirm-fresh-starts-explained-1.0: 66
+    2026-10-10-sweep-particles-default-criterion: 71
+    2026-10-10-sweep-particles-explained-0.51: 58
+    2026-10-10-sweep-particles-explained-1.0: 29
+    2026-10-10-sweep-particles-large-default-criterion: 2
+    2026-10-10-sweep-particles-large-explained-1.0: 1
+webots_final:
+  wrong_claims_pooled: 5
+  within_tolerance_of_a_half_turn: 3
+  within_tolerance_of_a_quarter_turn: 2
+  neither: 0
+  fraction_rotated_twins: 1.0000
+  runs_contributing:
+    2026-10-10-webots-final-seed1001-6000-debug-explained-0.5: 5

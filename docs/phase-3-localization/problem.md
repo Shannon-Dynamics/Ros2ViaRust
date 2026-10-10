@@ -103,5 +103,73 @@ The structure stays conventional (REP 105): the localization result corrects `ma
 and never touches `odom -> base_link`, so a consumer that wants continuity reads `odom` and
 a consumer that wants global accuracy reads `map`.
 
+## 6. P2 has two halves, and the second one is harder
+
+Section 3 folds two problems into P2 and they are not the same problem.
+
+**P2b, the kidnapped robot.** The filter *had* a good belief and it was invalidated. It has
+something to notice (the scans stop fitting) and a place to start from (the old belief, which
+it can throw away). [benchmark.md](benchmark.md) section 6 is about this.
+
+**P2a, global localization from nothing.** The filter never had a belief. The starting
+distribution is uniform over the free space of the room and over every heading,
+
+```text
+bel(x_0) = Uniform(F x (-pi, pi]),    F = the room minus a disc around every pillar
+```
+
+where each disc has the radius of a pillar plus the robot's footprint, because those are
+poses the robot cannot be in. There is no occupancy grid yet (Phase 4), so `F` is the room
+square minus those discs, and "uniform over the free cells" is the continuous version of it.
+Nothing signals that the filter is lost, because there is nothing to be lost from: the cloud
+starts as wide as it can be and has to narrow onto the truth from the scans and the motion
+alone.
+
+What makes it hard here is the map. The four pillars are identical, so the filter has to
+solve the correspondence problem as well as the localization problem (which detection is
+which pillar is not given), and they are close to rotationally symmetric about the middle of
+the room. [`scripts/phase3_map_symmetry.py`](../../scripts/phase3_map_symmetry.py) measures
+how close, from the map file: its output is
+[`map-symmetry.yaml`](../../evidence/phase-3-global-localization/2026-10-10-ambiguity/map-symmetry.yaml).
+A rotated copy of the map lands each pillar within a few tenths of a metre of a pillar, which
+is within a factor of two of the association gate, so a pose rotated by a quarter or half
+turn can explain a scan with only a subset of the pillars well enough to pass.
+[`global_trials ambiguity`](../../crates/robotics_localization/examples/global_trials.rs)
+ranks start poses by how many separate regions of pose space explain one static scan from
+them; the ranking is
+[`ambiguity.csv`](../../evidence/phase-3-global-localization/2026-10-10-ambiguity/ambiguity.csv).
+It is a relative ranking, not a count of hypotheses: the pose grid fragments a ring of
+poses into pieces, so read its order and not its magnitudes.
+
+### What counts as solved
+
+Global localization is not solved by "the estimate ended up near the truth": a filter that
+is wrong and says so is a different thing from one that is wrong and says it is converged.
+So a trial has a *claim*, the filter's own declaration of convergence
+([theory.md](theory.md) section 8 and `crates/robotics_localization/src/global.rs` define
+exactly when it is made), and it is graded against ground truth the filter never sees:
+
+| Outcome | Meaning |
+|---|---|
+| `SUCCESS` | a claim was made, the pose was within 0.15 m and 0.15 rad of the truth when it was made, and still was at the end of the route |
+| `WRONG_CONVERGENCE` | a claim was made and the pose was not within tolerance: the filter was confident and wrong |
+| `LOST_AFTER_CONVERGENCE` | a correct claim that the filter later lost |
+| `NO_CONVERGENCE` | no claim was made by the end of the route |
+
+The tolerances are those of the kidnap verdict
+([`phase3_kidnap_verdict.py`](../../scripts/phase3_kidnap_verdict.py)), so P2a and P2b are
+graded by one yardstick. `WRONG_CONVERGENCE` is the dangerous outcome for a robot that acts on
+the claim, and the reason the criterion has a knob that trades it for `NO_CONVERGENCE`. The
+reported metrics are the success rate over repeated trials with its 95 per cent Wilson
+interval, and, among the successes, the time and the distance driven from the first scan to
+the claim and the position RMSE after it. They are in [benchmark.md](benchmark.md) section 7,
+generated from the evidence, not typed.
+
+A trial is repeated from many start poses, because the outcome of one is a draw: the particles
+are random, and so is how many of them start near the truth. The start poses come in three
+kinds, all recorded as files next to the results: a development set used to choose settings, a
+fresh set that played no part in choosing, and a set picked by the ambiguity ranking and the
+map's symmetry, which is where a wrong-but-plausible hypothesis is most likely to survive.
+
 Continue with [theory.md](theory.md), then [ros-graph.md](ros-graph.md) for where the node
 sits in the ROS 2 graph.

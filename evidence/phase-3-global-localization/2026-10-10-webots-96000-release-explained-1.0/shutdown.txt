@@ -1,0 +1,2 @@
+ros2_launch: still alive 30 s after SIGINT
+webots_bin_left: 0

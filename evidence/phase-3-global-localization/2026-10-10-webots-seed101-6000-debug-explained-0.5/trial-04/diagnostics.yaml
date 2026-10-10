@@ -1,0 +1,784 @@
+header:
+  stamp:
+    sec: 1791627870
+    nanosec: 403743536
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '206'
+  - key: detections
+    value: '953'
+  - key: published
+    value: '744'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-0.863'
+  - key: y
+    value: '-0.016'
+  - key: theta
+    value: '-2.5573'
+  - key: sigma_xy
+    value: '0.0000'
+  - key: sigma_theta
+    value: '0.0000'
+  - key: ess
+    value: '5530.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '206'
+  - key: resamples
+    value: '51'
+  - key: injections
+    value: '1'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '150.36'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '288.320'
+---
+header:
+  stamp:
+    sec: 292
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.96 [5.50 - 304652.40] us, StdDev: 2532.04'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.10 [10.94 - 1709.83] us, StdDev: 26.47'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627871
+    nanosec: 381659124
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '210'
+  - key: detections
+    value: '973'
+  - key: published
+    value: '762'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '-0.863'
+  - key: y
+    value: '-0.016'
+  - key: theta
+    value: '-2.5573'
+  - key: sigma_xy
+    value: '0.0000'
+  - key: sigma_theta
+    value: '0.0000'
+  - key: ess
+    value: '5530.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '210'
+  - key: resamples
+    value: '51'
+  - key: injections
+    value: '1'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '141.98'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '288.320'
+---
+header:
+  stamp:
+    sec: 293
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.92 [5.50 - 304652.40] us, StdDev: 2527.68'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.12 [10.94 - 1709.83] us, StdDev: 26.44'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627872
+    nanosec: 432464768
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '215'
+  - key: detections
+    value: '998'
+  - key: published
+    value: '777'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.279'
+  - key: y
+    value: '0.013'
+  - key: theta
+    value: '0.6100'
+  - key: sigma_xy
+    value: '0.0003'
+  - key: sigma_theta
+    value: '0.0011'
+  - key: ess
+    value: '5399.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '215'
+  - key: resamples
+    value: '52'
+  - key: injections
+    value: '2'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '141.24'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '292.700'
+---
+header:
+  stamp:
+    sec: 294
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.87 [5.50 - 304652.40] us, StdDev: 2523.35'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.13 [10.94 - 1709.83] us, StdDev: 26.40'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627873
+    nanosec: 381645907
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '219'
+  - key: detections
+    value: '1018'
+  - key: published
+    value: '795'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.279'
+  - key: y
+    value: '0.013'
+  - key: theta
+    value: '0.6100'
+  - key: sigma_xy
+    value: '0.0000'
+  - key: sigma_theta
+    value: '0.0000'
+  - key: ess
+    value: '5399.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '219'
+  - key: resamples
+    value: '52'
+  - key: injections
+    value: '2'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '136.72'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '292.700'
+---
+header:
+  stamp:
+    sec: 295
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.80 [5.50 - 304652.40] us, StdDev: 2519.03'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.13 [10.94 - 1709.83] us, StdDev: 26.36'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627874
+    nanosec: 438395216
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '224'
+  - key: detections
+    value: '1043'
+  - key: published
+    value: '810'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.279'
+  - key: y
+    value: '0.013'
+  - key: theta
+    value: '0.6100'
+  - key: sigma_xy
+    value: '0.0000'
+  - key: sigma_theta
+    value: '0.0000'
+  - key: ess
+    value: '5399.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '224'
+  - key: resamples
+    value: '52'
+  - key: injections
+    value: '2'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '138.97'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '292.700'
+---
+header:
+  stamp:
+    sec: 296
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.74 [5.50 - 304652.40] us, StdDev: 2514.74'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.16 [10.94 - 1709.83] us, StdDev: 26.35'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627875
+    nanosec: 381642864
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '228'
+  - key: detections
+    value: '1063'
+  - key: published
+    value: '827'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.279'
+  - key: y
+    value: '0.013'
+  - key: theta
+    value: '0.6100'
+  - key: sigma_xy
+    value: '0.0000'
+  - key: sigma_theta
+    value: '0.0000'
+  - key: ess
+    value: '5399.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '228'
+  - key: resamples
+    value: '52'
+  - key: injections
+    value: '2'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '139.07'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '292.700'
+---
+header:
+  stamp:
+    sec: 297
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.70 [5.50 - 304652.40] us, StdDev: 2510.47'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.19 [10.94 - 1709.83] us, StdDev: 26.45'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791627876
+    nanosec: 464724960
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '233'
+  - key: detections
+    value: '1088'
+  - key: published
+    value: '843'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.279'
+  - key: y
+    value: '0.013'
+  - key: theta
+    value: '0.6100'
+  - key: sigma_xy
+    value: '0.0000'
+  - key: sigma_theta
+    value: '0.0000'
+  - key: ess
+    value: '5399.0'
+  - key: predictions
+    value: '1511'
+  - key: scored_updates
+    value: '233'
+  - key: resamples
+    value: '52'
+  - key: injections
+    value: '2'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '132.48'
+  - key: observe_ms_max
+    value: '604.51'
+  - key: global_sigma_xy
+    value: '0.0075'
+  - key: global_sigma_theta
+    value: '0.0073'
+  - key: global_streak
+    value: '10'
+  - key: global_travel_odom_m
+    value: '0.683'
+  - key: global_converged_at_s
+    value: '254.220'
+  - key: last_injected_at_s
+    value: '292.700'
+---
+header:
+  stamp:
+    sec: 298
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 67.64 [5.50 - 304652.40] us, StdDev: 2506.22'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 32.20 [10.94 - 1709.83] us, StdDev: 26.41'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---

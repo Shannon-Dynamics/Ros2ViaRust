@@ -24,9 +24,12 @@
 #   E  the topics actually publish                       (5 checks)
 #   F  the TF tree is complete, map -> odom -> base_link -> sensors  (10 checks)
 #   G  localization_node (EKF) behaves and reports     (8 checks)
-#   H  mcl_node (MCL) behaves and reports              (7 checks)
+#   H  mcl_node (MCL) behaves and reports              (11 checks)
 #   I  route_driver drives and the robot moves         (6 checks)
+#   K  global localization from a uniform prior        (11 checks)
 #   J  the stack shuts down and leaves nothing behind  (5 checks)
+#
+# (K runs before J, which is the shutdown, so that it can use the stack that is still up.)
 #
 # Evidence is written to the output directory, which defaults to
 # <EVIDENCE_ROOT>/phase-3-localization-runtime/<date>, never to /tmp: WSL clears /tmp when
@@ -349,6 +352,36 @@ check_match "H6  particles.count matches McLocalizer's documented default" \
     "particles.count:.*Integer value is: 6000" "$OUT/params_mcl.txt"
 check_match "H7  topics.odom points at the odometry the simulator publishes" \
     "topics.odom:.*String value is: /?odom$" "$OUT/params_mcl.txt"
+# The default start is the known pose: the global localization mode must be opt-in, so a
+# launch that never mentions it behaves exactly as it did before the mode existed.
+{
+    for prm in initial_pose.mode global.particles global.convergence_sigma_xy; do
+        printf '%s: ' "$prm"; ros2 param get /mcl_node "$prm"
+    done
+} >> "$OUT/params_mcl.txt" 2>&1
+check_match "H8  initial_pose.mode defaults to known (global localization is opt-in)" \
+    "initial_pose.mode:.*String value is: known" "$OUT/params_mcl.txt"
+check_block_match "H9  the default node reports initial_pose_mode known" \
+    "key: initial_pose_mode" "value: known" "$OUT/diagnostics_mcl.yaml"
+check_block_match "H10 the default node reports phase tracking" \
+    "key: phase" "value: tracking" "$OUT/diagnostics_mcl.yaml"
+check_match "H11 it reports what one update costs (observe_ms_max)" \
+    "key: observe_ms_max" "$OUT/diagnostics_mcl.yaml"
+
+# A second MCL, started from a uniform prior, driven by the same route as the first. Its
+# own checks are section K, after the route has run; it is started here so that it sees
+# the whole drive. Different node name and pose topic so the two do not collide, and it
+# publishes no TF, so there is still exactly one owner of map -> odom.
+GLOBAL_PARTICLES=3000
+# setsid, like the launch above: a plain background job of a non-interactive shell has SIGINT
+# ignored, so `kill -INT` of it does nothing and the `wait` that follows blocks forever. That
+# is how the first run of section K hung after K10. In its own session the process group can
+# be signalled, and `ros2 run` is a wrapper whose child is the node.
+setsid ros2 run robotics_localization_bridge mcl_node --ros-args -r __node:=mcl_global \
+    -p "map_file:=$MAP" -p topics.pose:=mcl_global/pose \
+    -p initial_pose.mode:=uniform_prior -p global.particles:=$GLOBAL_PARTICLES \
+    > "$OUT/mcl_global_node.log" 2>&1 &
+MCL_GLOBAL_PID=$!
 
 # ----------------------------------------------------------------- I: route_driver
 section "I: route_driver drives and the robot moves"
@@ -373,6 +406,70 @@ else
 fi
 check_match "I6  the robot reached the waypoints of the route" \
     "route .*finished|waypoint 3/3" "$OUT/route_driver.log"
+
+# ----------------------------------------------------------------- K: global localization
+section "K: global localization from a uniform prior"
+# What can be asserted about a search that has no ground truth to be graded against here:
+# that it started where it should, that it is internally consistent, and that it does not
+# misuse the kidnap trigger. Whether it finds the right pose is not a check, it is an
+# experiment (scripts/run_phase3_global_trials.sh), and a smoke route of 1.6 m is not one.
+check "K1  the uniform-prior node is in the node list" has_node /mcl_global
+check "K2  it publishes its own pose topic" has_topic /mcl_global/pose
+timeout 20 ros2 topic echo /diagnostics > "$OUT/diagnostics_global.yaml" 2>&1
+python3 - "$OUT/diagnostics_global.yaml" > "$OUT/global_status.txt" <<'PYEOF2'
+import sys, yaml
+want = {}
+for doc in yaml.safe_load_all(open(sys.argv[1])):
+    for st in (doc or {}).get("status", []):
+        vals = {v["key"]: v["value"] for v in st.get("values", [])}
+        if vals.get("initial_pose_mode") == "uniform_prior":
+            want = dict(vals, _message=st["message"])
+for k, v in sorted(want.items()):
+    print(f"{k}={v}")
+PYEOF2
+check_match "K3  its status reports initial_pose_mode uniform_prior" \
+    "^initial_pose_mode=uniform_prior" "$OUT/global_status.txt"
+check_match "K4  it holds the particle count it was asked for" \
+    "^particles=$GLOBAL_PARTICLES$" "$OUT/global_status.txt"
+# Internal consistency: searching <=> phase global_search <=> no convergence stamp, and
+# converged <=> phase tracking <=> a convergence stamp. Both outcomes are legitimate for a
+# 1.6 m route; an inconsistent mixture is not.
+if grep -q "^phase=global_search" "$OUT/global_status.txt"; then
+    check_match "K5  searching: the status says SEARCHING" \
+        "^_message=SEARCHING" "$OUT/global_status.txt"
+    refute "K6  searching: no convergence has been claimed" \
+        grep -q "^global_converged_at_s=" "$OUT/global_status.txt"
+else
+    check_match "K5  converged: the phase is tracking and the status is not SEARCHING" \
+        "^phase=tracking" "$OUT/global_status.txt"
+    check_match "K6  converged: a convergence stamp was reported" \
+        "^global_converged_at_s=" "$OUT/global_status.txt"
+fi
+check_match "K7  the kidnap trigger never fired during the search (injections=0)" \
+    "^injections=0$" "$OUT/global_status.txt"
+check_match "K8  it reports the cloud spread it judges convergence by" \
+    "^global_sigma_xy=" "$OUT/global_status.txt"
+ros2 topic info -v /tf > "$OUT/tf_publishers_global.txt" 2>&1
+refute "K9  the uniform-prior node is not a publisher on /tf either" \
+    bash -c "awk '/Publisher count:/,/Subscription count:/' '$OUT/tf_publishers_global.txt' | grep -q mcl_global"
+# A mode that does not exist is an error, not a silent fall-back to the default.
+timeout 20 ros2 run robotics_localization_bridge mcl_node --ros-args -r __node:=mcl_bogus \
+    -p "map_file:=$MAP" -p initial_pose.mode:=bogus > "$OUT/mcl_bogus_mode.log" 2>&1
+BOGUS_RC=$?
+if [ "$BOGUS_RC" != 0 ] && [ "$BOGUS_RC" != 124 ] && grep -q "initial_pose.mode must be" "$OUT/mcl_bogus_mode.log"; then
+    ok "K10 an unknown initial_pose.mode is rejected with a message"
+else
+    bad "K10 an unknown initial_pose.mode is rejected with a message"
+fi
+kill -INT -- -"$MCL_GLOBAL_PID" 2>/dev/null
+for _ in $(seq 1 20); do kill -0 "$MCL_GLOBAL_PID" 2>/dev/null || break; sleep 1; done
+if kill -0 "$MCL_GLOBAL_PID" 2>/dev/null; then
+    kill -9 -- -"$MCL_GLOBAL_PID" 2>/dev/null
+    bad "K11 the uniform-prior node exits on SIGINT"
+else
+    ok "K11 the uniform-prior node exits on SIGINT"
+fi
+wait "$MCL_GLOBAL_PID" 2>/dev/null
 
 # ----------------------------------------------------------------- J: shutdown
 section "J: the stack shuts down and leaves nothing behind"

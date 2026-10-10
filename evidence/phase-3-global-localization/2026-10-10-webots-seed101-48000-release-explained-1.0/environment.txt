@@ -1,0 +1,23 @@
+run: 2026-10-10-webots-seed101-48000-release-explained-1.0
+date_utc: 2026-10-10T10:34:01Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.40.1-microsoft-standard-WSL2
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+ros_distro: jazzy
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+build: release
+mcl_node_sha256: fa8fe386168bbff60dcdfdc4a249ef84ab773081f1d9a65d3a1d5a3a181e49d8
+map_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+starts_file: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-starts/starts-webots-20.csv
+starts_sha256: 
+trials: 0
+global_particles: 48000
+steady_state_particles: 6000
+convergence_min_explained_fraction: 1.0
+seed_of_trial_0: 101
+laps: 1
+git_head: unknown
+odometry_noise: off

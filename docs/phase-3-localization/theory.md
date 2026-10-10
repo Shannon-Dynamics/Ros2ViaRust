@@ -228,3 +228,131 @@ simulator produced.
 | sensor model | beam versus likelihood field | [implementation.md](implementation.md), measured in [benchmark.md](benchmark.md) |
 | map source | the four pillars as landmarks now, an occupancy grid after Phase 4 | [implementation.md](implementation.md) |
 | node interface | topics, frames, parameters | [ros-graph.md](ros-graph.md) |
+
+## 8. Global localization from a uniform prior
+
+Sections 3 and 4 describe a filter that is given a good belief and has to keep it, or to
+notice that it has lost it. This section is about a filter that is given none.
+
+### The prior, and what it costs
+
+Draw `M` particles from `Uniform(F x (-pi, pi])`, `F` being the free space of the room (the
+room minus a disc around each pillar, see [problem.md](problem.md) section 6). That is a
+uniform draw over a volume `V_prior = area(F) * 2 pi` in `(x, y, theta)`. After the first
+scans the posterior is concentrated on a region of volume `V_post`: the poses from which the
+detected pillars would have been seen at the ranges and bearings they were, to within the
+measurement noise. The number of particles that start inside it is Poisson with mean
+
+```text
+lambda = M * V_post / V_prior
+```
+
+and the chance that *no* particle starts inside it is `exp(-lambda)`. That is the whole
+difficulty of global localization with a sampled belief, and it explains the shape of the
+results before any simulation is run. `V_post` is small: the range and bearing noise is a few
+centimetres and a few hundredths of a radian, and a pose has to match all of them at once.
+`V_prior` is not: it is a room's worth of area times a full turn of heading. So `lambda` is
+small for the particle counts that are comfortable to run, and when it is small the posterior
+region is empty of particles, and the filter does not narrow onto it. It narrows onto whatever
+*does* have particles and happens to explain the scan.
+
+Resampling then makes this permanent. Low-variance resampling keeps a particle in proportion
+to its weight, so a hypothesis with no particle cannot come back, and a hypothesis with a few
+is amplified into the whole cloud. This is *particle deprivation*, and it is why the failure
+that matters is not "the filter diverged" but "the filter collapsed, confidently, onto a
+hypothesis that was available and not the one that was true". More motion helps only if there
+is something in the cloud for the new scans to select.
+
+Two things change `V_post`, and so how many particles a start needs. The number of pillars in
+view: one pillar fixes the pose to a ring (range and bearing to one known point is a
+one-dimensional family), four fix it to a point, so a start that sees one pillar has a much
+larger `V_post` than one that sees four, and a larger `V_post` is *easier* to hit but leaves
+the ambiguity to be resolved by motion. And the unknown correspondence: the filter does not
+know which pillar a detection is, so it associates each detection to whichever pillar
+explains it best for the particle under test (`McLocalizer::best_landmark_log_likelihood`,
+Thrun Table 8.2's maximum likelihood association), and the posterior has a region for every
+assignment that fits. Those are what the symmetry of the map multiplies.
+
+The measured success rate is therefore not a property of the filter alone: it is a
+property of the filter *and a count*. [benchmark.md](benchmark.md) section 7 reports the
+success rate at each particle count tried, and the shape is the one this section predicts,
+a rate that rises with `M`. It does not rise as `1 - exp(-M / M0)` with one `M0`, because the
+starts are not alike: each one has its own `V_post`, and the aggregate is a mixture of
+exponentials with different `M0`.
+
+### Why the kidnap trigger has to be off during a search
+
+The tracking filter's trigger (section 4 and `McLocalizer::observe`) fires when the best
+particle's upper-median fit stays below the gate for a number of consecutive scans, and
+responds by throwing the cloud away and starting again from a uniform draw. Both halves of
+that are wrong for a search. A search starts with a cloud that, by construction, explains
+very little yet; firing on it would reset a cloud that is doing what it should, over and
+over. And the reset *is* a uniform draw, which is what the search already is. So while the
+filter is in `LocalizationPhase::GlobalSearch` the trigger is inert and its statistic is not
+even computed. When the search converges the filter becomes an ordinary tracking filter and
+the trigger is armed again, with its tuning exactly as it was.
+
+This is a statement about *when the trigger runs*, not a change to it, and the unit test
+`a_search_converges_hands_over_and_re_arms_the_kidnap_trigger` checks both sides: no
+injections during the search, injections after it.
+
+### The convergence criterion
+
+A sampled belief has no flag that says it has found the answer, and nothing outside the
+filter can supply one without being told the answer. So the filter judges itself from its own
+cloud, and the judgement is a claim that can be wrong. The claim is made on the first scan at
+which, for `convergence_sustained_scans` scored scans in a row,
+
+1. the cloud's RMS position spread `sigma_xy = sqrt(var x + var y)` is below
+   `convergence_sigma_xy_m`;
+2. the cloud's circular heading spread `sigma_theta = sqrt(-2 ln R)`, with `R` the mean
+   resultant length of the weighted headings, is below `convergence_sigma_theta_rad`;
+3. the cloud's weighted mean pose explains at least `convergence_min_explained_fraction` of
+   the scan's detections, a detection being explained if some pillar fits it with a per-
+   observation log likelihood above the same threshold the kidnap trigger uses.
+
+Position spread is the root of the *trace*, not one axis, so a cloud stretched along a ring
+(what one visible pillar leaves) is not taken for a tight one. Heading spread is circular
+because a linear deviation about a circular mean is wrong for a cloud that straddles `+-pi`
+and for one holding two opposite headings. The third condition ties the claim to the
+sensor, so that a tight cloud that the laser disagrees with is not a claim.
+
+The two spread limits are one third of the tolerance the experiments grade success against,
+so that a cloud meeting them has, to three standard deviations, a mean inside the tolerance.
+They were fixed from that argument and from the filter's steady-state tracking spread
+(`global.rs` says which file and which columns to read), and were not tuned to the
+results.
+
+The third condition has a strictness, and the results are why it is a parameter. The first
+version was the upper median of the per-observation scores at the mean, the rule the kidnap
+trigger uses, which is satisfied by one of two detections. It is lenient, and the
+experiments show what leniency costs: a rotated twin of the true pose can explain *some* of
+a scan, the claim is then made, and it is wrong. Requiring more of the scan to be explained
+does **not** make the filter find the truth more often (the same trials succeed); it turns
+some confident wrong claims into no claim. That is a trade of one failure for a safer one, and
+the filter cannot do better than the particles it started with. Requiring the mean to explain
+every detection is stricter than a real detector may tolerate, since one spurious detection
+in a scan then blocks it; the end-to-end trials are where that cost, if there is one, shows.
+
+### Where the criterion is blind
+
+A claim is a statement about the cloud, and a cloud that has collapsed onto a twin is a tight
+cloud. If the twin explains every detection the filter sees, nothing in sections 1 to 3 can
+tell it from the truth, and the claim is made and is wrong. The map's near rotational
+symmetry makes such twins; [problem.md](problem.md) section 6 says how near. What would
+tell them apart is information the cloud no longer holds, since the particles near the true
+pose are gone. The remedies are to keep them (more particles, and the cost that comes with
+them) or to be able to bring them back (a restart of the search when the cloud stops
+explaining the scans, which the kidnap trigger does after convergence and which a search
+deliberately does not do). The second is a design change and is listed as open in
+[implementation.md](implementation.md) section 6.
+
+### Heading spread breathes at corners
+
+The published spread of a converged filter is not steady. It rises for a few seconds around
+each turn in place while the pose error stays small (`est_sigma_xy_m` against
+`position_error_m` of
+`evidence/phase-3-correctness/2026-10-10T144153-final-global-reset/normal-run-mcl.csv`). So a
+criterion judged on spread is delayed by turns: a converged filter falls out of the criterion
+at a corner and re-enters on the next straight leg. That is a property of the filter's
+covariance, measured, and the convergence time of a search includes it.

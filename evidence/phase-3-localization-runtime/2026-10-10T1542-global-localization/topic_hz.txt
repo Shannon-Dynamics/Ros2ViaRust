@@ -1,0 +1,10 @@
+--- ros2 topic hz /scan ---
+average rate: 4.507
+--- ros2 topic hz /odom ---
+average rate: 48.880
+--- ros2 topic hz /localization/pose ---
+average rate: 4.528
+--- ros2 topic hz /mcl/pose ---
+average rate: 15.264
+--- ros2 topic hz /ground_truth/pose ---
+average rate: 48.745

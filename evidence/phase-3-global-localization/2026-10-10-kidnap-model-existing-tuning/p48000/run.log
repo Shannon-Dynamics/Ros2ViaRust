@@ -1,0 +1,2 @@
+[2026-10-10-kidnap-model-existing-tuning-p48000] trial   1 ( 1.14,-0.10) -> (-1.18, 1.46) NOT_RECOVERED recovery   0.0s final err 3.888
+[2026-10-10-kidnap-model-existing-tuning-p48000] trial   2 (-1.30,-1.71) -> (-2.20, 0.39) RECOVERED     recovery   4.6s final err 0.008

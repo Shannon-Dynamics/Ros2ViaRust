@@ -1,0 +1,32 @@
+# Summary of /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-sweep-particles-explained-0.51/p24000/trials.csv, written by global_trials.rs; no number here is typed.
+label: 2026-10-10-sweep-particles-explained-0.51-p24000
+config:
+  global_particles: 24000
+  steady_state_particles: 6000
+  convergence_sigma_xy_m: 0.05
+  convergence_sigma_theta_rad: 0.05
+  convergence_sustained_scans: 10
+  convergence_min_explained_fraction: 0.51
+  detection_noise_range_m: 0.05
+  detection_noise_bearing_rad: 0.05
+  laps: 1
+  seed: 1
+  starts_seed: 1000
+  success_position_tolerance_m: 0.15
+  success_yaw_tolerance_rad: 0.15
+trials: 40
+skipped_no_feasible_route: 0
+outcomes:
+  SUCCESS: 27
+  WRONG_CONVERGENCE: 11
+  LOST_AFTER_CONVERGENCE: 0
+  NO_CONVERGENCE: 2
+success_rate: 0.6750
+success_rate_wilson95: [0.5202, 0.7992]
+among_successes:
+  convergence_time_s: {mean: 4.59, median: 3.80}
+  convergence_distance_m: {mean: 0.608, median: 0.540}
+  rmse_position_after_convergence_m: {mean: 0.0231, median: 0.0213}
+cost:
+  mean_scan_ms: 24.242
+  max_scan_ms: 74.488

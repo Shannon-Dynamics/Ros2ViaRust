@@ -1,0 +1,7 @@
+date_utc: 2026-10-10T09:27:29Z
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+binary_sha256: c74944ec7fdbd390396c20123bfb51b86b61cb38ab94dfc94a2ac3c4d4831492
+map_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+STEADY: 48000
+TRIALS: 70

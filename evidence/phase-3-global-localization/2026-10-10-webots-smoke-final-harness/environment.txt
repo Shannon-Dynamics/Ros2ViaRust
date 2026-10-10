@@ -1,0 +1,23 @@
+run: 2026-10-10-webots-smoke-final-harness
+date_utc: 2026-10-10T11:52:20Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.40.1-microsoft-standard-WSL2
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+ros_distro: jazzy
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+build: debug
+mcl_node_sha256: 62156f34207bee07a98a72fd915fdb64e49719a44a43c98961bd7422f3393d40
+map_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+starts_file: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-starts/starts-webots-20.csv
+starts_sha256: 88d2b757d305f704d48782bb78275ca29c60b2d635f4ee5e2973fbaafb030fa9
+trials: 2
+global_particles: 6000
+steady_state_particles: 6000
+convergence_min_explained_fraction: 0.5
+seed_of_trial_0: 901
+laps: 1
+git_head: 7acd838
+odometry_noise: off

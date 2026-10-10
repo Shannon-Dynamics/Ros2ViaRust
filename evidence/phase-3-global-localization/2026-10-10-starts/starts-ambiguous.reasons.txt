@@ -1,0 +1,11 @@
+  ( -0.50,   2.50,  0.000)  ambiguity rank, modes=12 widest=0.316m visible=2
+  ( -0.50,   2.50,  1.571)  ambiguity rank, modes=12 widest=0.316m visible=2
+  ( -0.50,   2.50,  3.142)  ambiguity rank, modes=12 widest=0.316m visible=2
+  ( -0.50,   2.50, -1.571)  ambiguity rank, modes=12 widest=0.316m visible=2
+  (  0.00,   2.50,  0.000)  ambiguity rank, modes=10 widest=0.447m visible=2
+  (  0.00,   2.50,  1.571)  ambiguity rank, modes=10 widest=0.447m visible=2
+  (  0.50,   1.50,  0.000)  ambiguity rank, modes=10 widest=0.447m visible=2
+  (  0.50,   2.00,  0.000)  ambiguity rank, modes=10 widest=0.447m visible=2
+  (  0.00,   0.00,  0.000)  spawn pose, centre of the near symmetry
+  (  0.00,   0.00,  3.142)  180 degree twin of the spawn pose
+  skipped 13 higher-ranked starts with no clear route

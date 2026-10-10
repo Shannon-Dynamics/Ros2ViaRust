@@ -1,0 +1,12 @@
+# Exploration route for a global localization trial, written by
+# crates/robotics_localization/examples/global_trials.rs (subcommand `route`).
+# Start pose: x=-0.2882 y=-1.5170 yaw=1.4631. A square of side 1.2 m with one
+# corner at the start, closed back at the start.
+route:
+  name: global-localization-exploration
+
+waypoints:
+  - {x: -0.1592, y: -0.3240}
+  - {x: -1.3523, y: -0.1950}
+  - {x: -1.4812, y: -1.3880}
+  - {x: -0.2882, y: -1.5170}

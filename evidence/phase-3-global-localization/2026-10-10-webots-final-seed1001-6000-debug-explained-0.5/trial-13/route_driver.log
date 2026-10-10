@@ -1,0 +1,4 @@
+[INFO] [1791634046.684588123] [route_driver]: route "global-localization-exploration" from /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-final-seed1001-6000-debug-explained-0.5/trial-13/route.yaml: 4 waypoint(s) x 1 lap(s)
+[INFO] [1791634046.688617609] [route_driver]: route_driver up: ground_truth/pose -> cmd_vel at 20 Hz, 17 parameters
+[INFO] [1791634053.288679968] [route_driver]: waypoint 1/4 of lap 1 reached at (-0.500, 1.360)
+[WARN] [1791634055.559777924] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)

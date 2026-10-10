@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-smoke-final-harness/trial-01/run.csv",
+  "estimates_received": 745,
+  "rows": 689,
+  "unpaired_estimates": 56,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 689, "rmse_position_m": 4.095004, "rmse_yaw_rad": 1.727727, "max_position_error_m": 5.054514, "final_position_error_m": 5.052254, "odom_only_rmse_position_m": 1.432719},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}

@@ -1,0 +1,47 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-10-17-34-01-770797-LAPTOP-HJL1R3P6-165798
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: world /home/genta/ros2-rust-robotics/sim/webots/worlds/turtlebot3_localization_room.wbt
+[INFO] [webots-1]: process started with pid [165821]
+[INFO] [ros2_supervisor.py-2]: process started with pid [165822]
+[INFO] [driver_turtlebot3-3]: process started with pid [165823]
+[INFO] [robot_state_publisher-4]: process started with pid [165824]
+[INFO] [static_transform_publisher-5]: process started with pid [165826]
+[INFO] [spawner-6]: process started with pid [165827]
+[INFO] [spawner-7]: process started with pid [165829]
+[INFO] [evaluation_supervisor-8]: process started with pid [165830]
+[static_transform_publisher-5] [INFO] [1791628442.299660012] [static_transform_publisher_V73QZTISaHeLzvP0]: Spinning until stopped - publishing transform
+[static_transform_publisher-5] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-5] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-5] from 'base_link' to 'base_footprint'
+[robot_state_publisher-4] [INFO] [1791628442.319376878] [robot_state_publisher]: Robot initialized
+[evaluation_supervisor-8] The specified robot (at /tmp/webots/genta/1234/ipc/evaluation_supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[spawner-7] [INFO] [1791628442.827260079] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[ros2_supervisor.py-2] The specified robot (at /tmp/webots/genta/1234/ipc/Ros2Supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[evaluation_supervisor-8] The specified robot (at /tmp/webots/genta/1234/ipc/evaluation_supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 45 seconds...
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 45 seconds...
+[ros2_supervisor.py-2] The specified robot (at /tmp/webots/genta/1234/ipc/Ros2Supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 45 seconds...
+[webots-1] Warning: The X11 connection broke: I/O error (code 1)
+[webots-1] XIO:  fatal IO error 22 (Invalid argument) on X server ":0"
+[webots-1]       after 521 requests (449 known processed) with 0 events remaining.
+[ERROR] [webots-1]: process has died [pid 165821, exit code 1, cmd 'webots --batch --port=1234 --mode=realtime --minimize --no-rendering --stdout --stderr /home/genta/ros2-rust-robotics/sim/webots/worlds/turtlebot3_localization_room.wbt'].
+[launch] shutdown: stopping webots-bin .*--port=1234
+[launch] shutdown: webots exited on SIGTERM
+[INFO] [evaluation_supervisor-8]: sending signal 'SIGINT' to process[evaluation_supervisor-8]
+[INFO] [spawner-7]: sending signal 'SIGINT' to process[spawner-7]
+[INFO] [spawner-6]: sending signal 'SIGINT' to process[spawner-6]
+[INFO] [static_transform_publisher-5]: sending signal 'SIGINT' to process[static_transform_publisher-5]
+[INFO] [robot_state_publisher-4]: sending signal 'SIGINT' to process[robot_state_publisher-4]
+[INFO] [driver_turtlebot3-3]: sending signal 'SIGINT' to process[driver_turtlebot3-3]
+[INFO] [ros2_supervisor.py-2]: sending signal 'SIGINT' to process[ros2_supervisor.py-2]
+[static_transform_publisher-5] [INFO] [1791628450.622749011] [rclcpp]: signal_handler(signum=2)
+[robot_state_publisher-4] [INFO] [1791628450.623457493] [rclcpp]: signal_handler(signum=2)
+[spawner-7] [INFO] [1791628450.623839223] [spawner_joint_state_broadcaster]: KeyboardInterrupt received! Exiting....
+[ERROR] [evaluation_supervisor-8]: process has died [pid 165830, exit code -2, cmd '/usr/local/webots/webots-controller --robot-name=evaluation_supervisor --protocol=ipc --port=1234 /home/genta/ros2-rust-robotics/sim/webots/launch/../scripts/evaluation_supervisor.py'].
+[ERROR] [ros2_supervisor.py-2]: process has died [pid 165822, exit code -2, cmd '/opt/ros/jazzy/lib/webots_ros2_driver/ros2_supervisor.py --ros-args -r __ns:=/Ros2Supervisor -r /Ros2Supervisor/clock:=/clock'].
+[spawner-6] [INFO] [1791628450.644507996] [ros2_control_controller_spawner_diffdrive_controller]: KeyboardInterrupt received! Exiting....
+[INFO] [spawner-6]: process has finished cleanly [pid 165827]
+[INFO] [static_transform_publisher-5]: process has finished cleanly [pid 165826]
+[INFO] [robot_state_publisher-4]: process has finished cleanly [pid 165824]
+[INFO] [spawner-7]: process has finished cleanly [pid 165829]
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 40 seconds...

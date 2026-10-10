@@ -1,0 +1,64 @@
+header:
+  stamp:
+    sec: 1791625667
+    nanosec: 964694122
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'SEARCHING: global localization from a uniform prior has not converged'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '208'
+  - key: detections
+    value: '1115'
+  - key: published
+    value: '755'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '48000'
+  - key: x
+    value: '0.582'
+  - key: y
+    value: '0.745'
+  - key: theta
+    value: '-0.3804'
+  - key: sigma_xy
+    value: '0.0052'
+  - key: sigma_theta
+    value: '0.0045'
+  - key: ess
+    value: '40701.1'
+  - key: predictions
+    value: '1662'
+  - key: scored_updates
+    value: '208'
+  - key: resamples
+    value: '46'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: uniform_prior
+  - key: phase
+    value: global_search
+  - key: observe_ms_last
+    value: '90.18'
+  - key: observe_ms_max
+    value: '125.38'
+  - key: global_sigma_xy
+    value: '0.0072'
+  - key: global_sigma_theta
+    value: '0.0045'
+  - key: global_streak
+    value: '0'
+  - key: global_travel_odom_m
+    value: '4.588'
+---

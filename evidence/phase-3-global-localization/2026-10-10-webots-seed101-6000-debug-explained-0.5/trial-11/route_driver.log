@@ -1,0 +1,9 @@
+[INFO] [1791628263.942851304] [route_driver]: route "global-localization-exploration" from /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-global-localization/2026-10-10-webots-seed101-6000-debug-explained-0.5/trial-11/route.yaml: 4 waypoint(s) x 1 lap(s)
+[INFO] [1791628263.947104373] [route_driver]: route_driver up: ground_truth/pose -> cmd_vel at 20 Hz, 17 parameters
+[INFO] [1791628274.678556609] [route_driver]: waypoint 1/4 of lap 1 reached at (-0.500, 1.356)
+[INFO] [1791628283.378569632] [route_driver]: waypoint 2/4 of lap 1 reached at (0.643, 1.302)
+[INFO] [1791628292.028580194] [route_driver]: waypoint 3/4 of lap 1 reached at (0.698, 2.441)
+[INFO] [1791628300.678550229] [route_driver]: waypoint 4/4 of lap 1 reached at (-0.445, 2.498)
+[INFO] [1791628300.679469489] [route_driver]: route "global-localization-exploration" finished: 1 lap(s), 4 waypoints, 4.59 m driven, 7.85 rad turned, 4 corner(s), 0 leg timeout(s)
+[INFO] [1791628303.728530529] [route_driver]: route driver done, stopping
+[INFO] [1791628303.729326016] [route_driver]: route_driver shutting down after 4.59 m and 7.85 rad on route "global-localization-exploration" (4 corner(s), 0 leg timeout(s))
