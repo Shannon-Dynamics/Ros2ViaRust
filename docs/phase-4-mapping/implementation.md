@@ -1,11 +1,14 @@
 # Phase 4, implementation: the Rust side
 
-> **Status: decisions taken, code in progress.** Phase 3 closed on 2026-10-10 and the
-> open questions that could be settled without writing the mapper were settled the same day
-> (section 5.2): three from data recorded in the simulator, two by design. What is built is
-> listed in section 8 as it lands; anything this file calls a plan and section 8 does not list
-> does not exist yet. The decisions of section 5.1 were confirmed by the project owner on
-> 2026-10-10.
+> **Status (2026-10-11): T1 to T8 built, one development phase run, no evaluation runs.** The
+> library, the three nodes, the launch file, the run script, the verdict script and the
+> integration test exist and are listed in section 8. Three development runs on `route_long.yaml`
+> have been made (`evidence/phase-4-mapping/2026-10-11-development-*`); the last has the mapper's
+> parameters frozen and **misses the pre-registered M1 tolerances on one check of seven** (false
+> occupied cells 2.6 per cent against 2). The three evaluation runs of claim M1 have not been made,
+> because their routes have not been written; M5 waits for decision D3. Anything section 8 does not
+> list does not exist. The decisions of section 5.1 were confirmed by the project owner on
+> 2026-10-10; those of 5.2 were decided on the owner's instruction to decide and document them.
 
 ## 1. Already in the repository
 
@@ -36,6 +39,8 @@ whether the stage can be done before Phase 3 closes.
 | T8 | harness: `scripts/run_phase4_mapping.sh`, `scripts/phase4_verdict.py` with every tolerance fixed in the file before the first evidence run, `robotics_bringup/launch/phase4_mapping.launch.py`, `scripts/verify_phase4_mapping.sh` | `scripts/`, `ros2_ws/` | the scripts yes; **running them waits** for Webots to be free (section 6) |
 | T9 | informative references (non-blocking): an rclpy port of the same update, and `nav2_costmap_2d` if it can be run headless ([benchmark.md](benchmark.md) section 3) | `scripts/`, `ros2_ws/` | yes; nothing waits on them |
 | T10 | **estimated-pose integration (M5):** the `map -> odom` owner for each estimator, with MCL's missing TF resolved one of the two ways of [problem.md](problem.md) section 6, and the M5 runs | `ros2_ws/`, possibly `mcl_node` | **no, waits for Phase 3** |
+
+The "before Phase 3 closes" column is historical: Phase 3 closed on 2026-10-10 and what is built is in section 8.
 
 2-D TSDF and quadtree (Ch. 19) are **not** in this table: they were removed from Phase 4
 on 2026-10-10 and are a Phase 5+ concern (ROADMAP, Phase 5). Nothing in Phase 4 consumes
@@ -349,9 +354,13 @@ not repeated here.
   shows in `surface_error_max_cells`, which is why that is a maximum and is reported next to the
   95th percentile.
 * D3 above, and with it T10 and M5.
-* The occupancy thresholds, the clamps, `l_occ`, `l_free` and the resolution are *defaults*
-  in the library, chosen by reasoning in section 8.1 and fixed on the development run
-  (section 6); they are not tuned on an evaluation run.
+* The occupancy thresholds, the clamps, `l_occ`, `l_free` and the resolution are the defaults of
+  `robotics_mapping::occupancy::OccupancyParams`, each with its reason in that item's
+  documentation. Chosen by reasoning before any run, except the occupied threshold, which the
+  development runs changed (item 10). They are frozen at the third development run's values.
+* The beam-index dependence of the hits that land outside the walls (8.4), not explained.
+* The three routes of the evaluation runs, which have to be written before the runs, and the
+  evaluation runs themselves.
 
 ## 6. Evidence, and how this part will be run
 
@@ -363,13 +372,13 @@ not repeated here.
   because runs execute in the WSL mirror and `scripts/sync_to_wsl.sh` uses `rsync
   --delete`. This has destroyed evidence before ([../phase-3-localization/implementation.md](../phase-3-localization/implementation.md)
   section 5.3), and the first Phase 4 run is exactly as exposed.
-* No Phase 4 run uses Webots, and nothing in Phase 4 that needs the simulator is run, until
+* (Written before Phase 3 closed, kept for the reason it gives.) No Phase 4 run uses Webots, and nothing in Phase 4 that needs the simulator is run, until
   the Phase 3 trials that are using it have finished: they share the simulator, its port and
   the CPU, and the benchmark rules ask for nothing else running.
 * Library tests use `robotics_sim` and the closed-form geometry of the room, not Webots, so
   T1 to T5 never wait for the simulator.
 
-## 7. What this plan deliberately does not do
+## 7. What the first plan deliberately did not do (as written on 2026-10-10; superseded where section 8 says)
 
 It does not edit `robotics_core`, `robotics_filters`, `robotics_models` or `robotics_sim`:
 the ESDF reuses `DistanceGrid` as it is. It does not add a workspace member, a package or
@@ -377,3 +386,78 @@ a launch file, since a new member changes `Cargo.lock` and a build, and this pla
 written while Phase 3 trials were running from the same workspace. It does not extend
 Phase 3: the remaining Phase 3 items stay in [../ROADMAP.md](../ROADMAP.md) as they were,
 and the `mcl_node` TF question of D3 is recorded and not acted on.
+
+## 8. What is built, and what the runs say
+
+### 8.1 Status of the tasks
+
+| Id | Task | State |
+|---|---|---|
+| T1 | `OccupancyGrid`, log-odds, three-state read-out, text form | built, `robotics_mapping::occupancy`, 65 unit tests across the crate |
+| T2 | inverse sensor model, ray integration, no-return policy | built, `robotics_mapping::{integrate, raycast}`; also `MotionGate` and `MotionFilter` (`gate`), added after the first runs (D13, D17) |
+| T3 | entropy | built, `robotics_mapping::entropy` |
+| T4 | map-accuracy evaluator and its example binaries | built, `robotics_mapping::eval`, examples `map_metrics` and `replay_scans` |
+| T5 | signed ESDF over the existing exact EDT | built, `robotics_mapping::esdf`; published as a `32FC1` image (D12); no consumer yet |
+| T6 | `ground_truth_tf_adapter` | built, `robotics_mapping_ros` |
+| T7 | `mapping_node`, `mapping_evaluator` | built, `robotics_mapping_ros`; the `~/reset` service is **not** built (no `std_srvs` Rust bindings in the interface underlay) |
+| T8 | harness | built: `scripts/run_phase4_mapping.sh`, `scripts/phase4_verdict.py`, `robotics_bringup/launch/phase4_mapping.launch.py`, `scripts/verify_phase4_mapping.sh`. `benchmarks/phase-4-mapping.csv` is **not** written: it is for the evaluation runs, which do not exist yet |
+| T9 | informative references (rclpy port, `nav2_costmap_2d`) | **not built**; non-blocking |
+| T10 | estimated-pose integration (M5) | **not started**; waits for D3 |
+
+Integration tests on a synthetic copy of the Phase 3 room (`robotics_mapping/tests/room_mapping.rs`):
+determinism and text round trip (M2 in the library), accuracy against the analytic geometry,
+nothing written outside the walls, entropy falling, the ESDF against the analytic distance. The
+`scripts/gates.sh` gates `fmt`, `clippy`, `test` and `colcon` pass on this work; its `docs` gate
+fails on a Phase 3 item that predates it (the saved
+`phase-3-global-localization/2026-10-10-ambiguity/wrong-claims-yaw.yaml` counts 5 wrong claims
+for the final Webots run and the evidence it is generated from yields 8).
+
+### 8.2 The ESDF convention
+
+The signed field is positive in free space and negative inside an obstacle, with its zero level at
+the **cell faces**, not the cell centres: a free cell beside an occupied one reads `+r/2` and the
+occupied one `-r/2`. It is `d - r/2` outside and `-(d - r/2)` inside, where `d` is the exact
+centre-to-centre distance of `robotics_models::DistanceGrid` to the nearest occupied cell (outside) or
+to the nearest cell that is not occupied (inside). Unknown cells count as free space for the
+distance; saturation is at the truncation distance (`esdf.truncation_m`, 2 m by default). It is
+checked against the brute-force definition on random grids.
+
+### 8.3 The evidence so far
+
+Everything is in `evidence/phase-4-mapping/`; the verdict files are written by the verdict script,
+and each run has a `NOTE-what-this-run-found.md` where something needs saying.
+
+| Run | What it is | Result |
+|---|---|---|
+| `2026-10-10-scan-skew-probe` | a recording with the robot still, driving and turning, against ground truth | the findings of 5.2 items 1 to 3 |
+| `2026-10-11-harness-smoke`, `-smoke-with-motion-gate`, `-smoke-with-margin` | three runs of the harness on a 0.5 m triangle | not results: they found the stamp lag, the need for the motion gate and the clear margin, and two harness faults |
+| `2026-10-11-development-route-long` | development run 1 | M2, M4 pass; M1 fails on five checks |
+| `2026-10-11-development-2-route-long` | development run 2 (D16 was not in effect, see its note) | M2, M4 pass; M1 fails on three checks |
+| `2026-10-11-development-3-route-long` | development run 3, parameters frozen | M2, M4 pass; M1 fails on one check (false occupied) |
+| `phase-4-mapping-runtime/*` | the integration test | see 8.4 |
+
+**What the development runs establish and what they do not.** They establish that the mapper is
+deterministic on real simulator data (M2), cheap (M4), and that with ground-truth pose it maps the
+room's walls and pillars to within a cell on average, completely and with almost no free-space
+errors, and that what separates it from the pre-registered tolerance is a small set of cells in the
+row just outside the walls. They do not establish M1: the tolerances are for the evaluation runs, on
+routes that played no part in choosing the parameters, and those are not made. The parameters were
+chosen over three runs on one route, so the development run's own result is optimistic by
+construction. M5 and the claim that mapping works with an estimator's pose are untouched.
+
+### 8.4 Limitations known now
+
+* The lidar's stamp lags its measurement by up to a scan period (5.2 item 2); the mapper skips
+  the scans where that matters (D13) and corrects the mean (D15). A real driver that stamps at
+  measurement does not need either; both are parameters.
+* About a fifth of the scans are skipped for motion on this route, essentially all of them in the
+  turns in place; the map is built from the straight legs.
+* The row of cells just outside the walls is the remaining false occupied: hits that land more than
+  4.5 cm past a face at a rate that depends on the beam's direction in the sensor frame (3 times in
+  1000 over all beams, 2 in 100 for the beams straight behind the robot). Not explained (see
+  `2026-10-11-development-3-route-long/NOTE-what-this-run-found.md`).
+* Flying pixels at depth edges (5.3), the mount of the lidar read from TF and not checked against
+  the proto, and the ground-truth reader `mapping_evaluator`'s position list being a 2 cm-spaced
+  subsample of the route.
+* The grid's origin puts the walls on lattice lines, so a wall is mapped two cells thick in places.
+  The metrics are written to be indifferent to that (closed-cell rule), the occupancy is not.

@@ -601,27 +601,35 @@ fn main() -> Result<(), RclrsError> {
     let latency_csv = p.string(
         &node,
         "output.latency_csv",
-        "",
-        "Per-scan outcome and latency CSV (empty: off)",
+        "none",
+        "Per-scan outcome and latency CSV (none: off)",
     )?;
     let trace_csv = p.string(
         &node,
         "output.trace_csv",
-        "",
-        "Entropy and state-count trace CSV (empty: off)",
+        "none",
+        "Entropy and state-count trace CSV (none: off)",
     )?;
     let record_csv = p.string(
         &node,
         "output.record_csv",
-        "",
-        "Integrated scans with their poses, for replay (empty: off)",
+        "none",
+        "Integrated scans with their poses, for replay (none: off)",
     )?;
     let final_grid = p.string(
         &node,
         "output.final_grid",
-        "",
-        "Exact log-odds grid written at shutdown (empty: off)",
+        "none",
+        "Exact log-odds grid written at shutdown (none: off)",
     )?;
+    // `ParamStore::string` refuses an empty string, so "off" is spelled `none`.
+    let off = |s: String| if s == "none" { String::new() } else { s };
+    let (latency_csv, trace_csv, record_csv, final_grid) = (
+        off(latency_csv),
+        off(trace_csv),
+        off(record_csv),
+        off(final_grid),
+    );
     let diag_period = p.i64(
         &node,
         "diagnostics_period_s",

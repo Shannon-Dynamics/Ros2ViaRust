@@ -4,11 +4,17 @@ The robot knows where it is; now it has to write down what it has seen, turning 
 lidar scans taken from known poses into an occupancy grid and a distance field the rest of
 the stack can plan in.
 
-> **Status: design final, nothing built.** Written and confirmed on 2026-10-10 while Phase 3
-> is still open. No crate, package, script or launch file named here exists yet, and no run
-> has been made. There are no numbers in this part and there will be none in it: results go
-> to `benchmarks/phase-4-mapping.csv` and to verdict files under `evidence/phase-4-mapping/`.
-> Phase 3 is not closed by this design.
+> **Status (2026-10-11): built and measured on development runs; the evaluation runs of M1 have
+> not been made.** The pure crate `robotics_mapping`, the ROS package `robotics_mapping_ros`
+> (`ground_truth_tf_adapter`, `mapping_node`, `mapping_evaluator`), the launch file, the run
+> script, the verdict script and the integration test exist; see section 8 of
+> [implementation](phase-4-mapping/implementation.md) for exactly what, and
+> `evidence/phase-4-mapping/` for the runs. With ground-truth pose the mapper is deterministic and
+> cheap, and on the third development run it meets six of the seven pre-registered accuracy
+> checks of M1 and misses the seventh (false occupied cells, 2.6 per cent against 2). That is a
+> development result: the verdicts that count are the evaluation runs, on routes that played no
+> part in choosing the parameters, and they are not made. M5 (the estimator's pose) waits for the
+> open decision D3.
 
 ## Where the detail is
 
@@ -66,7 +72,7 @@ more complex world is the backlog item M1-extended, after the Phase 3 trials.
 **Packages.** Crate `crates/robotics_mapping`; ROS package `ros2_ws/src/robotics_mapping_ros`
 with `ground_truth_tf_adapter`, `mapping_node` and `mapping_evaluator`.
 
-## What can start before Phase 3 closes
+## What could start before Phase 3 closed (it has since closed)
 
 The pure crate (grid, inverse model, entropy, accuracy evaluator, ESDF), the adapter, the
 node, the harness and the verdict script, all on ground-truth pose. Running any of it in

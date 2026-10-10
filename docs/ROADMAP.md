@@ -167,15 +167,21 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
 * `localization_node`: `/scan` + `/odom` + `/map` (+ `/initialpose`) → `/pose`,
   `/particle_cloud`, `map → odom`. Nav2-compatible outputs (`/amcl_pose`).
 
-## Phase 4 — Mapping
+## Phase 4 — Mapping (in progress)
 
 * `robotics_mapping`: log-odds `OccupancyGrid` with hand-crafted inverse model and
   Bresenham/supercover integration, entropy (Ch. 13); exact EDT/ESDF (Ch. 19). *(The 2-D TSDF named here originally is moved
   out of Phase 4 on 2026-10-10; see Phase 5.)*
 * `mapping_node`: `/scan` + `map → base_link` → `/map` (latched), `/map_entropy`.
 
-**Status: planned and confirmed, nothing built (plan written 2026-10-10 while Phase 3 is
-still open; decisions confirmed the same day).** Design doc:
+**Status (2026-10-11): T1 to T8 built; three development runs made, the evaluation runs of M1
+not made; M5 waits for decision D3.** The plan below was written on 2026-10-10 while Phase 3
+was still open and decisions confirmed the same day; what is built, what the runs found and what
+is not built are in `docs/phase-4-mapping/implementation.md` section 8. With ground-truth pose the
+mapper is deterministic and cheap and meets six of the seven pre-registered accuracy checks of M1
+on the third development run, missing false-occupied cells (2.6 per cent against 2); the
+pre-registered tolerances are for the evaluation runs, which need three routes that are not
+written yet. Original status line: *planned and confirmed, nothing built*. Design doc:
 [phase-4-mapping.md](phase-4-mapping.md), with the detail in `docs/phase-4-mapping/`:
 [problem](phase-4-mapping/problem.md), [implementation](phase-4-mapping/implementation.md),
 [benchmark](phase-4-mapping/benchmark.md). The two bullets above are the original scope with

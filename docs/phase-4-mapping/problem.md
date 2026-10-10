@@ -1,11 +1,12 @@
 # Phase 4, problem: what does the room look like?
 
-> **Status: plan only.** Nothing described here is built, run or measured. There are no
-> numbers in this file and there will be none in it later: results go to
-> `benchmarks/phase-4-mapping.csv` and to verdict files under `evidence/phase-4-mapping/`,
-> and this text interprets them. Phase 3 is still open when this is written, and this plan
-> does not close any part of it. The decisions of section 4 and section 6 were confirmed by
-> the project owner on 2026-10-10.
+> **Status (2026-10-11): the plan below was built; see
+> [implementation.md](implementation.md) section 8 for what exists and what the runs found.**
+> The text of this file is the plan as written and confirmed on 2026-10-10 and is not edited
+> to match what happened, except where a note says so. There are no numbers in this file; the
+> results are in verdict files under `evidence/phase-4-mapping/`, and the first runs found things
+> the plan did not know (the lidar stamp lags its measurement, section 5.2 of the implementation
+> file), which is why "M1 shows the mapper is implemented correctly" needed more than a mapper.
 
 ## 1. The situation
 
