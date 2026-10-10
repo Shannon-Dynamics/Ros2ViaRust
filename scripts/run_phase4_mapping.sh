@@ -36,6 +36,7 @@ ROUTE_FILE=${3:-$REPO/sim/webots/config/route_long.yaml}
 LAPS=${LAPS:-1}
 NO_RETURN=${NO_RETURN:-clear_to_max_range}
 TRACER=${TRACER:-supercover}
+CLEAR_MARGIN=${CLEAR_MARGIN:-0.10}
 OUT="$EVIDENCE_ROOT/phase-4-mapping/$NAME"
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
@@ -93,8 +94,8 @@ fi
 
 log "starting the world, the adapter, the mapper and the evaluator"
 ros2 launch robotics_bringup phase4_mapping.launch.py gui:=false mode:=realtime \
-    owner:=ground_truth evaluate:=true record:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
-    no_return:="$NO_RETURN" tracer:="$TRACER" > "$OUT/launch.log" 2>&1 &
+    owner:=ground_truth evaluate:=true capture:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
+    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" > "$OUT/launch.log" 2>&1 &
 LAUNCH_PID=$!
 
 wait_for() {  # wait_for <seconds> <description> <command...>
@@ -178,7 +179,7 @@ if [ -s "$OUT/integrated-scans.csv" ] && [ -s "$OUT/final-grid.txt" ]; then
     log "replaying the recorded scans (claim M2)"
     ( cd "$REPO" && cargo run -q --release -p robotics_mapping --example replay_scans -- \
         "$OUT/integrated-scans.csv" "$OUT/final-grid.txt" "$OUT/replay-grid.txt" \
-        "$NO_RETURN" "$TRACER" ) > "$OUT/replay.log" 2>&1
+        "$NO_RETURN" "$TRACER" "$CLEAR_MARGIN" ) > "$OUT/replay.log" 2>&1
     REPLAY_SCANS=$(grep -o 'replayed [0-9]*' "$OUT/replay.log" | grep -o '[0-9]*' || echo none)
 fi
 
@@ -188,7 +189,7 @@ fi
     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
     echo "route_driver_exit_code: $ROUTE_RC"
     echo "replay_scans: $REPLAY_SCANS"
-    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
+    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
     grep -E '^(source_git_commit|source_git_dirty|mapping_node_executable_sha256|route_sha256|world_sha256):' "$OUT/environment.txt"
 } > "$OUT/summary.yaml"
 

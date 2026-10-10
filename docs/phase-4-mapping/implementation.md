@@ -126,7 +126,7 @@ the Webots world, unchanged.
 | D6 | A second, more complex world is the backlog item *M1-extended*, after the Phase 3 trials. |
 | D7 | The analytic geometry of the world is the main baseline. The rclpy port and `nav2_costmap_2d` are additional information and do not block. |
 
-### 5.2 Questions settled on 2026-10-11, before any mapper code
+### 5.2 Questions settled on 2026-10-11: items 1 to 6 before any mapper code, items 7 to 9 after the first runs
 
 Decided on the project owner's instruction to decide and document them, so open to the
 owner's revision (unlike 5.1, they were not separately confirmed). The scan recording they
@@ -135,10 +135,12 @@ rely on was made on 2026-10-10.
 | Id | Decision |
 |---|---|
 | D8 | The lidar plane (0.173 m) is below the walls (0.5 m) and the pillars (0.6 m): item 1. |
-| D9 | A Webots scan is one instant at its header stamp; the mapper does not deskew: item 2. |
+| D9 | A Webots scan is one instant, not spread over its period, so the mapper does not deskew; but that instant is **not** its header stamp: item 2. |
 | D10 | A beam with no return clears free space to `range_max` by default, `drop` selectable: item 3. |
 | D11 | A cell is updated at most once per scan, occupied over free: item 4. |
 | D12 | The ESDF is a `sensor_msgs/Image` `32FC1` paired by stamp with `/map`: item 5. |
+| D13 | Because the stamp lags the measurement by up to a scan period, the mapper skips a scan when the sensor moved more than 5 cm or turned more than 0.015 rad across the window `[stamp - 0.2 s, stamp]`: item 7. |
+| D14 | A no-return beam clears free space up to `range_max - 0.10 m`, not to `range_max`: item 8. |
 
 
 The first four were open at the end of 5.1. Items 1 to 3 are answers from the simulator's
@@ -155,27 +157,46 @@ not repeated here.
    (`Cylinder height 0.6`, centred at 0.3 m) both span it. Nothing in the room can pass over
    or under the scan plane, so a 2-D grid is an honest representation of this world. That is
    a property of this world and says nothing about furniture of other heights.
-2. **Scan skew (D9): one scan is one instant, to within about one beam.** Recorded with the
-   robot still, driving straight at the route driver's 0.18 m/s, and turning in place at its
-   0.8 rad/s plus a 2.0 rad/s stress turn, against ground truth and the analytic room. Two
-   models of when the 360 beams were measured were fitted per scan (one instant; or beams
-   spread over a span `s`), and the method was first checked on synthetic scans with a
-   known span (0 s and 0.2 s, both recovered). Findings: the published
-   `time_increment` and `scan_time` are both `0`, so the driver asserts nothing about
-   sweep timing; the seam between the last and first beam, which point the same way, shows no
-   step at driving speed to within its standard error, where a 0.2 s sweep would show one
-   of about 36 mm; and in the turns the fitted span equals about one beam of heading, not
-   the nine and twenty-three beams a 0.2 s sweep would give, and it shrinks as the turn gets
-   faster, so it is not a sweep time. **Decision:** the mapper treats every scan as one
-   instant at its header stamp, looks the pose up at that stamp, and does no deskewing. The
-   skew that remains at route speed is far below one 5 cm cell. **Scope:** this is a
-   statement about the Webots LDS-01 model. The real LDS-01 rotates during the 0.2 s and a
-   robot at speed would smear a scan; nothing here covers that, and a real-robot mapper
-   would need the deskew this one omits. Not all phases of the recording could be used: the
-   three stopping phases are not evidence (two have no valid seam beams, one has a residual
-   several times the noise floor, so the robot had not settled), and the straight-line fit of
-   the span is poorly conditioned, which is why the seam test, not that fit, carries the
-   translation result.
+2. **Scan timing (D9, corrected by D13): a scan is one instant, but not the instant of its
+   stamp.** Recorded with the robot still, driving straight at the route driver's 0.18 m/s,
+   and turning in place at its 0.8 rad/s plus a 2.0 rad/s stress turn, against ground truth and
+   the analytic room. Two things were measured, and the first report on this recording stated
+   only the first.
+
+   *Is a sweep spread over time? No.* Two models of when the 360 beams were measured were
+   fitted per scan (one instant; or beams spread over a span `s`), and the method was first
+   checked on synthetic scans with a known span (0 s and 0.2 s, both recovered). The published
+   `time_increment` and `scan_time` are both `0`, so the driver asserts nothing; the seam between
+   the last and first beam, which point the same way, shows no step at driving speed to within
+   its standard error, where a 0.2 s sweep would show one of about 36 mm; and in the turns the
+   fitted span equals about one beam of heading, not the nine and twenty-three beams a 0.2 s
+   sweep would give, and it shrinks as the turn gets faster, so it is not a sweep time. So each
+   scan is one instant and needs no deskewing.
+
+   *Is that instant the header stamp? No.* The same fits carry a constant offset `d` between the
+   scan stamp and the ground-truth clock, which the first report left out. In the turning
+   phases, where a rotation pins it to a few milliseconds, the instants the beams were measured
+   at lie on a regular **0.2 s lattice** (resultant length of their phase 0.995, phase standard
+   deviation 3 ms; no other trial period from 0.19 to 0.22 s comes close) while the stamps do not
+   (0.17). The stamp **lags the measurement by up to about 0.18 s, 0.06 s on average**, in a
+   sawtooth: the driver publishes every 0.2 or 0.22 s on its own clock, the lidar measures every
+   0.2 s on its, and the lag grows by about 0.02 s per scan until a measurement is skipped.
+   The numbers are in `skew-report.yaml` (`stamp_lag_turning_phases`).
+
+   Scope: both statements are about the Webots LDS-01 model and its driver. The real LDS-01
+   rotates during the 0.2 s and a robot at speed would smear a scan; a real-robot mapper would
+   need the deskew this one omits, and would not have this stamp lag if its driver stamped at
+   measurement. Not all phases of the recording could be used: the three stopping phases are not
+   evidence (two have no valid seam beams, one has a residual several times the noise floor, so
+   the robot had not settled), and the straight-line fit of the span is poorly conditioned, which
+   is why the seam test, not that fit, carries the translation result.
+
+   **How this was found.** Not from the recording but from the first mapping run
+   (`evidence/phase-4-mapping/2026-10-11-harness-smoke`), which mapped a 0.5 m triangle and
+   failed M1 badly: cells called occupied up to 27 cm from any surface. That run integrated every
+   scan at the pose TF gives for its stamp, which was the decision this item first recorded, and
+   the offset `d` was already in the recording's report. It is a correction of an earlier
+   statement of mine, and that run is kept to show it.
 3. **Beams without a return (D10): clear free space up to the range limit.** In this
    simulator a beam with nothing in range is published as `inf`; never as NaN, never as
    `range_max`. Against the analytic room, the beams that came back `inf` are exactly the
@@ -185,8 +206,8 @@ not repeated here.
    discarding those beams would throw away about 30 per cent of every scan (the corners of
    the room are 4.24 m away) and leave the far part of the room unexplored for no reason.
    **Decision:** an `inf` beam, and a finite one at or beyond `range_max`, clears the cells
-   along the beam up to `range_max` and marks nothing occupied; NaN and anything below
-   `range_min` are dropped. A parameter selects `drop` instead, for a sensor whose no-return
+   along the beam up to `range_max` less a margin (item 8) and marks nothing occupied; NaN and
+   anything below `range_min` are dropped. A parameter selects `drop` instead, for a sensor whose no-return
    can also mean a surface that absorbed the beam; the default is `clear_to_max_range`, and the
    evidence above is why. Consequence of the published angle grid (increment `-2 pi / 359`,
    so beams 0 and 359 point the same way): it is correct, it was checked against the
@@ -204,8 +225,8 @@ not repeated here.
    `float32` per cell, in metres, row-major with row 0 at the grid's `j = 0` (the
    `nav_msgs/OccupancyGrid` order, which is the opposite of an image's top-down order and is
    stated here so that nobody flips it), positive in free space, negative inside an obstacle,
-   zero level at the cell faces (the signed convention of section 8.2), saturating at the
-   truncation distance, and `inf` where no obstacle exists. `header.frame_id` is the map's
+   zero level at the cell faces (the signed convention of section 8.2), and saturating at the
+   truncation distance (which is also what a map with no obstacle at all reports). `header.frame_id` is the map's
    and `header.stamp` is the stamp of the `/map` message it was computed from; its grid
    geometry (width, height, resolution, origin) is **by contract that of `/map`**, so a
    consumer checks the two stamps and sizes and reads the geometry from `/map`. Rejected:
@@ -223,7 +244,62 @@ not repeated here.
    runs, and the two options are the ones of [problem.md](problem.md) section 6. Recorded here
    so that it is not forgotten: **T10 and M5 do not start until D3 is decided.**
 
+7. **The motion gate (D13).** The lag cannot be removed by the mapper: the measurement instant
+   is only known to lie in `[stamp - 0.2 s, stamp]`, and a constant correction would leave the
+   sawtooth's other 0.1 s. What can be bounded is the damage. If the sensor's pose barely
+   changes across that window, the exact instant does not matter; if it changes a lot, the scan
+   would be written into the map at a pose that may be wrong by the whole change. So the
+   mapper looks the pose up at the stamp and at the start of the window and **skips the scan**
+   when the sensor moved more than `motion_gate.max_translation_m` or turned more than
+   `motion_gate.max_yaw_rad`. The error of an integrated scan is then at most that change.
+   Defaults, from the geometry and not from a run: 0.05 m (the robot's 0.2 m/s limit moves 4 cm
+   in 0.2 s, so straight driving always passes, with a worst-case position error of 4 cm and a
+   typical one of a third of that, since the mean lag is 0.06 s) and 0.015 rad (5 cm at the
+   lidar's 3.5 m limit, one cell: a turn faster than 0.075 rad/s is skipped, the route's
+   0.8 rad/s turns and its heading corrections with it). Scans skipped for motion are counted
+   and written to the latency file with the change that caused it; a run that skips more than
+   half its scans is not valid (`scripts/phase4_verdict.py`). The cost is real: no scan is
+   integrated while the robot turns. The alternatives were rejected: a constant offset (leaves
+   up to 0.1 s), a lattice estimator that restamps scans from their stamps alone (the phase is
+   not identifiable from the stamps without ground truth or an assumed minimum lag), and fixing
+   the driver (it is used as published).
+
+   Whether 4 cm of residual pose error during travel is small enough is what the development
+   run measures; the tolerances of the verdict were committed before any run and were not
+   changed for it.
+
+8. **The clear margin (D14).** Item 3 as first written cleared right up to `range_max`, and
+   the second Webots run showed what that does: wall cells at the edge of the lidar's reach
+   were called free (`evidence/phase-4-mapping/2026-10-11-smoke-with-motion-gate`, 22 per cent
+   of the observable surface samples in free cells, against 4 per cent of what the exact grid
+   holds). The mechanism, found by tracing which beams crossed one such cell: a beam whose wall
+   is a few centimetres beyond 3.5 m returns `inf`, and drawn from a pose that is a few
+   centimetres off (the motion gate admits up to 5 cm and 0.015 rad, 5 cm at the limit) its
+   free segment crosses the wall. The sensor is not at fault: in the standing-still recording
+   `inf` appears only above 3.5 m, to within the range noise. Clearing stops **0.10 m short of
+   `range_max`** (`model.clear_margin_m`, `DEFAULT_CLEAR_MARGIN`): the 3-sigma range noise at the
+   limit (3 x 0.0043 x 3.5 m = 4.5 cm) plus the pose error the gate admits, rounded to two
+   cells. The price is a 10 cm band at the limit that stays unknown instead of free.
+9. **Two faults in the harness found by the same runs, fixed and kept in the record.** The
+   `record` launch argument collided with the world launch file's own (launch configurations
+   are global), which stopped the first attempt before it started. And the evaluator read the
+   map's resolution from a `float32`, so 0.05 arrived as 0.0500000007 and a wall on a lattice
+   line sat 2e-6 cells off it at the far edge, which made the closed-cell rule of `eval.rs`
+   miss it: false-free samples were over-counted by an order of magnitude (it was 22 per cent
+   where the exact grid says 4). The evaluator now restores the resolution to seven decimals,
+   and the rule's tolerance is a ten-thousandth of a cell.
+
 ### 5.3 Still open
+
+* **Flying pixels and repeated scans.** The Webots lidar returns ranges between a foreground
+  and a background surface at depth edges (the silhouette of a pillar), and a robot standing
+  still integrates the same one every scan until its cell saturates as occupied
+  (`evidence/phase-4-mapping/2026-10-11-smoke-with-margin`, `NOTE-what-this-run-found.md`).
+  Not handled: a range-jump filter would also drop thin or grazing real surfaces, and a motion
+  filter (integrate only after the sensor moved a minimum distance) changes what the evidence
+  runs measure. Both are decisions for after the development run has shown their size. Until
+  then they appear in `surface_error_max_cells`, which is why that is a maximum and is reported
+  next to the 95th percentile.
 
 * D3 above, and with it T10 and M5.
 * The occupancy thresholds, the clamps, `l_occ`, `l_free` and the resolution are *defaults*

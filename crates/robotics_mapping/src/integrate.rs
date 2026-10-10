@@ -25,10 +25,15 @@
 //! # Beams that returned nothing
 //!
 //! A beam whose range is `+inf`, or finite and at or beyond `range_max`, says that nothing was
-//! within range. With [`NoReturn::ClearToMaxRange`] (the default) the cells it crossed up to
-//! `range_max` are free; the cell at `range_max` itself is left alone, as the cell of a hit is
-//! marked but the cell of a no-return is only partly observed. With [`NoReturn::Drop`] such a
-//! beam is ignored. `NaN`, `-inf`, zero, negative and below-`range_min` ranges carry no
+//! within range. With [`NoReturn::ClearToMaxRange`] (the default) the cells it crossed are free
+//! up to **`range_max` less a margin** ([`DEFAULT_CLEAR_MARGIN`], 0.10 m); the cell at the end
+//! of the cleared segment is left alone, as the cell of a hit is marked but the cell of a
+//! no-return is only partly observed. The margin is not a nicety. A beam that came back `inf`
+//! may have a wall only centimetres beyond the limit, and a pose that is a few centimetres
+//! off (the motion gate admits up to 5 cm) would draw its free segment across that wall: the
+//! first Webots runs wrote free space into wall cells that way. The margin covers the range
+//! noise at the limit (3 sigma of 0.0043 of 3.5 m is 4.5 cm) and the admitted pose error. With
+//! [`NoReturn::Drop`] such a beam is ignored. `NaN`, `-inf`, zero, negative and below-`range_min` ranges carry no
 //! information and are always dropped. The default is justified by measurement in
 //! `docs/phase-4-mapping/implementation.md` section 5.2: in the Webots world `inf` is
 //! reported only for beams whose true range exceeds `range_max`.
@@ -80,17 +85,27 @@ pub struct ScanReport {
     pub cells_occupied: usize,
 }
 
+/// How far short of `range_max` a no-return beam stops clearing (m).
+pub const DEFAULT_CLEAR_MARGIN: f64 = 0.10;
+
 const FREE: u8 = 1;
 const OCCUPIED: u8 = 2;
 
 /// Integrates laser scans into an [`OccupancyGrid`]. Holds only scratch space, so one
 /// integrator can serve any number of grids of the same size, and allocates once.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct ScanIntegrator {
     no_return: NoReturn,
     tracer: RayTracer,
+    clear_margin: f64,
     marks: Vec<u8>,
     touched: Vec<usize>,
+}
+
+impl Default for ScanIntegrator {
+    fn default() -> Self {
+        Self::new(NoReturn::default(), RayTracer::default())
+    }
 }
 
 fn floor_cell(g: &GridGeometry, p: &Vector2<f64>) -> (i32, i32) {
@@ -107,9 +122,28 @@ impl ScanIntegrator {
         Self {
             no_return,
             tracer,
+            clear_margin: DEFAULT_CLEAR_MARGIN,
             marks: Vec::new(),
             touched: Vec::new(),
         }
+    }
+
+    /// Change how far short of `range_max` a no-return beam stops clearing (m, finite, not
+    /// negative). Zero reproduces clearing right up to the limit.
+    pub fn with_clear_margin(mut self, margin: f64) -> Result<Self, MappingError> {
+        if !(margin.is_finite() && margin >= 0.0) {
+            return Err(MappingError::InvalidParameter {
+                what: "clear margin",
+                value: margin,
+            });
+        }
+        self.clear_margin = margin;
+        Ok(self)
+    }
+
+    /// The clear margin (m).
+    pub fn clear_margin(&self) -> f64 {
+        self.clear_margin
     }
 
     /// The no-return policy.
@@ -234,9 +268,14 @@ impl ScanIntegrator {
                 // `+inf`, or a finite range at or beyond the limit.
                 match self.no_return {
                     NoReturn::ClearToMaxRange => {
-                        report.no_return_cleared += 1;
-                        let end = origin + dir * scan.range_max;
-                        self.trace(&g, &origin, origin_cell, &end, false);
+                        let reach = scan.range_max - self.clear_margin;
+                        if reach > scan.range_min {
+                            report.no_return_cleared += 1;
+                            let end = origin + dir * reach;
+                            self.trace(&g, &origin, origin_cell, &end, false);
+                        } else {
+                            report.no_return_dropped += 1;
+                        }
                     }
                     NoReturn::Drop => report.no_return_dropped += 1,
                 }
@@ -441,6 +480,30 @@ mod tests {
             )
             .unwrap();
         assert!(g.bit_identical(&g2));
+    }
+
+    /// The margin: from x = 0.5 with `range_max` 3.0, clearing to 3.0 less 0.6 ends at x = 2.9,
+    /// the middle of cell 2, so only cells 0 and 1 are cleared; with no margin the segment ends
+    /// at x = 3.5 and cells 0 to 2 are. A margin as long as the range clears nothing.
+    #[test]
+    fn the_clear_margin_stops_a_no_return_beam_short_of_the_limit() {
+        let beam = scan(0.0, 0.0, &[f32::INFINITY], 3.0);
+        let sensor = Se2::new(0.5, 0.5, 0.0);
+        let run = |margin: f64| {
+            let mut g = grid(8, 4);
+            let mut integ = integrator().with_clear_margin(margin).unwrap();
+            integ.integrate(&mut g, &sensor, &beam).unwrap();
+            let free = (0..8)
+                .filter(|&i| g.log_odds(i, 0) == Some(g.params().l_free))
+                .count();
+            free
+        };
+        assert_eq!(run(0.0), 3);
+        assert_eq!(run(0.6), 2);
+        assert_eq!(run(3.0), 0);
+        assert!(integrator().with_clear_margin(-0.1).is_err());
+        assert!(integrator().with_clear_margin(f64::NAN).is_err());
+        assert_eq!(integrator().clear_margin(), DEFAULT_CLEAR_MARGIN);
     }
 
     #[test]

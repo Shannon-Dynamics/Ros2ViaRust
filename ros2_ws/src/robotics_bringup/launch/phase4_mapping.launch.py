@@ -58,10 +58,11 @@ ARGS = {
     'laps': ('1', 'how many times route_driver drives the route'),
     'evaluate': ('false', 'start mapping_evaluator; needs output_dir'),
     'output_dir': ('', 'directory the evaluator and the mapper write their files to'),
-    'record': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
+    'capture': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
     'tau_cells': ('1.0', 'evaluation tolerance in cells; scripts/phase4_verdict.py checks it'),
     'no_return': ('clear_to_max_range', 'mapper policy for beams with no return'),
     'tracer': ('supercover', 'mapper ray traversal: supercover | bresenham'),
+    'clear_margin': ('0.10', 'mapper: a no-return beam clears up to range_max less this (m)'),
 }
 
 
@@ -84,8 +85,8 @@ def setup(context):
             + f'\nrepo was resolved to {repo!r}. Pass repo:=/path/to/ros2-rust-robotics.')
     if lc['owner'] not in ('ground_truth', 'ekf'):
         raise RuntimeError(f"owner:= must be ground_truth or ekf, not {lc['owner']!r}")
-    if (truthy('evaluate') or truthy('record')) and not lc['output_dir']:
-        raise RuntimeError('evaluate:=true and record:=true require output_dir:=')
+    if (truthy('evaluate') or truthy('capture')) and not lc['output_dir']:
+        raise RuntimeError('evaluate:=true and capture:=true require output_dir:=')
     out = lc['output_dir']
 
     actions = [
@@ -116,8 +117,9 @@ def setup(context):
     mapper_params = {
         'model.no_return': lc['no_return'],
         'model.tracer': lc['tracer'],
+        'model.clear_margin_m': float(lc['clear_margin']),
     }
-    if truthy('record'):
+    if truthy('capture'):
         mapper_params.update({
             'output.latency_csv': os.path.join(out, 'update-latency.csv'),
             'output.trace_csv': os.path.join(out, 'entropy-trace.csv'),

@@ -38,6 +38,12 @@ on the fit above:
                with the alternative -2 pi / 360, to say which grid the beams really lie on
   no return    for beams that came back `inf`, the exact range the analytic world predicts,
                to say what `inf` means in this simulator
+  stamp lag    the constant offset `d` of the instant model, per scan, in the turning phases
+               (where a rotation pins it to a few milliseconds): how far the header stamp lags
+               the instant the beams were measured at, and whether those instants lie on a
+               regular lattice (resultant length R of their phase modulo a trial period; 1 is
+               perfectly periodic, 0 is uniform). Added after the first Webots mapping run
+               showed that the stamp is not the measurement time.
 """
 import csv
 import math
@@ -236,6 +242,42 @@ def no_return_check(track, scans, mount, t0, dur):
     }
 
 
+def stamp_lag(track, scans, mount, phases):
+    """Offset between each scan's stamp and its measurement instant, and its periodicity."""
+    stamps, offsets = [], []
+    for name, t0, dur, lin, ang in phases:
+        if ang == 0.0:
+            continue  # only turning phases pin d down tightly
+        for sc in scans:
+            if t0 + 1.0 <= sc["t"] <= t0 + dur - 0.3:
+                f = fit_scan(track, sc, mount, with_s=False)
+                if f:
+                    stamps.append(sc["t"])
+                    offsets.append(f["d"])
+    s_, d_ = np.array(stamps), np.array(offsets)
+    tm = s_ + d_  # the instant the beams were measured at, on the ground-truth clock
+    out = {"scans": int(s_.size)}
+    lag = -d_
+    out["stamp_minus_measurement_s"] = {
+        "mean": float(lag.mean()), "sd": float(lag.std()),
+        "min": float(lag.min()), "max": float(lag.max())}
+
+    def lattice(times, period):
+        a = 2 * math.pi * np.mod(times, period) / period
+        r = abs(np.mean(np.exp(1j * a)))
+        mean = (math.atan2(np.mean(np.sin(a)), np.mean(np.cos(a))) % (2 * math.pi)) * period / (2 * math.pi)
+        dev = (np.mod(times, period) - mean + period / 2) % period - period / 2
+        return float(r), float(mean), float(dev.std())
+
+    for period in (0.19, 0.2, 0.21, 0.22):
+        r, mean, sd = lattice(tm, period)
+        out[f"measurement_instants_period_{period}"] = {
+            "resultant_length": r, "mean_phase_s": mean, "phase_sd_s": sd}
+    r, _, _ = lattice(s_, 0.2)
+    out["header_stamps_period_0.2"] = {"resultant_length": r}
+    return out
+
+
 def summarize(vals):
     a = np.array(vals)
     if a.size == 0:
@@ -279,6 +321,7 @@ def main():
             "x_m": mount[0], "y_m": mount[1], "yaw_rad": mount[2]},
         "angle_grid_standing_still": angle_grid_check(track, scans, mount, still[1], still[2]),
         "no_return_standing_still": no_return_check(track, scans, mount, still[1], still[2]),
+        "stamp_lag_turning_phases": stamp_lag(track, scans, mount, phases),
         "phases": {},
     }
     for name, t0, dur, lin, ang in phases:

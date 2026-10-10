@@ -35,8 +35,8 @@ use rclrs::*;
 use robotics_core::tf::{LookupTime, TransformBuffer, TransformBufferConfig};
 use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
 use robotics_mapping::{
-    grid_entropy, signed_esdf, GridGeometry, NoReturn, OccupancyGrid, OccupancyParams, RayTracer,
-    ScanIntegrator,
+    grid_entropy, signed_esdf, GridGeometry, MotionGate, NoReturn, OccupancyGrid, OccupancyParams,
+    RayTracer, ScanIntegrator,
 };
 use robotics_ros_bridge::convert::{header, laser_scan_from_ros, now, pose_to_ros};
 use robotics_ros_bridge::diagnostics::{DiagnosticLevel, DiagnosticsPublisher, StatusBuilder};
@@ -61,6 +61,7 @@ struct Counters {
     integrated: u64,
     skipped_malformed: u64,
     skipped_no_transform: u64,
+    skipped_motion: u64,
     skipped_sensor_outside_grid: u64,
     hits: u64,
     no_return_cleared: u64,
@@ -72,6 +73,8 @@ struct State {
     integrator: ScanIntegrator,
     map_frame: FrameId,
     esdf_truncation: f64,
+    /// Window of a scan's timestamp uncertainty and the gate over it; `None` disables the gate.
+    gate: Option<(f64, MotionGate)>,
     pending: VecDeque<Pending>,
     max_pending: usize,
     max_age: Duration,
@@ -111,10 +114,18 @@ fn invalid(node: &Node, what: &str) -> RclrsError {
     }
 }
 
+enum Outcome {
+    Integrated,
+    /// The pose changed too much across the scan's timestamp window: skipped, by design.
+    SkippedMotion,
+    /// A transform is missing (yet).
+    NotReady,
+}
+
 impl State {
-    /// Look the sensor pose up at the scan's stamp and integrate. `Ok(true)` integrated,
-    /// `Ok(false)` the transform is not there (yet), `Err` the scan cannot ever be integrated.
-    fn try_integrate(&mut self, p: &Pending) -> Result<bool, String> {
+    /// Look the sensor pose up at the scan's stamp, check that it was steady across the window
+    /// the stamp leaves open, and integrate. `Err` means the scan can never be integrated.
+    fn try_integrate(&mut self, p: &Pending) -> Result<Outcome, String> {
         let started = Instant::now();
         let t = match self.buffer.lock().lookup_transform(
             &self.map_frame,
@@ -122,9 +133,38 @@ impl State {
             LookupTime::At(p.scan.stamp),
         ) {
             Ok(t) => t,
-            Err(_) => return Ok(false),
+            Err(_) => return Ok(Outcome::NotReady),
         };
         let sensor: Se2 = t.transform;
+        let mut window_change: Option<(f64, f64)> = None;
+        if let Some((window, gate)) = self.gate {
+            // The beams were measured somewhere in [stamp - window, stamp] (see the gate's
+            // module documentation), so the pose at the start of that window bounds the error.
+            let earlier = match self.buffer.lock().lookup_transform(
+                &self.map_frame,
+                &p.scan.frame,
+                LookupTime::At(p.scan.stamp.plus_secs_f64(-window)),
+            ) {
+                Ok(t) => t.transform,
+                Err(_) => return Ok(Outcome::NotReady),
+            };
+            window_change = Some(MotionGate::change(&earlier, &sensor));
+            if !gate.admits(&earlier, &sensor) {
+                self.c.skipped_motion += 1;
+                if let Some(w) = self.latency_csv.as_mut() {
+                    let (dt, dy) = MotionGate::change(&earlier, &sensor);
+                    let _ = writeln!(
+                        w,
+                        "{:.6},skipped_motion,{:.1},{:.1},{},,,,,,{dt:.4},{dy:.4}",
+                        p.scan.stamp.as_secs_f64(),
+                        started.elapsed().as_secs_f64() * 1e6,
+                        p.received.elapsed().as_secs_f64() * 1e6,
+                        p.scan.ranges.len()
+                    );
+                }
+                return Ok(Outcome::SkippedMotion);
+            }
+        }
         let report = match self.integrator.integrate(&mut self.grid, &sensor, &p.scan) {
             Ok(r) => r,
             Err(robotics_mapping::MappingError::SensorOutsideGrid { .. }) => {
@@ -147,14 +187,16 @@ impl State {
         if let Some(w) = self.latency_csv.as_mut() {
             let _ = writeln!(
                 w,
-                "{:.6},integrated,{latency_us:.1},{wait_us:.1},{},{},{},{},{},{}",
+                "{:.6},integrated,{latency_us:.1},{wait_us:.1},{},{},{},{},{},{},{}",
                 p.scan.stamp.as_secs_f64(),
                 report.beams,
                 report.hits,
                 report.no_return_cleared,
                 report.invalid,
                 report.cells_free,
-                report.cells_occupied
+                report.cells_occupied,
+                window_change
+                    .map_or_else(|| ",".to_string(), |(dt, dy)| format!("{dt:.4},{dy:.4}"))
             );
         }
         if let Some(w) = self.record_csv.as_mut() {
@@ -177,21 +219,21 @@ impl State {
             }
             let _ = writeln!(w);
         }
-        Ok(true)
+        Ok(Outcome::Integrated)
     }
 
     /// Try the oldest pending scans in order; drop the ones that waited too long.
     fn drain(&mut self) {
         while let Some(front) = self.pending.pop_front() {
             match self.try_integrate(&front) {
-                Ok(true) => {}
-                Ok(false) => {
+                Ok(Outcome::Integrated) | Ok(Outcome::SkippedMotion) => {}
+                Ok(Outcome::NotReady) => {
                     if front.received.elapsed() > self.max_age {
                         self.c.skipped_no_transform += 1;
                         if let Some(w) = self.latency_csv.as_mut() {
                             let _ = writeln!(
                                 w,
-                                "{:.6},skipped_no_transform,,{:.1},{},,,,,",
+                                "{:.6},skipped_no_transform,,{:.1},{},,,,,,,",
                                 front.scan.stamp.as_secs_f64(),
                                 front.received.elapsed().as_secs_f64() * 1e6,
                                 front.scan.ranges.len()
@@ -407,6 +449,14 @@ fn main() -> Result<(), RclrsError> {
             ))
         }
     };
+    let clear_margin = p.f64(
+        &node,
+        "model.clear_margin_m",
+        robotics_mapping::DEFAULT_CLEAR_MARGIN,
+        0.0,
+        10.0,
+        "A no-return beam clears free space up to range_max less this margin (m)",
+    )?;
     let tracer = match p
         .string(
             &node,
@@ -425,6 +475,30 @@ fn main() -> Result<(), RclrsError> {
             ))
         }
     };
+    let gate_window = p.f64(
+        &node,
+        "motion_gate.window_s",
+        0.2,
+        0.0,
+        10.0,
+        "Window the scan stamp leaves open for the measurement instant (s); 0 turns the gate off",
+    )?;
+    let gate_translation = p.f64(
+        &node,
+        "motion_gate.max_translation_m",
+        0.05,
+        1e-4,
+        10.0,
+        "Skip a scan if the sensor moved farther than this across the window (m)",
+    )?;
+    let gate_yaw = p.f64(
+        &node,
+        "motion_gate.max_yaw_rad",
+        0.015,
+        1e-5,
+        3.2,
+        "Skip a scan if the sensor turned more than this across the window (rad)",
+    )?;
     let esdf_truncation = p.f64(
         &node,
         "esdf.truncation_m",
@@ -496,6 +570,15 @@ fn main() -> Result<(), RclrsError> {
         resolution,
         origin: robotics_core::nalgebra::Vector2::new(origin_x, origin_y),
     };
+    let gate = if gate_window > 0.0 {
+        Some((
+            gate_window,
+            MotionGate::new(gate_translation, gate_yaw)
+                .map_err(|e| invalid(&node, &format!("motion gate: {e}")))?,
+        ))
+    } else {
+        None
+    };
     let params =
         OccupancyParams::from_probabilities(p_hit, p_miss, p_min, p_max, p_occupied, p_free);
     let grid = OccupancyGrid::new(geometry, params)
@@ -505,7 +588,7 @@ fn main() -> Result<(), RclrsError> {
     if let Some(w) = latency_csv_w.as_mut() {
         let _ = writeln!(
             w,
-            "stamp_s,outcome,latency_us,queue_wait_us,beams,hits,no_return_cleared,invalid,cells_free,cells_occupied"
+            "stamp_s,outcome,latency_us,queue_wait_us,beams,hits,no_return_cleared,invalid,cells_free,cells_occupied,window_translation_m,window_yaw_rad"
         );
     }
     let mut trace_csv_w = open(&trace_csv)?;
@@ -530,9 +613,12 @@ fn main() -> Result<(), RclrsError> {
     let diagnostics = DiagnosticsPublisher::new(&node)?;
     let shared = Shared::new(State {
         grid,
-        integrator: ScanIntegrator::new(no_return, tracer),
+        integrator: ScanIntegrator::new(no_return, tracer)
+            .with_clear_margin(clear_margin)
+            .map_err(|e| invalid(&node, &format!("model.clear_margin_m: {e}")))?,
         map_frame: FrameId::new(&map_frame),
         esdf_truncation,
+        gate,
         pending: VecDeque::new(),
         max_pending,
         max_age: Duration::from_secs_f64(max_age),
@@ -640,6 +726,7 @@ fn main() -> Result<(), RclrsError> {
                 .value("scans_received", st.c.received)
                 .value("scans_integrated", st.c.integrated)
                 .value("skipped_no_transform", st.c.skipped_no_transform)
+                .value("skipped_motion", st.c.skipped_motion)
                 .value("skipped_malformed", st.c.skipped_malformed)
                 .value(
                     "skipped_sensor_outside_grid",
@@ -711,9 +798,10 @@ fn main() -> Result<(), RclrsError> {
         }
         log_info!(
             node.logger(),
-            "mapping_node shutting down: {} scans received, {} integrated, {} skipped for want of a transform",
+            "mapping_node shutting down: {} scans received, {} integrated, {} skipped for motion, {} skipped for want of a transform",
             st.c.received,
             st.c.integrated,
+            st.c.skipped_motion,
             st.c.skipped_no_transform
         );
     }

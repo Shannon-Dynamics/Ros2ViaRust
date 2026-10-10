@@ -235,7 +235,10 @@ fn main() -> Result<(), RclrsError> {
                     geometry: GridGeometry {
                         width: msg.info.width as usize,
                         height: msg.info.height as usize,
-                        resolution: msg.info.resolution as f64,
+                        // The message carries the resolution as a float32, which turns 0.05 into
+                        // 0.0500000007 and moves a surface on a lattice line 2e-6 cells off it
+                        // at the far edge of a 140 cell grid. Restore the value that was meant.
+                        resolution: (msg.info.resolution as f64 * 1e7).round() / 1e7,
                         origin: Vector2::new(o.position.x, o.position.y),
                     },
                     data: msg.data.clone(),

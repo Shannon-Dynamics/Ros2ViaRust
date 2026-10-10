@@ -350,7 +350,7 @@ pub struct MapMetrics {
 }
 
 /// The cells of the grid whose closed box contains `p`: one cell normally, two or four when
-/// `p` lies on a lattice line or corner (within a millionth of a cell). Empty outside the grid.
+/// `p` lies on a lattice line or corner (within a ten-thousandth of a cell, 5 micrometres at 5 cm; a grid whose resolution went through a `float32` is off by about 2e-6 cells at the far edge). Empty outside the grid.
 fn closed_cells(g: &crate::occupancy::GridGeometry, p: &V2) -> Vec<(usize, usize)> {
     let axis = |v: f64, origin: f64, n: usize| -> Vec<usize> {
         let f = (v - origin) / g.resolution;
@@ -359,7 +359,7 @@ fn closed_cells(g: &crate::occupancy::GridGeometry, p: &V2) -> Vec<(usize, usize
         }
         let r = f.round();
         let mut idx = vec![f.floor() as i64];
-        if (f - r).abs() < 1e-6 {
+        if (f - r).abs() < 1e-4 {
             idx = vec![r as i64 - 1, r as i64];
         }
         idx.into_iter()
@@ -860,6 +860,27 @@ mod tests {
             "false free with both sides free: {}",
             east(&none)
         );
+    }
+
+    /// A grid whose resolution went through a `float32` (a `nav_msgs/OccupancyGrid` carries it
+    /// so) has resolution 0.05000000074505806 for 0.05, which puts the lattice line x = 3.0 of a
+    /// grid from -3.5 at cell coordinate 129.999998 and not 130. The wall must still be found on
+    /// the line, between cells 129 and 130.
+    #[test]
+    fn a_float32_resolution_does_not_hide_a_lattice_line() {
+        let g = GridGeometry {
+            width: 140,
+            height: 140,
+            resolution: 0.05f32 as f64,
+            origin: v(-3.5, -3.5),
+        };
+        assert_ne!(g.resolution, 0.05);
+        assert_eq!(
+            closed_cells(&g, &v(3.0, 0.0125)),
+            vec![(129, 70), (130, 70)]
+        );
+        // An interior point is one cell.
+        assert_eq!(closed_cells(&g, &v(2.99, 0.0125)), vec![(129, 70)]);
     }
 
     #[test]

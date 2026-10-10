@@ -9,6 +9,8 @@
 //!   `nav_msgs/OccupancyGrid` values (Probabilistic Robotics, Chapter 9, Table 9.1).
 //! * [`raycast`]: the two ways of walking a beam through the grid, Bresenham between cell
 //!   centres and the exact supercover of the continuous segment.
+//! * [`gate`]: the refusal of scans whose timestamp cannot be trusted while the pose changes,
+//!   a measured property of the Webots lidar driver and not a general nicety.
 //! * [`integrate`]: the hand-crafted inverse sensor model and the integration of one laser
 //!   scan, one update per cell per scan, with a documented policy for beams that returned
 //!   nothing.
@@ -27,6 +29,7 @@
 pub mod entropy;
 pub mod esdf;
 pub mod eval;
+pub mod gate;
 pub mod integrate;
 pub mod occupancy;
 pub mod raycast;
@@ -34,7 +37,8 @@ pub mod raycast;
 pub use entropy::{cell_entropy_bits, grid_entropy, GridEntropy};
 pub use esdf::{signed_esdf, EsdfGrid};
 pub use eval::{evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample};
-pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport};
+pub use gate::MotionGate;
+pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport, DEFAULT_CLEAR_MARGIN};
 pub use occupancy::{CellState, GridGeometry, OccupancyGrid, OccupancyParams};
 
 /// Errors of the mapping library.

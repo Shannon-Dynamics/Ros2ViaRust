@@ -99,10 +99,24 @@ OBSERVABLE_FRACTION_MIN = 0.5
 SCAN_PERIOD_S = 0.2
 UPDATE_LATENCY_P99_MAX_S = 0.5 * SCAN_PERIOD_S
 
-# Validity: at least this fraction of the scans the mapper received must have been integrated
-# (a scan is skipped when its transform never arrives). A map from a stream that lost more
-# than two per cent of its scans is a map of a different experiment.
+# Validity: of the scans the mapper tried to integrate (those not skipped for motion, below), at
+# least this fraction must have been integrated: a scan is lost when its transform never
+# arrives. A map from a stream that lost more than two per cent of its scans to missing
+# transforms is a map of a different experiment.
 INTEGRATED_FRACTION_MIN = 0.98
+
+# Validity: scans skipped *by design* because the sensor moved too much across the window the
+# scan's stamp leaves open (`mapping_node` motion gate; docs/phase-4-mapping/implementation.md
+# section 5.2 items 2 and 6). They are not losses and do not count against the fraction above,
+# but a mapper that discarded more than half of what it was given did not map the route, so
+# this bounds them. The route turns in place 21 times; a quarter to a third of its scans fall
+# in those turns and in heading corrections, which is why half is the bound and not a tenth.
+#
+# ADDED AFTER THE HARNESS SMOKE RUN (evidence/phase-4-mapping/2026-10-11-harness-smoke),
+# which exposed that the lidar's stamp lags its measurement and led to the gate. It is a
+# validity bound and not an accuracy tolerance, no development or evaluation run existed
+# when it was added, and this paragraph is the record of that edit.
+MOTION_SKIPPED_FRACTION_MAX = 0.5
 
 # Validity: the robot must have moved. Every route is several metres long; this is the
 # threshold of scripts/phase3_guards.sh for the same reason (the 2026-10-06 run in which the
@@ -217,7 +231,7 @@ def grade(run):
             travel = max(math.hypot(x - pts[0][0], y - pts[0][1]) for x, y in pts)
     if travel is None or travel < MIN_TRAVEL_M:
         reasons.append(f"the robot did not move (largest displacement {travel}, needs {MIN_TRAVEL_M} m)")
-    integrated = skipped = 0
+    integrated = skipped = skipped_motion = 0
     lat = []
     lat_p = need("update-latency.csv")
     if lat_p:
@@ -226,12 +240,18 @@ def grade(run):
                 if r["outcome"] == "integrated":
                     integrated += 1
                     lat.append(float(r["latency_us"]) * 1e-6)
+                elif r["outcome"] == "skipped_motion":
+                    skipped_motion += 1
                 else:
                     skipped += 1
-    total = integrated + skipped
-    frac = integrated / total if total else None
+    tried = integrated + skipped
+    frac = integrated / tried if tried else None
     if frac is None or frac < INTEGRATED_FRACTION_MIN:
-        reasons.append(f"too many scans were not integrated: {integrated} of {total}")
+        reasons.append(f"too many scans were lost to missing transforms: {integrated} integrated of {tried}")
+    seen = integrated + skipped + skipped_motion
+    motion_frac = skipped_motion / seen if seen else None
+    if motion_frac is None or motion_frac > MOTION_SKIPPED_FRACTION_MAX:
+        reasons.append(f"too many scans were skipped for motion: {skipped_motion} of {seen}")
     if metrics and num(metrics.get("tau_cells")) != TAU_CELLS:
         reasons.append(f"the metrics used tau_cells {metrics.get('tau_cells')}, this script grades {TAU_CELLS}")
     valid = not reasons
@@ -241,7 +261,8 @@ def grade(run):
         lines += [f"  - {r}" for r in reasons]
     lines += [
         f"scans_integrated: {integrated}",
-        f"scans_not_integrated: {skipped}",
+        f"scans_lost_to_missing_transforms: {skipped}",
+        f"scans_skipped_for_motion: {skipped_motion}",
         f"largest_displacement_m: {travel}",
     ]
 

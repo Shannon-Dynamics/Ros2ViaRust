@@ -1,7 +1,7 @@
 //! Replay the scans a `mapping_node` integrated and write the grid they produce.
 //!
 //!     cargo run --release -p robotics_mapping --example replay_scans -- \
-//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham]
+//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham] [clear margin, m]
 //!
 //! This is the check of claim M2, determinism, on real simulator data: the recording holds
 //! every scan the mapper integrated, in the order it integrated them, each with the sensor pose
@@ -20,8 +20,8 @@ use std::process::ExitCode;
 
 fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.len() < 3 || args.len() > 5 {
-        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal]".into());
+    if args.len() < 3 || args.len() > 6 {
+        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal] [clear margin]".into());
     }
     let no_return = match args.get(3).map(String::as_str) {
         None | Some("clear_to_max_range") => NoReturn::ClearToMaxRange,
@@ -37,7 +37,15 @@ fn run() -> Result<(), String> {
     let template = OccupancyGrid::from_text(&read(&args[1])?).map_err(|e| e.to_string())?;
     let mut grid =
         OccupancyGrid::new(*template.geometry(), *template.params()).map_err(|e| e.to_string())?;
-    let mut integrator = ScanIntegrator::new(no_return, tracer);
+    let margin: f64 = match args.get(5) {
+        None => robotics_mapping::DEFAULT_CLEAR_MARGIN,
+        Some(v) => v
+            .parse()
+            .map_err(|_| format!("clear margin {v:?} is not a number"))?,
+    };
+    let mut integrator = ScanIntegrator::new(no_return, tracer)
+        .with_clear_margin(margin)
+        .map_err(|e| e.to_string())?;
 
     let mut scans = 0usize;
     for (n, line) in read(&args[0])?.lines().enumerate() {
