@@ -1,0 +1,52 @@
+header:
+  stamp:
+    sec: 1791656214
+    nanosec: 2939287
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '1731'
+  - key: scans_integrated
+    value: '1309'
+  - key: skipped_no_transform
+    value: '2'
+  - key: skipped_motion
+    value: '313'
+  - key: skipped_stationary
+    value: '107'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '299268'
+  - key: no_return_cleared
+    value: '171972'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '14206'
+  - key: occupied_cells
+    value: '944'
+  - key: unknown_cells
+    value: '4450'
+  - key: entropy_bits
+    value: '12315.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1296'
+  - key: update_latency_us_p95
+    value: '1931'
+  - key: update_latency_us_p99
+    value: '2326'
+---

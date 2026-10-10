@@ -1,0 +1,10 @@
+[phase4 development] starting the world, the adapter, the mapper and the evaluator
+[phase4 development] controllers are active; letting the adapter and the mapper settle
+[phase4 development] owner of map -> odom: ground_truth_tf_adapter; mapping_node subscribes to ground truth: false
+[phase4 development] driving route /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml (1 lap(s))
+[phase4 development] route_driver exited with code 0
+[phase4 development] route finished, letting the last scans be integrated
+[phase4 development] stopping with SIGINT: the mapper writes its grid and the evaluator grades, both at shutdown
+[phase4 development] replaying the recorded scans (claim M2)
+[phase4 development] grading
+[phase4 development] verdict written to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-development-2-route-long/phase4-verdict.yaml
