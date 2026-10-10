@@ -327,7 +327,7 @@ larger count next to it.
 <!-- kidnap-model-tables:end -->
 
 **Webots kidnap trials, a separate result that is not part of the generated table above.**
-Pada satu geometri kidnap tetap (seed 1001–1020), MCL recovered 20/20. Pada sampel model yang memvariasikan geometri kidnap (n=102), recovery rate ≈39%/81% (tergantung kondisi). Kedua hasil mengukur kode mcl.rs yang sama tapi tidak bisa dibandingkan langsung karena cakupan kidnap yang diuji berbeda.
+At one fixed kidnap geometry (seeds 1001–1020), MCL recovered 20/20. On the model sample that varies the kidnap geometry (n=102), the recovery rate is ≈39%/81% (depending on the condition). Both results measure the same `mcl.rs` code but cannot be compared directly, because the kidnap coverage tested differs.
 
 The conditions behind the two model figures, so that the sentence above is not read as one sample:
 39% is the as-shipped configuration (6000 particles, n=102); 81% is the labelled what-if at 48000

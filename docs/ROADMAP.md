@@ -135,10 +135,11 @@ none of the items below is claimed done):
   the Webots group) is counted as recovered exactly like one that took 15.480 s, so the
   20 of 20 above says that MCL eventually recovers, not that it recovers in a time a robot
   could use. A deadline for the criterion is not implemented.
-* **Known limitation: 20/20 recovery hanya diverifikasi untuk satu geometri kidnap
-  (seed-only variation, seed 1001–1020).** Generalisasi ke kidnap acak diukur di model pada
-  ~39–81% dan belum divalidasi di Webots. Variasi geometri (butuh ubah
-  `run_phase3_correctness.sh`, ~20 sesi, ~2,5 jam) ditunda ke backlog, bukan dibatalkan.
+* **Known limitation: 20/20 recovery has only been verified for one kidnap geometry
+  (seed-only variation, seeds 1001–1020).** Generalization to random kidnaps is measured in
+  the model at ~39–81% and has not been validated in Webots. Varying the geometry (this needs
+  a change to `run_phase3_correctness.sh`, ~20 sessions, ~2.5 hours) is deferred to the
+  backlog, not cancelled.
 
 Still open in Phase 3, in the order they bear on the results above:
 
