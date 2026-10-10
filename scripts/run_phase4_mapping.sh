@@ -184,8 +184,20 @@ if [ -s "$OUT/integrated-scans.csv" ] && [ -s "$OUT/final-grid.txt" ]; then
     REPLAY_SCANS=$(grep -o 'replayed [0-9]*' "$OUT/replay.log" | grep -o '[0-9]*' || echo none)
 fi
 
+# The model parameters the run actually used, read back from the files it wrote and not from
+# what this script meant to pass: a default that silently did not change cost one run its
+# purpose (evidence/phase-4-mapping/2026-10-11-development-2-route-long/NOTE-*.md).
+hdr() { sed -n "s/^$2 //p" "$1" 2>/dev/null | head -1; }
 {
     echo "role: $ROLE"
+    echo "mapper_occupied_threshold: $(hdr "$OUT/final-grid.txt" occupied_threshold)"
+    echo "mapper_free_threshold: $(hdr "$OUT/final-grid.txt" free_threshold)"
+    echo "mapper_l_occ: $(hdr "$OUT/final-grid.txt" l_occ)"
+    echo "mapper_l_free: $(hdr "$OUT/final-grid.txt" l_free)"
+    echo "mapper_l_min: $(hdr "$OUT/final-grid.txt" l_min)"
+    echo "mapper_l_max: $(hdr "$OUT/final-grid.txt" l_max)"
+    echo "evaluator_occupied_threshold: $(hdr "$OUT/final-map-states.txt" occupied_threshold)"
+    echo "grid_resolution_m: $(hdr "$OUT/final-grid.txt" resolution)"
     echo "owner_of_map_odom: $OWNER"
     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
     echo "route_driver_exit_code: $ROUTE_RC"

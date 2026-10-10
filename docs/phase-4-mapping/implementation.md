@@ -142,7 +142,7 @@ rely on was made on 2026-10-10.
 | D13 | Because the stamp lags the measurement by up to a scan period, the mapper skips a scan when the sensor moved more than 5 cm or turned more than 0.015 rad across the window `[stamp - 0.2 s, stamp]`: item 7. |
 | D14 | A no-return beam clears free space up to `range_max - 0.10 m`, not to `range_max`: item 8. |
 | D15 | Scans are integrated at the pose `0.06 s` before their stamp (`scan_time_offset_s`, the Webots lidar's mean lag), not at the stamp: item 10. |
-| D16 | A cell is occupied after two hits, not one (`p_occupied` 0.75, was 0.65): item 10. |
+| D16 | A cell is occupied after four hits, not one (`p_occupied` 0.95, was 0.65): item 10. |
 | D17 | A scan taken from where the last integrated one was taken is skipped (`motion_filter`, 2 cm or 0.02 rad): item 10. |
 
 
@@ -312,10 +312,18 @@ not repeated here.
       about) and the Phase 4 launch sets it to -0.06. It halves the worst-case translation
       error (the lag then lies in [-0.08, 0.12] s) and leaves the motion gate as the bound for
       what is left.
-    * **D16, two hits.** The occupied threshold goes from probability 0.65 to 0.75, so a cell
-      needs two hits; the free threshold is unchanged. Replaying the recording offline with only
-      this change, the false-occupied cells fall from 119 to 59 and the surface error does not
-      move, which is why it is not the whole answer.
+    * **D16, more hits to occupy (first written as two, now four).** The occupied threshold
+      first went from probability 0.65 to 0.75 (two hits). Replaying the first run's recording
+      offline with only that change, the false-occupied cells fell from 119 to 59 and the
+      surface error did not move. The second development run was meant to test it and did not:
+      the default was not changed in the node (a text replacement that silently matched nothing),
+      so that run had one-hit occupancy, which its recording then let me sweep offline (table in
+      its `NOTE-what-this-run-found.md`): 121 false cells at one hit, 67 at two, 35 at three,
+      20 at four (0.95), 15 at four-plus (0.96, where completeness falls below 0.95). The third run
+      uses 0.95, the largest threshold of that grid that keeps completeness at the verdict's
+      0.95. That is a choice made on a development recording after seeing it, and it leaves false
+      occupied (2.8 per cent in the replay) above the verdict's 2 per cent: what is left is a row
+      of cells outside the wall, at saturation, behind and beside the pillars, from grazing returns.
     * **D17, no repeats from a standing pose.** The log-odds update treats every scan as
       independent, and scans from one pose are not (the first smoke runs saturated a lidar
       "flying pixel", a depth-edge artefact of the rendered lidar, at a pillar's silhouette that

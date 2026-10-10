@@ -102,8 +102,8 @@ elided) · **P** prose/pseudocode only · **N** none (TypeScript only).
 | Book example | Test |
 |---|---|
 | Ch. 9 log-odds update from the prior one half: hit weight 0.7 gives 0.7, a second hit `49/58`, two misses of weight 0.4 give `4/13` | `occupancy::tests::worked_example_log_odds_updates_match_the_odds_products` |
-| Clamps at probabilities 0.12 and 0.97: a saturated occupied cell flips after 11 misses, a saturated free one after 4 hits; two hits make a cell occupied (threshold 0.75) | `occupancy::tests::clamps_bound_the_log_odds_and_set_how_fast_a_cell_flips` |
-| Table 9.1 on one beam: sensor at (0.5, 0.5) facing +x, range 4.2, 1 m cells: cells (0,0) to (3,0) get one miss each, (4,0) one hit, nothing else moves (one observation does not yet make a cell free or occupied) | `integrate::tests::worked_example_one_beam_along_a_row` |
+| Clamps at probabilities 0.12 and 0.97: a saturated occupied cell flips after 11 misses, a saturated free one after 6 hits; four hits make a cell occupied (threshold 0.95) | `occupancy::tests::clamps_bound_the_log_odds_and_set_how_fast_a_cell_flips` |
+| Table 9.1 on one beam: sensor at (0.5, 0.5) facing +x, range 4.2, 1 m cells: cells (0,0) to (3,0) get one miss each, (4,0) one hit, nothing else moves (one observation makes a cell neither free nor occupied: it takes two misses or four hits) | `integrate::tests::worked_example_one_beam_along_a_row` |
 | One update per cell per scan, and the result independent of beam order, bit for bit | `integrate::tests::{a_cell_is_updated_once_per_scan_however_many_beams_cross_it, beam_order_does_not_change_the_result}` |
 | Bresenham (0,0) to (5,2): (0,0) (1,0) (2,1) (3,1) (4,2) (5,2) | `raycast::tests::worked_example_bresenham_five_by_two` |
 | The segment (0.95, 0.95) to (2.05, 1.05) crosses (1, 0), which cell-centre Bresenham from (0, 0) to (2, 1) steps over | `raycast::tests::worked_example_bresenham_skips_a_cell_the_supercover_crosses`, `integrate::tests::the_tracer_decides_whether_a_corner_cell_is_cleared` |

@@ -131,6 +131,13 @@ MIN_TRAVEL_M = 0.2
 # reason to add runs until the average improves.
 SPREAD_MAX_CELLS = 1.0
 
+# Comparisons are made to this much slack. Distances in cells on a lattice take values such as
+# 1.0 and 1.5 exactly, and a quotient of metres computed in floating point lands a few parts
+# in 10^15 on the wrong side of the limit it is meant to meet (a cell at exactly 1.5 cells
+# measured 1.5000000000000036 and failed a limit of 1.5). Added after the first development
+# run, which showed it; it moves no tolerance by more than a billionth.
+EPSILON = 1e-9
+
 # ----------------------------------------------------------------------------------------
 
 
@@ -171,9 +178,9 @@ class Check:
         if value is None:
             self.ok = False
         elif op == "<=":
-            self.ok = value <= limit
+            self.ok = value <= limit + EPSILON
         elif op == ">=":
-            self.ok = value >= limit
+            self.ok = value >= limit - EPSILON
         elif op == "==":
             self.ok = value == limit
         else:
@@ -207,6 +214,9 @@ def grade(run):
     lines.append(f"role: {summary.get('role', 'unknown')}")
     owner = summary.get("owner_of_map_odom", "unknown")
     lines.append(f"owner_of_map_odom: {owner}")
+    lines.append(f"mapper_occupied_threshold: {summary.get('mapper_occupied_threshold')}")
+    lines.append(f"mapper_free_threshold: {summary.get('mapper_free_threshold')}")
+    lines.append(f"mapper_l_occ: {summary.get('mapper_l_occ')}")
     facts.update(
         mapper_sha=summary.get("mapping_node_executable_sha256", "unknown"),
         launch_args=summary.get("launch_arguments", "unknown"),
@@ -259,6 +269,11 @@ def grade(run):
         reasons.append(f"too many scans were skipped for motion: {skipped_motion} of {seen}")
     if metrics and num(metrics.get("tau_cells")) != TAU_CELLS:
         reasons.append(f"the metrics used tau_cells {metrics.get('tau_cells')}, this script grades {TAU_CELLS}")
+    # The mapper and the evaluator must read the same grid with the same thresholds, or the
+    # states the evaluator graded are not the states the mapper held.
+    mt, et = summary.get("mapper_occupied_threshold"), summary.get("evaluator_occupied_threshold")
+    if mt is None or et is None or mt != et:
+        reasons.append(f"the mapper and the evaluator used different occupied thresholds ({mt} vs {et})")
     valid = not reasons
     lines.append(f"valid: {str(valid).lower()}")
     if reasons:

@@ -122,17 +122,17 @@ pub enum CellState {
 
 /// The numbers of the inverse sensor model and of the read-out, all as log-odds.
 ///
-/// These are the defaults the development run of `docs/phase-4-mapping/benchmark.md` left, and
-/// they are not touched after it. All but the occupied threshold were chosen by reasoning before
+/// These are the defaults the development runs of `docs/phase-4-mapping/benchmark.md` left, and
+/// they are not touched after them. All but the occupied threshold were chosen by reasoning before
 /// any run; that one is the first parameter a run changed (its row says why):
 ///
 /// | quantity | probability | log-odds | why |
 /// |---|---|---|---|
 /// | `l_occ` | 0.7 | `ln(7/3)` | the usual hit weight (OctoMap's 0.7): one hit is evidence, not proof |
 /// | `l_free` | 0.4 | `ln(2/3)` | the usual miss weight (OctoMap's 0.4): a miss is weaker than a hit because the beam may have been blocked by something nearer |
-/// | `l_min` | 0.12 | `ln(0.12/0.88)` | OctoMap's clamp: a saturated free cell flips after four hits |
+/// | `l_min` | 0.12 | `ln(0.12/0.88)` | OctoMap's clamp: a saturated free cell flips after six hits |
 /// | `l_max` | 0.97 | `ln(0.97/0.03)` | OctoMap's clamp: a saturated occupied cell flips after eleven misses |
-/// | occupied threshold | 0.75 | `ln 3` | **two hits** make a cell occupied (one hit is 0.7, two are 0.845). Set on the first development run, `evidence/phase-4-mapping/2026-10-11-development-route-long`: with one hit it left 113 cells occupied one and a half cells beyond the walls, each one hit from a pose that was a few centimetres off, and nothing ever crosses a cell outside a wall to clear it |
+/// | occupied threshold | 0.95 | `ln 19` | **four hits** make a cell occupied (three are 0.93, four 0.97). Set on the second development run, `evidence/phase-4-mapping/2026-10-11-development-2-route-long`: with one hit (0.65) the map had 944 occupied cells of which 121 were farther than a cell from any surface, almost all in the row of cells just outside a wall, where a hit lands when the range noise and pose error put it 5 cm past the face and where no beam ever crosses to clear it. Replayed offline on that recording the false-occupied cells fell from 121 to 67 at 0.75, 35 at 0.85, 32 at 0.90, 20 at 0.95 and 15 at 0.96; 0.95 is the largest value of that grid that keeps completeness at 0.95 or more (0.96 gives 0.938) |
 /// | free threshold | 0.35 | `-ln(65/35)` | two misses are needed, one is not enough |
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct OccupancyParams {
@@ -218,7 +218,7 @@ impl OccupancyParams {
 
 impl Default for OccupancyParams {
     fn default() -> Self {
-        Self::from_probabilities(0.7, 0.4, 0.12, 0.97, 0.75, 0.35)
+        Self::from_probabilities(0.7, 0.4, 0.12, 0.97, 0.95, 0.35)
     }
 }
 
@@ -552,14 +552,16 @@ mod tests {
         assert_relative_eq!(g.probability(2, 2).unwrap(), 4.0 / 13.0, epsilon = 1e-6);
     }
 
-    /// Two hits make a cell occupied (the second takes it from 0.7 to 0.845, past the 0.75
-    /// threshold) and one is not enough; two misses make it free and one is not enough.
+    /// Four hits make a cell occupied (three give 0.93, four 0.97, past the 0.95 threshold) and
+    /// fewer do not; two misses make it free and one is not enough.
     #[test]
-    fn two_hits_make_a_cell_occupied_and_two_misses_make_it_free() {
+    fn four_hits_make_a_cell_occupied_and_two_misses_make_it_free() {
         let p = OccupancyParams::default();
         let mut g = grid();
-        g.add_evidence(0, 0, p.l_occ);
-        assert_eq!(g.state(0, 0), Some(CellState::Unknown));
+        for n in 1..=3 {
+            g.add_evidence(0, 0, p.l_occ);
+            assert_eq!(g.state(0, 0), Some(CellState::Unknown), "{n} hits");
+        }
         g.add_evidence(0, 0, p.l_occ);
         assert_eq!(g.state(0, 0), Some(CellState::Occupied));
         g.add_evidence(1, 0, p.l_free);
@@ -599,7 +601,7 @@ mod tests {
             hits += 1;
             assert!(hits < 100);
         }
-        assert_eq!(hits, 4, "a saturated free cell flips after four hits");
+        assert_eq!(hits, 6, "a saturated free cell flips after six hits");
     }
 
     #[test]
@@ -652,8 +654,7 @@ mod tests {
     fn ros_data_has_exactly_the_three_values() {
         let p = OccupancyParams::default();
         let mut g = grid();
-        g.add_evidence(0, 0, p.l_occ);
-        g.add_evidence(0, 0, p.l_occ);
+        g.add_evidence(0, 0, p.l_max);
         g.add_evidence(1, 0, p.l_free);
         g.add_evidence(1, 0, p.l_free);
         g.add_evidence(2, 0, p.l_free); // one miss: still unknown

@@ -133,9 +133,9 @@ mod tests {
         .unwrap();
         let l = g.params().l_occ;
         for &(i, j) in occupied {
-            // Two hits: one is not enough to call a cell occupied (see OccupancyParams).
-            g.add_evidence(i, j, l);
-            g.add_evidence(i, j, l);
+            // Saturate it: how many hits a cell needs is the grid's business, not this test's.
+            let _ = l;
+            g.add_evidence(i, j, g.params().l_max);
         }
         g
     }

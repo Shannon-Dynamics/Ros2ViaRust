@@ -102,6 +102,8 @@ replay_scans: 100
 launch_arguments: fixture
 source_git_commit: fixture
 mapping_node_executable_sha256: fixture
+mapper_occupied_threshold: 2.9444
+evaluator_occupied_threshold: 2.9444
 EOF
     cat > "$d/map-metrics.yaml" <<EOF
 maps_received: 10
@@ -145,7 +147,9 @@ make_fixture readsgt ground_truth_tf_adapter true 1 0.5 1.2 20
 make_fixture wrongtau ground_truth_tf_adapter false 2 0.5 1.2 20
 make_fixture inaccurate ground_truth_tf_adapter false 1 2.0 6.0 20
 make_fixture skipsmost ground_truth_tf_adapter false 1 0.5 1.2 150
-for f in good m5run readsgt wrongtau inaccurate skipsmost; do verdict $f; done
+make_fixture thresholds ground_truth_tf_adapter false 1 0.5 1.2 20
+sed -i 's/^evaluator_occupied_threshold: .*/evaluator_occupied_threshold: 0.619/' "$FIX/thresholds/summary.yaml"
+for f in good m5run readsgt wrongtau inaccurate skipsmost thresholds; do verdict $f; done
 check_match "B1  a valid, accurate run with the adapter as owner passes M1" '^M1: PASS' "$FIX/good/phase4-verdict.yaml"
 check_match "B2  a run whose map -> odom owner is an estimator is refused, not graded" '^M1: REFUSED' "$FIX/m5run/phase4-verdict.yaml"
 check_match "B3  a mapper that read ground truth makes the run invalid" '^valid: false' "$FIX/readsgt/phase4-verdict.yaml"
@@ -153,6 +157,7 @@ check_match "B4  an M1 verdict is withheld from an invalid run" '^M1: NOT_GRADED
 check_match "B5  metrics taken at another tolerance make the run invalid" 'tau_cells' "$FIX/wrongtau/phase4-verdict.yaml"
 check_match "B6  an inaccurate map fails M1" '^M1: FAIL' "$FIX/inaccurate/phase4-verdict.yaml"
 check_match "B7  a run that skipped most scans for motion is invalid" 'skipped for motion' "$FIX/skipsmost/phase4-verdict.yaml"
+check_match "B9  a mapper and an evaluator that disagree about the thresholds make the run invalid" 'different occupied thresholds' "$FIX/thresholds/phase4-verdict.yaml"
 check_match "B8  the verdict records the hash of the script that wrote it" '^verdict_script_sha256: [0-9a-f]{64}' "$FIX/good/phase4-verdict.yaml"
 
 # ----------------------------------------------------------------- C: bringup

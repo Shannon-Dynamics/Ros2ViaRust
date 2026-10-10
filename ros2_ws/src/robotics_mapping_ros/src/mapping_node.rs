@@ -465,7 +465,7 @@ fn main() -> Result<(), RclrsError> {
     let p_occupied = prob(
         &mut p,
         "model.p_occupied",
-        0.65,
+        0.95,
         "A cell at or above this is occupied",
     )?;
     let p_free = prob(

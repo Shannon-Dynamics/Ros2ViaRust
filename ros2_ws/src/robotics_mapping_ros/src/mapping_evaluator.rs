@@ -171,7 +171,7 @@ fn main() -> Result<(), RclrsError> {
     let p_occupied = p.f64(
         &node,
         "model.p_occupied",
-        0.65,
+        0.95,
         1e-3,
         0.999,
         "Must equal the mapper's",

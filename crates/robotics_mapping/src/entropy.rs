@@ -133,7 +133,7 @@ mod tests {
         let p = OccupancyParams::default();
         let mut g = grid(10, 10);
         let before = grid_entropy(&g);
-        for _ in 0..3 {
+        for _ in 0..5 {
             g.add_evidence(4, 4, p.l_occ);
         }
         let after = grid_entropy(&g);
