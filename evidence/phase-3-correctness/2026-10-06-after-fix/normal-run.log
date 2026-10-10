@@ -1,0 +1,22 @@
+[normal] starting the world with ground truth
+[normal] simulation is up
+[normal] controllers are active
+[normal] starting localization_node and localization_evaluator
+[normal] driving the square route
+[normal] side 1: forward
+[normal] side 1: turn
+[normal] side 2: forward
+[normal] side 2: turn
+[normal] side 3: forward
+[normal] side 3: turn
+[normal] side 4: forward
+[normal] side 4: turn
+[normal] route finished, letting the filter settle
+[normal] stopping with SIGINT, evaluator first so that it writes its summary
+localization_evaluator: exit code 0
+localization_node: exit code 0
+ros2_launch: exit code 0
+webots_bin_left: 0
+[normal] rows written: 649
+[normal] ground_truth_max_displacement_m: 1.174
+[normal] done, evidence in /home/genta/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-06-after-fix

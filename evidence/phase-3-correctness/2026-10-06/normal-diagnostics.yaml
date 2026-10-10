@@ -1,0 +1,36 @@
+header:
+  stamp:
+    sec: 52
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x02"
+  name: 'controller_manager: Controllers Activity'
+  message: No hardware components are currently active to activate controllers
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: unconfigured
+  - key: diffdrive_controller.state
+    value: inactive
+- level: "\x02"
+  name: 'controller_manager: Hardware Components Activity'
+  message: No hardware components are loaded!
+  hardware_id: ros2_control
+  values: []
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---

@@ -1,0 +1,63 @@
+# ros2-rust-robotics — workspace root.
+#
+# Layout
+#   crates/*      pure Rust robotics libraries (no ROS dependency, build anywhere)
+#   ros2_ws/src/* ROS 2 (rclrs) packages: thin adapters + nodes (need a sourced ROS 2 Jazzy env)
+#
+# `cargo test` / `cargo build` with no flags only touch the pure crates (default-members).
+# Use `--workspace` from inside a sourced ROS 2 environment to include the ROS packages,
+# or build them with `colcon build` from ros2_ws/ (see docs/BUILD.md).
+[workspace]
+resolver = "2"
+members = [
+    "crates/robotics_core",
+    "crates/robotics_models",
+    "crates/robotics_filters",
+    "crates/robotics_sim",
+    "crates/robotics_localization",
+    "ros2_ws/src/robotics_ros_bridge",
+    "ros2_ws/src/robotics_examples",
+    "ros2_ws/src/robotics_estimation",
+    "ros2_ws/src/robotics_sim_bridge",
+    "ros2_ws/src/robotics_localization_bridge",
+    "ros2_ws/src/robotics_integration",
+]
+default-members = [
+    "crates/robotics_core",
+    "crates/robotics_models",
+    "crates/robotics_filters",
+    "crates/robotics_sim",
+    "crates/robotics_localization",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "Apache-2.0"
+authors = ["Shannon Robotics"]
+
+[workspace.dependencies]
+# --- pure robotics core (ROS-independent, portable, WASM-clean) ---
+nalgebra = { version = "0.35", default-features = true }   # fixed-size SMatrix/SVector for states, covariances, Jacobians
+rand = "0.10"                                               # seeded SmallRng: the determinism discipline from the book
+rand_distr = "0.6"                                          # Normal / StandardNormal sampling (pairs with rand 0.10)
+thiserror = "2"                                             # typed error enums instead of panics
+# --- ROS 2 (only ros2_ws packages) ---
+rclrs = "0.8"                                               # ROS 2 client library (links against sourced rcl/rmw)
+ros-env = "0.3"                                             # re-exports Rust message crates found in AMENT_PREFIX_PATH
+# --- dev only ---
+approx = "0.5"
+proptest = "1"
+# --- internal ---
+robotics_core = { path = "crates/robotics_core" }
+robotics_models = { path = "crates/robotics_models" }
+robotics_filters = { path = "crates/robotics_filters" }
+robotics_sim = { path = "crates/robotics_sim" }
+robotics_localization = { path = "crates/robotics_localization" }
+robotics_ros_bridge = { path = "ros2_ws/src/robotics_ros_bridge" }
+
+[profile.release]
+debug = 1          # keep line tables for profiling on the robot
+lto = "thin"
+codegen-units = 4

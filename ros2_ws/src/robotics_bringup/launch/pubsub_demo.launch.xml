@@ -1,0 +1,16 @@
+<!-- Phase 1 proof: Rust publisher -> DDS -> Rust subscriber, with explicit QoS and parameters. -->
+<launch>
+  <arg name="reliable" default="true" description="RELIABLE (true) or BEST_EFFORT (false) on both ends"/>
+  <arg name="period_ms" default="500"/>
+
+  <node pkg="robotics_examples" exec="qos_talker" name="qos_talker" output="screen">
+    <param name="reliable" value="$(var reliable)"/>
+    <param name="period_ms" value="$(var period_ms)"/>
+    <param name="prefix" value="hello from rclrs"/>
+  </node>
+
+  <node pkg="robotics_examples" exec="qos_listener" name="qos_listener" output="screen">
+    <param name="reliable" value="$(var reliable)"/>
+    <param name="report_period_s" value="5"/>
+  </node>
+</launch>

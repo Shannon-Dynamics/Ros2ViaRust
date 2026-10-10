@@ -1,0 +1,192 @@
+[INFO] [1791305011.146239148] [tf2_echo]: Waiting for transform odom ->  base_link: Invalid frame ID "odom" passed to canTransform argument target_frame - frame does not exist
+At time 63.400000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 64.200000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 65.60000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 65.960000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 66.860000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 67.720000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 68.600000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 69.480000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 70.380000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 71.300000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 72.200000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 73.80000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 73.960000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 74.840000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 75.680000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 76.520000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 77.420000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 78.320000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+At time 79.220000000
+- Translation: [0.647, 0.842, 0.000]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.445, 0.895]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.923]
+- Rotation: in RPY (degree) [0.000, -0.000, 52.856]
+- Matrix:
+  0.604 -0.797  0.000  0.647
+  0.797  0.604  0.000  0.842
+  0.000  0.000  1.000  0.000
+  0.000  0.000  0.000  1.000
+[INFO] [1791305030.758465181] [rclcpp]: signal_handler(signum=15)

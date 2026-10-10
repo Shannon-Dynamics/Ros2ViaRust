@@ -1,0 +1,37 @@
+<!--
+  Phase 2 stack: deterministic Rusty simulator (wheels, IMU, LiDAR) + wheel odometry + ESKF.
+
+    sim_node ── joint_states ──► wheel_odometry_node ── wheel/odometry ──┐
+             ── imu/data ────────────────────────────────────────────────┼─► state_estimator_node ─► odom, state_estimate
+             ── scan  (LaserScan, frame laser)                            │                          + TF odom→base_link
+             ── ground_truth/odom ─► estimator_evaluator ◄── wheel/odometry, odom
+
+  TF ownership in this launch (exactly one owner per edge):
+    odom → base_link      state_estimator_node   (/tf; wheel_odometry_node runs with publish_tf:=false)
+    base_link → imu_link  sim_node               (/tf_static, same message as below)
+    base_link → laser     sim_node               (/tf_static)
+  Verified end to end by `ros2 run robotics_integration phase2_stack_test`.
+-->
+<launch>
+  <arg name="config" default="$(find-pkg-share robotics_bringup)/config/state_estimation.yaml"/>
+  <arg name="seed" default="1"/>
+  <arg name="evaluate" default="true"/>
+
+  <node pkg="robotics_sim_bridge" exec="sim_node" name="sim_node" output="screen">
+    <param from="$(var config)"/>
+    <param name="seed" value="$(var seed)"/>
+  </node>
+
+  <node pkg="robotics_estimation" exec="wheel_odometry_node" name="wheel_odometry_node" output="screen">
+    <param from="$(var config)"/>
+    <remap from="odom" to="wheel/odometry"/>
+  </node>
+
+  <node pkg="robotics_estimation" exec="state_estimator_node" name="state_estimator_node" output="screen">
+    <param from="$(var config)"/>
+  </node>
+
+  <node if="$(var evaluate)" pkg="robotics_sim_bridge" exec="estimator_evaluator" name="estimator_evaluator" output="screen">
+    <param from="$(var config)"/>
+  </node>
+</launch>

@@ -1,0 +1,21 @@
+/target/
+**/target/
+# colcon
+/ros2_ws/build/
+/ros2_ws/install/
+/ros2_ws/log/
+/ros2_ws/.cargo/
+# editors
+.vscode/
+.idea/
+*.swp
+# local logs
+*.log
+# ...except the logs under evidence/, which are the raw output a run is judged on: the
+# documentation points at these files instead of quoting numbers, so they have to be here.
+!/evidence/**/*.log
+!/sim/webots/evidence/**/*.log
+# python
+__pycache__/
+# webots per-world UI state
+*.wbproj

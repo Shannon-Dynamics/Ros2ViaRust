@@ -1,0 +1,279 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-06-23-41-33-305445-LAPTOP-HJL1R3P6-6634
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: world /home/genta/ros2-rust-robotics/sim/webots/worlds/turtlebot3_localization_room.wbt
+[INFO] [webots-1]: process started with pid [6670]
+[INFO] [ros2_supervisor.py-2]: process started with pid [6671]
+[INFO] [driver_turtlebot3-3]: process started with pid [6672]
+[INFO] [robot_state_publisher-4]: process started with pid [6675]
+[INFO] [static_transform_publisher-5]: process started with pid [6676]
+[INFO] [spawner-6]: process started with pid [6677]
+[INFO] [spawner-7]: process started with pid [6678]
+[INFO] [movie_recorder-8]: process started with pid [6679]
+[static_transform_publisher-5] [INFO] [1791304893.538779970] [static_transform_publisher_vWaUVWDVPVbU3OFi]: Spinning until stopped - publishing transform
+[static_transform_publisher-5] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-5] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-5] from 'base_link' to 'base_footprint'
+[robot_state_publisher-4] [INFO] [1791304893.565508149] [robot_state_publisher]: Robot initialized
+[movie_recorder-8] The specified robot (at /tmp/webots/genta/1234/ipc/movie_recorder/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[spawner-7] [INFO] [1791304894.096094625] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[ros2_supervisor.py-2] The specified robot (at /tmp/webots/genta/1234/ipc/Ros2Supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[movie_recorder-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[movie_recorder-8] movie_recorder: connected at sim t=0.000, basic time step 20 ms, will record 40.0 s to /home/genta/ros2-rust-robotics/sim/webots/evidence/2026-10-06-gui-realtime/phase3_smoke.mp4
+[robot_state_publisher-4] [INFO] [1791304901.956038943] [robot_state_publisher]: Robot initialized
+[driver_turtlebot3-3] [INFO] [1791304902.026060809] [controller_manager]: Using ROS clock for triggering controller manager cycles.
+[driver_turtlebot3-3] [WARN] [1791304902.026173575] [controller_manager]: The resource manager is not yet initialized, will wait for the robot description to initialize it..
+[driver_turtlebot3-3] [INFO] [1791304902.033541747] [controller_manager]: Subscribing to '/robot_description' topic for robot description.
+[driver_turtlebot3-3] [INFO] [1791304902.035161556] [controller_manager]: Received robot description from topic.
+[driver_turtlebot3-3] [INFO] [1791304902.035219158] [controller_manager]: Enforcing command limits is disabled. Command limits from URDF will be ignored.
+[driver_turtlebot3-3] [INFO] [1791304902.039437241] [controller_manager]: Initialize hardware 'WebotsControl' 
+[driver_turtlebot3-3] [WARN] [1791304902.039511761] [controller_manager.hardware_component.system.WebotsControl]: Executor is not available during hardware component initialization for 'WebotsControl'. Skipping node creation!
+[driver_turtlebot3-3] [INFO] [1791304902.039561678] [controller_manager]: Successful initialization of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791304902.039646041] [controller_manager]: Activating component 'WebotsControl'.
+[driver_turtlebot3-3] [INFO] [1791304902.039655884] [resource_manager]: 'configure' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791304902.039660739] [resource_manager]: Successful 'configure' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791304902.039666440] [resource_manager]: 'activate' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791304902.039674579] [resource_manager]: Successful 'activate' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [WARN] [1791304902.039699915] [controller_manager]: Component 'WebotsControl' does not have read or write statistics initialized, skipping registration.
+[driver_turtlebot3-3] [INFO] [1791304902.039706742] [controller_manager]: Resource Manager has been successfully initialized. Starting Controller Manager services...
+[driver_turtlebot3-3] [INFO] [1791304902.120060279] [controller_manager]: Loading controller : 'joint_state_broadcaster' of type 'joint_state_broadcaster/JointStateBroadcaster'
+[driver_turtlebot3-3] [INFO] [1791304902.120110196] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [WARN] [1791304902.130686668] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791304902.130726061] [controller_manager]: Controller 'joint_state_broadcaster' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[spawner-7] [INFO] [1791304902.149336980] [spawner_joint_state_broadcaster]: Loaded joint_state_broadcaster
+[driver_turtlebot3-3] [INFO] [1791304902.150672115] [controller_manager]: Configuring controller: 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791304902.150817415] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[driver_turtlebot3-3] [INFO] [1791304902.160324798] [controller_manager]: Activating controllers: [ joint_state_broadcaster ]
+[driver_turtlebot3-3] [INFO] [1791304902.474892678] [plugin_node_example]:   - properties: {'parameterExample': 'someValue'}
+[driver_turtlebot3-3] [INFO] [1791304902.475318180] [plugin_node_example]:   - robot name: TurtleBot3Burger
+[driver_turtlebot3-3] [INFO] [1791304902.475653143] [plugin_node_example]:   - basic timestep: 20
+[driver_turtlebot3-3] [INFO] [1791304902.476081712] [plugin_node_example]:   - is supervisor? False
+[driver_turtlebot3-3] [INFO] [1791304902.478220510] [TurtleBot3Burger]: Controller successfully connected to robot in Webots simulation.
+[driver_turtlebot3-3] [INFO] [1791304902.547319620] [controller_manager]: Successfully switched controllers!
+[spawner-7] [INFO] [1791304902.599055114] [spawner_joint_state_broadcaster]: Configured and activated joint_state_broadcaster
+[INFO] [spawner-7]: process has finished cleanly [pid 6678]
+[driver_turtlebot3-3] [INFO] [1791304902.953938393] [controller_manager]: Loading controller : 'diffdrive_controller' of type 'diff_drive_controller/DiffDriveController'
+[driver_turtlebot3-3] [INFO] [1791304902.953997772] [controller_manager]: Loading controller 'diffdrive_controller'
+[driver_turtlebot3-3] [WARN] [1791304902.965072819] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791304902.965130276] [controller_manager]: Controller 'diffdrive_controller' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[spawner-6] [INFO] [1791304903.002400117] [spawner_diffdrive_controller]: Loaded diffdrive_controller
+[driver_turtlebot3-3] [INFO] [1791304903.015437614] [controller_manager]: Configuring controller: 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791304903.047368609] [controller_manager]: Activating controllers: [ diffdrive_controller ]
+[driver_turtlebot3-3] [INFO] [1791304903.052836261] [controller_manager]: Successfully switched controllers!
+[spawner-6] [INFO] [1791304903.062147104] [spawner_diffdrive_controller]: Configured and activated diffdrive_controller
+[INFO] [spawner-6]: process has finished cleanly [pid 6677]
+[driver_turtlebot3-3] [WARN] [1791304903.653150163] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304904.580705664] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304905.473997763] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304906.402769390] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304907.330057819] [diffdrive_controller]: Velocity command timed out. Braking.
+[movie_recorder-8] movie_recorder: recording started at sim t=6.000
+[driver_turtlebot3-3] [WARN] [1791304908.309957229] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304909.972400793] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304910.723404278] [diffdrive_controller]: Received TwistStamped with zero timestamp, setting it to current time, this message will only be shown once
+[driver_turtlebot3-3] [WARN] [1791304918.420300592] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304923.846279670] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304932.175735395] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304938.462742071] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304946.928492460] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304949.150123621] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304951.261046999] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304953.342370262] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304955.700873578] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304958.035080262] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304960.352645717] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304962.680445105] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304964.747462895] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304967.081165090] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304969.495304648] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304971.794709718] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304973.914517682] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304976.180176680] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304978.703324261] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304981.076471004] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304983.139719368] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304985.294739742] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304987.627319252] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304989.687661934] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304991.894182699] [diffdrive_controller]: Velocity command timed out. Braking.
+[movie_recorder-8] movie_recorder: recording stopped at sim t=46.000, encoding
+[driver_turtlebot3-3] [WARN] [1791304993.811076083] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304994.810337153] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304995.607122349] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304996.304555913] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304997.227960023] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304998.101343245] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791304999.193544642] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305000.517911326] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305001.690668343] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305002.838394006] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305004.018485657] [diffdrive_controller]: Velocity command timed out. Braking.
+[movie_recorder-8] movie_recorder: done, failed=False exists=True bytes=2558787
+[INFO] [movie_recorder-8]: process has finished cleanly [pid 6679]
+[driver_turtlebot3-3] [WARN] [1791305005.149388064] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305006.423556448] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305007.574808937] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305008.760751862] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305009.943765761] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305011.202284077] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305012.314369467] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305013.493698389] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305014.611397331] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305015.764186013] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305016.967574764] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305018.056182996] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305019.156258038] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305020.309875115] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305021.401606057] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305022.563174636] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305023.655654598] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305024.827379792] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305025.940474642] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305027.139361367] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305028.231001229] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305029.390993821] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305030.492682639] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305031.594677097] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305032.750025510] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305033.805993440] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305034.932837490] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305035.995626996] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305037.142258383] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305038.208096126] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305039.330329108] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305040.413410760] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305041.593275044] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305042.656761233] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305043.784433680] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305044.875928990] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305046.038783057] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305047.124205552] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305048.245450386] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305049.302289070] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305050.422477370] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305051.473114633] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305052.628431004] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305053.729615636] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305054.904493270] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305055.955785058] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305057.126429417] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305058.192648782] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305059.322283015] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305060.384388643] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305061.538158526] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305062.544602676] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305063.694711446] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305064.814442110] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305065.981422981] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305067.068460690] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305068.216015315] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305069.297450381] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305070.440522296] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305071.522931332] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305072.707166216] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305073.787868065] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305074.932231167] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305076.021160629] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305077.198940668] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305078.279974316] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305079.433772406] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305080.512576172] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305081.662233020] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305082.739473300] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305083.901120450] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305084.994977207] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305086.151467257] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305087.234850834] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305088.439591370] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305089.530642002] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305090.683442298] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305091.772758209] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305092.958306626] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305094.026809525] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305095.174612595] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305096.269206365] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305097.409560814] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305098.593603120] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305099.692011963] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305100.782913089] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305101.933623144] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305103.049426242] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305104.246048601] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305105.334783951] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305106.508646027] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305107.626661747] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305108.765214494] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305109.864264683] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305111.005232646] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305112.097228181] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305113.256286454] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305114.343659484] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305115.489952750] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305116.586387740] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305117.729029214] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305118.872264330] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305120.059231173] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305121.128723192] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305122.287632526] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305123.357655065] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305124.492538811] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305125.535780304] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305126.622117771] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305127.763610691] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305128.851574334] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305129.995870842] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305131.087575649] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305132.250145251] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305133.440407871] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305134.563688746] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305135.645304952] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305136.811746378] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305137.928099173] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305139.072572529] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305140.153444166] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305141.306122825] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305142.389011065] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305143.550485190] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305144.632697341] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305145.783824617] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305146.871433961] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305148.020241456] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305149.107245593] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305150.286210645] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305151.387834495] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305152.574479802] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305153.650488729] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305154.801667427] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305155.892685521] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305156.995253854] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305158.051031910] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305159.175775676] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305160.264834829] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305161.409126893] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305162.461367508] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305163.581553280] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305164.661914609] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305165.849814435] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305166.926571538] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305168.058734031] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305169.114307725] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305170.233741431] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305171.327914849] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305172.440926460] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305173.530815000] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305174.701136929] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305175.768818657] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305176.916156132] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305178.028036750] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305179.200229066] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305180.311452162] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305181.502857613] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305182.609746171] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305183.753594121] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305184.814456626] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305185.944726007] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305187.053744165] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305188.183258425] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791305189.278352400] [diffdrive_controller]: Velocity command timed out. Braking.

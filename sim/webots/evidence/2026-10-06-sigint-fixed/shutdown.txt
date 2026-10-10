@@ -1,0 +1,5 @@
+signal: SIGINT to the ros2 launch process (pid 21386)
+exit_code: 0
+seconds_to_exit: 2.016869819
+webots_bin_processes_left: 0
+ros2_launch_processes_left: 0

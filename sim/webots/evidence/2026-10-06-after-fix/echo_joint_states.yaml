@@ -1,0 +1,26 @@
+header:
+  stamp:
+    sec: 66
+    nanosec: 420000000
+  frame_id: base_link
+name:
+- left wheel motor
+- right wheel motor
+- LDS-01_secondary_motor
+- LDS-01_main_motor
+position:
+- 43.48272
+- 49.03424
+- 0.0
+- 0.0
+velocity:
+- 0.0
+- 0.0
+- 0.0
+- 0.0
+effort:
+- .nan
+- .nan
+- 0.0
+- 0.0
+---

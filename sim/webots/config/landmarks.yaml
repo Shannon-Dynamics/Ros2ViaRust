@@ -1,0 +1,26 @@
+# Ground truth of the Phase 3 localization world, read out of
+# ../worlds/turtlebot3_localization_room.wbt. Webots coordinates, metres, world frame.
+# Keep this file and the world file in sync: a landmark moved in one and not the other
+# turns a localization bug into a bookkeeping bug.
+#
+# The landmark positions are the input a range and bearing landmark model needs
+# (crates/robotics_models/src/sensor/landmark.rs); the room outline is what a beam or
+# likelihood field model needs once the Phase 4 occupancy grid exists.
+
+world:
+  name: turtlebot3_localization_room
+  # RectangleArena, centred on the origin, inner wall faces at +/- 3.0 m.
+  floor_size: [6.0, 6.0]
+  wall_height: 0.5
+  wall_thickness: 0.05
+
+robot:
+  model: TurtleBot3 Burger
+  # Pose the robot spawns at, which is also the prior mean a tracking filter starts from.
+  spawn_pose: {x: 0.0, y: 0.0, theta: 0.0}
+
+landmarks:
+  - {id: landmark_a, x: 1.8, y: 1.2, radius: 0.15, height: 0.6}
+  - {id: landmark_b, x: -1.4, y: 2.0, radius: 0.15, height: 0.6}
+  - {id: landmark_c, x: -2.0, y: -1.0, radius: 0.15, height: 0.6}
+  - {id: landmark_d, x: 0.9, y: -2.1, radius: 0.15, height: 0.6}

@@ -1,0 +1,27 @@
+# Parameters for the Phase 1 wheel-odometry demo (Rusty's geometry from the book, Ch. 4).
+fake_wheel_encoders:
+  ros__parameters:
+    wheel_radius: 0.033
+    wheel_separation: 0.16
+    rate_hz: 50
+    left_joint: left_wheel_joint
+    right_joint: right_wheel_joint
+    v: 0.3
+    omega: 0.5
+    frame_id: base_link
+
+wheel_odometry_node:
+  ros__parameters:
+    wheel_radius: 0.033
+    wheel_separation: 0.16
+    left_joint: left_wheel_joint
+    right_joint: right_wheel_joint
+    odom_frame: odom
+    base_frame: base_link
+    publish_tf: true
+    use_header_stamp: true
+    noise_trans_per_m: 0.02
+    noise_lateral_per_m: 0.01
+    noise_rot_per_rad: 0.02
+    noise_rot_per_m: 0.01
+    diagnostics_period_s: 1

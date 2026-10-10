@@ -1,0 +1,18 @@
+transforms:
+- header:
+    stamp:
+      sec: 76
+      nanosec: 700000000
+    frame_id: odom
+  child_frame_id: base_link
+  transform:
+    translation:
+      x: 0.6886250502356197
+      y: 0.8124926353517061
+      z: 0.0
+    rotation:
+      x: 0.0
+      y: 0.0
+      z: 0.41457806097582384
+      w: 0.9100137533892145
+---

@@ -1,0 +1,19 @@
+ros2-rust-robotics
+Copyright 2026 Shannon Robotics
+
+This framework is an original implementation licensed under the Apache License 2.0 (see LICENSE).
+
+Its algorithms are informed by the design documents and Rust listings of the book
+"Probabilistic Robotics via Rust" (Shannon Dynamics), whose reference copy lives at
+  D:\Shannon\ROS2 via RUST\ProbabilisticRoboticRust-main
+That repository carries NO license file. No prose, widget code or TypeScript from it is
+copied here; chapter references in doc comments are citations, not copies. The mathematics
+follows Thrun, Burgard & Fox, "Probabilistic Robotics" (MIT Press, 2005) and Sola, Deray &
+Atchuthan, "A micro Lie theory for state estimation in robotics" (arXiv:1812.01537).
+
+Third-party runtime components:
+  rclrs, ros-env, rosidl_runtime_rs  (Apache-2.0)          https://github.com/ros2-rust
+  nalgebra                            (Apache-2.0)          https://nalgebra.org
+  rand, rand_distr                    (MIT OR Apache-2.0)   https://github.com/rust-random/rand
+  thiserror                           (MIT OR Apache-2.0)   https://github.com/dtolnay/thiserror
+  ctrlc                               (MIT OR Apache-2.0)   https://github.com/Detegr/rust-ctrlc

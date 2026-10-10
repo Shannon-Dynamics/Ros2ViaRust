@@ -1,0 +1,18 @@
+[package]
+name = "robotics_filters"
+description = "Recursive Bayesian state estimators: Bayes filter trait, histogram filter, Kalman, information filter, RTS smoother, EKF, UKF, SE(2) ESKF, wheel+IMU fusion, particle machinery with KLD sizing, NEES/NIS (ROS-independent)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+robotics_core = { workspace = true }
+nalgebra = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+rand_distr = { workspace = true }

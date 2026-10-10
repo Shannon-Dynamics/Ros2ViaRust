@@ -1,0 +1,19 @@
+[package]
+name = "robotics_models"
+description = "Probabilistic motion and sensor models (beam + EM, likelihood field, landmark, tempering), differential-drive kinematics and wheel odometry (ROS-independent)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+robotics_core = { workspace = true }
+nalgebra = { workspace = true }
+rand = { workspace = true }
+rand_distr = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+proptest = { workspace = true }

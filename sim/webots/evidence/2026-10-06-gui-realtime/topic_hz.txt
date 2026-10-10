@@ -1,0 +1,20 @@
+$ ros2 topic hz -w 20 /scan
+average rate: 2.154
+	min: 0.432s max: 0.501s std dev: 0.03166s window: 4
+
+$ ros2 topic hz -w 20 /odom
+average rate: 21.886
+	min: 0.001s max: 0.084s std dev: 0.03984s window: 20
+
+$ ros2 topic hz -w 20 /imu
+average rate: 7.436
+	min: 0.084s max: 0.193s std dev: 0.04359s window: 9
+
+$ ros2 topic hz -w 20 /joint_states
+average rate: 24.077
+	min: 0.001s max: 0.086s std dev: 0.03992s window: 20
+
+$ ros2 topic hz -w 20 /clock
+average rate: 24.594
+	min: 0.001s max: 0.084s std dev: 0.03919s window: 20
+

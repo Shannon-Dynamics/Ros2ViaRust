@@ -1,0 +1,27 @@
+[package]
+name = "robotics_examples"
+description = "Minimal rclrs nodes proving the pipeline: QoS-aware talker/listener, parameters, timers, and a fake wheel-encoder publisher"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "qos_talker"
+path = "src/qos_talker.rs"
+
+[[bin]]
+name = "qos_listener"
+path = "src/qos_listener.rs"
+
+[[bin]]
+name = "fake_wheel_encoders"
+path = "src/fake_wheel_encoders.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_models = { workspace = true }
+robotics_ros_bridge = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }

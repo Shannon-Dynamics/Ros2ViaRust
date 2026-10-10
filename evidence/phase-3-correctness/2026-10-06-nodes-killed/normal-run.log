@@ -1,0 +1,26 @@
+[normal] FAIL: a webots-bin process is already running, stop it first
+[normal] FAIL: a webots-bin process is already running, stop it first
+[normal] starting the world with ground truth
+[normal] simulation is up
+[normal] controllers are active
+[normal] starting localization_node and localization_evaluator
+[normal] driving the square route
+[normal] side 1: forward
+[normal] side 1: turn
+[normal] side 2: forward
+[normal] side 2: turn
+[normal] side 3: forward
+[normal] side 3: turn
+[normal] side 4: forward
+[normal] side 4: turn
+[normal] route finished, letting the filter settle
+[normal] stopping with SIGINT, evaluator first so that it writes its summary
+localization_evaluator: still alive 30 s after SIGINT, exit code unknown
+scripts/run_phase3_correctness.sh: line 174: 25813 Killed                  ros2 run robotics_localization_bridge localization_evaluator --ros-args -p "output_csv:=$CSV" -p "output_json:=$JSON" > "$OUT/$SCENARIO-evaluator.log" 2>&1
+localization_node: still alive 30 s after SIGINT, exit code unknown
+scripts/run_phase3_correctness.sh: line 174: 25812 Killed                  ros2 run robotics_localization_bridge localization_node --ros-args -p "map_file:=$MAP" > "$OUT/$SCENARIO-localization_node.log" 2>&1
+ros2_launch: exit code 0
+webots_bin_left: 0
+[normal] rows written: 855
+[normal] ground_truth_max_displacement_m: 1.244
+[normal] done, evidence in /home/genta/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-06-after-fix

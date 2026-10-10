@@ -1,0 +1,18 @@
+{
+  "movie_file": "/home/genta/ros2-rust-robotics/sim/webots/evidence/2026-10-06-sigint-fixed/phase3_smoke.mp4",
+  "width": 1280,
+  "height": 720,
+  "quality": 90,
+  "acceleration": 1,
+  "codec": 0,
+  "requested_seconds": 20.0,
+  "start_delay_seconds": 6.0,
+  "basic_time_step_ms": 20,
+  "started_sim_time": 6.0,
+  "stopped_sim_time": 26.0,
+  "recorded_sim_seconds": 20.0,
+  "failed": false,
+  "exists": true,
+  "size_bytes": 1465027,
+  "finished_sim_time": 31.34
+}

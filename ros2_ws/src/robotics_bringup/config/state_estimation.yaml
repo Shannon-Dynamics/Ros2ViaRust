@@ -1,0 +1,98 @@
+# Phase 2: Rusty simulator (wheels, IMU, LiDAR) + wheel odometry + wheel/IMU ESKF
+# (see docs/STATE_ESTIMATION.md and docs/SIMULATION.md).
+sim_node:
+  ros__parameters:
+    physics_rate_hz: 200
+    wheel_rate_hz: 50
+    imu_rate_hz: 100
+    robot:
+      wheel_radius: 0.033
+      wheel_separation: 0.16
+      ticks_per_rev: 4096
+    noise:
+      slip_sigma: 0.02            # per wheel, per physics step
+      right_radius_error: 0.002   # the true robot differs from its nominal model by 0.2 %
+      gyro_noise_density: 0.005   # rad/s/sqrt(Hz)
+      gyro_bias_random_walk: 0.0001
+      gyro_initial_bias: 0.005    # rad/s
+    trajectory:
+      repeat: true
+    use_cmd_vel: false
+    world: rusty_arena            # 13 m x 13 m room with corner obstacles (docs/SIMULATION.md)
+    lidar:
+      enabled: true
+      rate_hz: 10                 # must divide physics_rate_hz
+      beams: 360
+      angle_min: -3.141592653589793
+      angle_max: 3.12413936106985   # -pi + 359 * (2 pi / 360): full circle, 1 deg steps
+      range_min: 0.12             # closer returns -> -inf (REP 117)
+      range_max: 8.0              # no return -> +inf (REP 117)
+      range_sigma: 0.02
+      dropout_probability: 0.01
+      mount_x: 0.05               # static base_link -> laser, published by sim_node
+      mount_y: 0.0
+      mount_yaw: 0.0
+    frames:
+      odom: odom
+      base_link: base_link
+      imu: imu_link
+      laser: laser
+      ground_truth: base_link_ground_truth
+
+wheel_odometry_node:
+  ros__parameters:
+    wheel_radius: 0.033           # nominal: the node does not know the 0.2 % error
+    wheel_separation: 0.16
+    left_joint: left_wheel_joint
+    right_joint: right_wheel_joint
+    odom_frame: odom
+    base_frame: base_link
+    publish_tf: false             # state_estimator_node owns odom -> base_link here
+    use_header_stamp: true
+
+state_estimator_node:
+  ros__parameters:
+    frames:
+      odom: odom
+      base_link: base_link
+    topics:
+      wheel_odom: wheel/odometry
+      imu: imu/data
+      output_odom: odom
+      state_estimate: state_estimate
+    publish_tf: true
+    process_noise:
+      gyro_noise_density: 0.005
+      accel_noise_density: 0.5
+      gyro_bias_random_walk: 0.0001
+      slip_diffusion: 0.01
+    wheel_noise:
+      speed_sigma: 0.02
+      yaw_rate_sigma: 0.005
+      yaw_rate_per_speed: 0.1
+      yaw_rate_per_turn: 0.02
+      bias_update_max_speed: 0.05
+      wheel_only_yaw_var_per_s: 0.01
+    imu_noise:
+      yaw_rate_sigma: 0.005
+      use_message_covariance: true
+    initial_covariance:
+      sigma_xy: 0.001
+      sigma_theta: 0.001
+      sigma_speed: 0.5
+      sigma_bias: 0.02
+    max_dt: 0.5
+    max_measurement_delay: 0.05
+    imu_timeout: 0.2
+    wheel_timeout: 0.5
+    max_publish_rate_hz: 50.0
+    diagnostics_period_s: 1
+
+estimator_evaluator:
+  ros__parameters:
+    topics:
+      ground_truth: ground_truth/odom
+      raw: wheel/odometry
+      fused: odom
+    match_tolerance: 0.006
+    report_period_s: 5

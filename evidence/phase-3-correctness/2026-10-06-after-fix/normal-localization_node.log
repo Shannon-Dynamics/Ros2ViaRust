@@ -1,0 +1,4 @@
+[INFO] [1791306683.490616752] [localization_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791306683.493730615] [localization_node]: localization_node up: scan + odom + imu -> localization/pose (frame map), 36 parameters
+[INFO] [1791306683.818208214] [localization_node]: localizer started at (0.000, 0.000, 0.000) with 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, gate chi2(2) = 9.21
+[INFO] [1791306735.639904807] [localization_node]: localization_node shutting down

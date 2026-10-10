@@ -1,0 +1,13 @@
+scenario: normal
+date_utc: 2026-10-06T17:06:23Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.40.1-microsoft-standard-WSL2
+os: Ubuntu 24.04.2 LTS
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+ros_distro: jazzy
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+map_file: /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml
+map_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f

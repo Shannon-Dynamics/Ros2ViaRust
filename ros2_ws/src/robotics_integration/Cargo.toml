@@ -1,0 +1,21 @@
+[package]
+name = "robotics_integration"
+description = "Rust-first ROS 2 integration tests (launch_testing equivalent) for the ros2-rust-robotics stack"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "phase2_stack_test"
+path = "src/phase2_stack_test.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_ros_bridge = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }

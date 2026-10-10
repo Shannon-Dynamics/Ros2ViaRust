@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>robotics_bringup</name>
+  <version>0.1.0</version>
+  <description>Launch files and parameter configurations for the ros2-rust-robotics stack.</description>
+  <maintainer email="russell.otniel@shannon.id">Shannon Robotics</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>robotics_examples</exec_depend>
+  <exec_depend>robotics_estimation</exec_depend>
+  <exec_depend>robotics_sim_bridge</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

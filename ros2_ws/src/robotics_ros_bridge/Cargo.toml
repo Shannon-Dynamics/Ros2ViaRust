@@ -1,0 +1,22 @@
+[package]
+name = "robotics_ros_bridge"
+description = "ROS 2 <-> robotics_core adapters: message converters, QoS presets, TF broadcaster and listener, diagnostics"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+nalgebra = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }
+thiserror = { workspace = true }
+ctrlc = { version = "3", features = ["termination"] }   # SIGINT/SIGTERM handler; rclrs 0.8 has none
+
+[dev-dependencies]
+approx = { workspace = true }

@@ -1,0 +1,6 @@
+localization_evaluator: still alive 30 s after SIGINT, exit code unknown
+scripts/run_phase3_correctness.sh: line 134: 46814 Killed                  ros2 run robotics_localization_bridge localization_evaluator --ros-args -p "output_csv:=$CSV" -p "output_json:=$JSON" > "$OUT/$SCENARIO-evaluator.log" 2>&1
+localization_node: still alive 30 s after SIGINT, exit code unknown
+scripts/run_phase3_correctness.sh: line 134: 46813 Killed                  ros2 run robotics_localization_bridge localization_node --ros-args -p "map_file:=$MAP" > "$OUT/$SCENARIO-localization_node.log" 2>&1
+ros2_launch: still alive 30 s after SIGINT, exit code unknown
+webots_bin_left: 1

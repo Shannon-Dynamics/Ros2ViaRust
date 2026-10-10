@@ -1,0 +1,5 @@
+signal: SIGINT to the ros2 launch process (pid 12106)
+result: still alive 90 s after SIGINT, exit code unknown
+exit_code: none
+webots_bin_processes_left: 1
+ros2_launch_processes_left: 1

@@ -1,0 +1,24 @@
+[package]
+name = "robotics_sim_bridge"
+description = "ROS 2 adapter for the Rusty simulator (sim_node) and an estimator accuracy evaluator"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "sim_node"
+path = "src/sim_node.rs"
+
+[[bin]]
+name = "estimator_evaluator"
+path = "src/estimator_evaluator.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_models = { workspace = true }
+robotics_sim = { workspace = true }
+robotics_ros_bridge = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }

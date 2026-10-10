@@ -1,0 +1,413 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-06-23-13-14-613163-LAPTOP-HJL1R3P6-45822
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: world /home/genta/ros2-rust-robotics/sim/webots/worlds/turtlebot3_localization_room.wbt
+[INFO] [webots-1]: process started with pid [45845]
+[INFO] [ros2_supervisor.py-2]: process started with pid [45846]
+[INFO] [driver_turtlebot3-3]: process started with pid [45847]
+[INFO] [robot_state_publisher-4]: process started with pid [45848]
+[INFO] [static_transform_publisher-5]: process started with pid [45849]
+[INFO] [spawner-6]: process started with pid [45851]
+[INFO] [spawner-7]: process started with pid [45853]
+[INFO] [evaluation_supervisor-8]: process started with pid [45854]
+[static_transform_publisher-5] [INFO] [1791303194.772384506] [static_transform_publisher_4ExIF4p4s8ocvKLf]: Spinning until stopped - publishing transform
+[static_transform_publisher-5] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-5] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-5] from 'base_link' to 'base_footprint'
+[robot_state_publisher-4] [INFO] [1791303194.774662340] [robot_state_publisher]: Robot initialized
+[evaluation_supervisor-8] The specified robot (at /tmp/webots/genta/1234/ipc/evaluation_supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[ros2_supervisor.py-2] The specified robot (at /tmp/webots/genta/1234/ipc/Ros2Supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[spawner-6] [INFO] [1791303195.334280977] [spawner_diffdrive_controller]: waiting for service /controller_manager/list_controllers to become available...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[spawner-7] [WARN] [1791303214.271559443] [ros2_control_controller_spawner_joint_state_broadcaster]: Failed to acquire lock in 20 seconds. Attempt 1 of 5 failed. Retrying in 3 seconds...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[webots-1] WARNING: Cannot initialize the sound engine: Cannot initialize OpenAL default device 'OpenAL Soft'
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'TurtleBot3Burger'.
+[webots-1] INFO: 'Ros2Supervisor' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'Ros2Supervisor'.
+[webots-1] INFO: 'movie_recorder' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'movie_recorder'.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'evaluation_supervisor'.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: connected.
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: connected.
+[webots-1] WARNING: DEF TURTLEBOT3 TurtleBot3Burger > DEF CASTER_JOINT BallJoint: Exporting 'BallJoint' nodes to URDF is currently not supported
+[driver_turtlebot3-3] [INFO] [1791303231.224667852] [controller_manager]: Using ROS clock for triggering controller manager cycles.
+[driver_turtlebot3-3] [WARN] [1791303231.224756959] [controller_manager]: The resource manager is not yet initialized, will wait for the robot description to initialize it..
+[driver_turtlebot3-3] [INFO] [1791303231.229353755] [controller_manager]: Subscribing to '/robot_description' topic for robot description.
+[driver_turtlebot3-3] [INFO] [1791303231.230757996] [controller_manager]: Received robot description from topic.
+[driver_turtlebot3-3] [INFO] [1791303231.230826946] [controller_manager]: Enforcing command limits is disabled. Command limits from URDF will be ignored.
+[driver_turtlebot3-3] [ERROR] [1791303231.230933077] [controller_manager]: Exception caught while loading and initializing components: URDF cannot be parsed by a `ros2_control` component parser: no 'ros2_control' tag found in the URDF
+[driver_turtlebot3-3] [INFO] [1791303231.231039136] [controller_manager]: Resource Manager has been successfully initialized. Starting Controller Manager services...
+[driver_turtlebot3-3] [INFO] [1791303231.236317427] [controller_manager]: Received robot description from topic.
+[driver_turtlebot3-3] [WARN] [1791303231.236374558] [controller_manager]: ResourceManager has already loaded a urdf and is initialized. Ignoring attempt to reload a robot description.
+[evaluation_supervisor-8] [INFO] [1791303231.285000488] [evaluation_supervisor]: evaluation_supervisor: TURTLEBOT3, ground truth every 1 step(s) of 20 ms, frame map
+[webots-1] INFO: 'Ros2Supervisor' extern controller: connected.
+[driver_turtlebot3-3] [INFO] [1791303231.367721064] [controller_manager]: Loading controller : 'diffdrive_controller' of type 'diff_drive_controller/DiffDriveController'
+[driver_turtlebot3-3] [INFO] [1791303231.367793611] [controller_manager]: Loading controller 'diffdrive_controller'
+[driver_turtlebot3-3] [WARN] [1791303231.371712076] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791303231.371750359] [controller_manager]: Controller 'diffdrive_controller' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[robot_state_publisher-4] [INFO] [1791303231.389655207] [robot_state_publisher]: Robot initialized
+[robot_state_publisher-4] [INFO] [1791303231.394256680] [robot_state_publisher]: Robot initialized
+[spawner-6] [INFO] [1791303231.395074866] [spawner_diffdrive_controller]: Loaded diffdrive_controller
+[driver_turtlebot3-3] [INFO] [1791303231.395368931] [controller_manager]: Received robot description from topic.
+[driver_turtlebot3-3] [WARN] [1791303231.395419085] [controller_manager]: ResourceManager has already loaded a urdf and is initialized. Ignoring attempt to reload a robot description.
+[driver_turtlebot3-3] [INFO] [1791303231.396602057] [controller_manager]: Configuring controller: 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791303231.401541273] [controller_manager]: Activating controllers: [ diffdrive_controller ]
+[driver_turtlebot3-3] [WARN] [1791303231.401634399] [controller_manager]: Unable to activate controller 'diffdrive_controller' since the command interface 'left wheel motor/velocity' is not available.
+[spawner-6] [ERROR] [1791303231.402800502] [spawner_diffdrive_controller]: Failed to activate controller : diffdrive_controller
+[driver_turtlebot3-3] [INFO] [1791303231.667793615] [plugin_node_example]:   - properties: {'parameterExample': 'someValue'}
+[driver_turtlebot3-3] [INFO] [1791303231.668270921] [plugin_node_example]:   - robot name: TurtleBot3Burger
+[driver_turtlebot3-3] [INFO] [1791303231.668670508] [plugin_node_example]:   - basic timestep: 20
+[driver_turtlebot3-3] [INFO] [1791303231.669113963] [plugin_node_example]:   - is supervisor? False
+[driver_turtlebot3-3] [INFO] [1791303231.671445479] [TurtleBot3Burger]: Controller successfully connected to robot in Webots simulation.
+[spawner-7] [INFO] [1791303231.979884853] [spawner_joint_state_broadcaster]: Spawner lock acquired!
+[ERROR] [spawner-6]: process has died [pid 45851, exit code 1, cmd '/opt/ros/jazzy/lib/controller_manager/spawner diffdrive_controller --controller-manager-timeout 60 --ros-args'].
+[driver_turtlebot3-3] [INFO] [1791303232.003064422] [controller_manager]: Loading controller : 'joint_state_broadcaster' of type 'joint_state_broadcaster/JointStateBroadcaster'
+[driver_turtlebot3-3] [INFO] [1791303232.003106003] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [WARN] [1791303232.007616217] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791303232.007684508] [controller_manager]: Controller 'joint_state_broadcaster' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[spawner-7] [INFO] [1791303232.041143173] [spawner_joint_state_broadcaster]: Loaded joint_state_broadcaster
+[driver_turtlebot3-3] [INFO] [1791303232.042232059] [controller_manager]: Configuring controller: 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791303232.042330266] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[driver_turtlebot3-3] [INFO] [1791303232.061766985] [controller_manager]: Activating controllers: [ joint_state_broadcaster ]
+[driver_turtlebot3-3] [ERROR] [1791303232.080553091] [joint_state_broadcaster]: No state interfaces found to publish.
+[driver_turtlebot3-3] [ERROR] [1791303232.080640024] [joint_state_broadcaster]: Error initializing joint data. JointStateBroadcaster will not run.
+[driver_turtlebot3-3] [WARN] [1791303232.080662294] [joint_state_broadcaster]: Callback returned ERROR during the transition: activate
+[driver_turtlebot3-3] [ERROR] [1791303232.080685418] [controller_manager]: After activation, controller 'joint_state_broadcaster' is in state 'unconfigured' (1), expected 'active' (3). Releasing interfaces!
+[driver_turtlebot3-3] [ERROR] [1791303232.080701999] [controller_manager]: At least one controller failed to be activated. Releasing all interfaces and stopping all activated controllers because the switch strictness is set to STRICT.
+[driver_turtlebot3-3] [ERROR] [1791303232.080738690] [controller_manager]: Could not activate controller : 'joint_state_broadcaster'
+[driver_turtlebot3-3] [ERROR] [1791303232.080765256] [controller_manager]: Failed switching controllers.... 
+[driver_turtlebot3-3] [ERROR] [1791303232.080776179] [controller_manager]: Unable to activate controllers: [ joint_state_broadcaster  ]
+[spawner-7] [ERROR] [1791303232.104157711] [spawner_joint_state_broadcaster]: Failed to activate controller : joint_state_broadcaster
+[ERROR] [spawner-7]: process has died [pid 45853, exit code 1, cmd '/opt/ros/jazzy/lib/controller_manager/spawner joint_state_broadcaster --controller-manager-timeout 60 --ros-args'].
+[driver_turtlebot3-3] [WARN] [1791303236.368240659] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303236.468684316] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303236.568841660] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303236.668661328] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303236.768635391] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303236.868821699] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303236.968746325] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.068862331] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.169285099] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.268723691] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.368845873] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.468774691] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.568798895] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.668950864] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.768687365] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.868814528] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303237.968995588] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.068910632] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.168844946] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.268751569] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.368730583] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.468623724] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.568697057] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.668721055] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.768844664] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.868828711] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303238.968864970] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.068792470] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.168741487] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.268679321] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.368667404] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.468692431] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.569128360] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.669098537] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.768833223] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.868727748] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303239.968820749] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.068724162] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.168763833] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.269261173] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.369201274] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.469096912] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.568970444] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.668896091] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.769003379] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.868994754] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303240.969502618] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303241.068829163] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303241.168887411] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303242.648899608] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303242.749318242] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303242.849392819] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303242.949401755] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.049547143] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.149283264] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.249376054] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.349403546] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.449514346] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.549368334] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.649430238] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.749756511] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.849659689] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303243.949651929] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.049390536] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.149663923] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.249329856] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.349589333] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.449487093] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.549499667] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.649655733] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.749430367] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.849723645] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303244.949343631] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303245.049566657] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303245.149455787] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303245.249415784] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303245.349354212] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303245.449558577] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303245.549324765] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303246.984246298] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.084822885] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.184743557] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.285023831] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.385238262] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.485008912] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.584760638] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.684749066] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.784898053] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.884832737] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303247.984893718] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.084800076] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.184708756] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.284547463] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.385128321] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.485126871] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.585074640] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.685129802] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.785125066] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.884548771] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303248.985176788] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.084766185] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.185358614] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.284964165] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.385265943] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.484913691] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.585063773] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.684842146] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.784933574] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.885787958] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303249.984674833] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.085492216] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.185460748] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.285542435] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.384909432] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.484911122] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.584930591] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.684598915] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.785973763] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.886141982] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303250.985198343] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.085608823] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.185161881] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.284637355] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.384623658] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.485287999] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.585932618] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.684919109] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303251.785206687] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.276195536] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.376947385] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.478574312] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.577234818] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.677678431] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.777636428] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.877354932] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303253.976811813] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.076915525] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.177088590] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.277030843] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.376848408] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.476842589] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.577125834] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.677028938] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.776854650] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.876931173] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303254.976845908] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.076819354] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.176997056] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.277360860] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.376863386] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.477130547] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.576958714] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.677085418] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.776697323] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.877153903] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303255.976944115] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303256.076948163] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303257.543568986] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303257.644286537] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303257.744433772] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303257.844266830] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303257.944936192] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.044275069] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.144442868] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.244252097] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.344437965] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.444785944] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.544286681] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.644240842] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.744177270] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.844793846] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303258.944242817] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.044509544] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.144211739] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.244468627] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.344334748] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.444461317] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.544312900] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.644374107] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.744457222] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.844242164] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303259.944271895] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.044232365] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.144228022] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.244312019] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.344266167] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.444424940] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.544231254] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.644700383] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.744756734] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.844789052] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303260.944337515] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.044893166] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.144459856] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.244473364] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.344552941] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.444691206] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.544236922] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.644650646] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.744349036] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.844189806] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303261.945095428] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303262.044266340] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303262.145115847] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303262.244171620] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303262.344272770] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303262.444858188] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.043189597] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.143078008] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.243113105] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.343041750] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.443167991] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.543240240] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.643236923] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.743382470] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.843344846] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303263.943143381] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.043065813] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.143174769] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.242998006] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.343004843] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.443594996] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.543140367] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.643218569] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.742958637] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.843129972] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303264.943101905] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.043061180] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.143125813] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.243195075] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.343196359] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.443186589] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.543096310] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.643158086] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.743614231] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303265.843427787] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.287763706] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.388356843] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.488082244] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.588170787] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.688114311] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.788227766] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.888422931] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303267.988388408] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.088432297] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.188230238] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.287983636] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.388213574] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.488357568] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.588471621] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.688107043] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.788187885] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.888125363] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303268.988114953] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.088017087] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.188491794] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.288203610] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.388514445] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.488379643] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.588110215] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.688174879] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.787989205] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.888093071] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303269.988278116] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.088270404] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.188222640] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.288222179] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.388067995] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.488118986] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.588097760] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.688199863] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.788125855] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.888474945] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303270.988058059] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.088157625] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.188525584] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.288134290] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.388077234] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.488498520] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.589125033] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.688048488] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.788252039] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.888503600] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303271.988444759] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303272.088170153] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303273.567694663] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303273.668382045] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303273.768997636] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303273.868363129] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303273.968905618] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.068463738] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.168516653] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.268821233] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.368420291] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.468521263] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.568521242] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.668437386] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.768316186] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.868618518] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303274.968338000] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.068570024] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.168537581] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.268245165] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.368337820] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.468418328] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.568377226] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.668428769] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.768387862] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.868388677] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303275.968385199] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303276.068460259] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303276.168431849] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303276.268849704] [diffdrive_controller]: Can't accept new commands. subscriber is inactive
+[driver_turtlebot3-3] [WARN] [1791303276.368875068] [diffdrive_controller]: Can't accept new commands. subscriber is inactive

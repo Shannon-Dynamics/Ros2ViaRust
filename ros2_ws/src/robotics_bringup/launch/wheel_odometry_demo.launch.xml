@@ -1,0 +1,12 @@
+<!-- Phase 1: fake wheel encoders -> wheel_odometry_node -> /odom + TF odom->base_link. -->
+<launch>
+  <arg name="config" default="$(find-pkg-share robotics_bringup)/config/wheel_odometry.yaml"/>
+
+  <node pkg="robotics_examples" exec="fake_wheel_encoders" name="fake_wheel_encoders" output="screen">
+    <param from="$(var config)"/>
+  </node>
+
+  <node pkg="robotics_estimation" exec="wheel_odometry_node" name="wheel_odometry_node" output="screen">
+    <param from="$(var config)"/>
+  </node>
+</launch>

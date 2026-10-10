@@ -1,0 +1,24 @@
+[package]
+name = "robotics_estimation"
+description = "State-estimation nodes for ros2-rust-robotics (wheel odometry, wheel + IMU ESKF state estimator)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "wheel_odometry_node"
+path = "src/wheel_odometry_node.rs"
+
+[[bin]]
+name = "state_estimator_node"
+path = "src/state_estimator_node.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_models = { workspace = true }
+robotics_filters = { workspace = true }
+robotics_ros_bridge = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }

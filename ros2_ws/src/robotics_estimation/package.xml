@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>robotics_estimation</name>
+  <version>0.1.0</version>
+  <description>State-estimation nodes for ros2-rust-robotics: differential-drive wheel odometry (JointState to Odometry) and the wheel + IMU SE(2) ESKF state estimator (fused Odometry and TF).</description>
+  <maintainer email="russell.otniel@shannon.id">Shannon Robotics</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>rclrs</depend>
+  <depend>robotics_ros_bridge</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf2_msgs</depend>
+  <depend>diagnostic_msgs</depend>
+
+  <export>
+    <build_type>ament_cargo</build_type>
+  </export>
+</package>

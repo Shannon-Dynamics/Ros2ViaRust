@@ -1,0 +1,21 @@
+[run] starting the launch, gui:=true mode:=realtime record:=true
+[run] launch pid 12106
+[run] topics are up
+[run] controllers are active
+[run] cmd_vel for 8 s: v=0.15 w=0.0
+[run] cmd_vel for 6 s: v=0.0 w=0.6
+[run] cmd_vel for 8 s: v=0.15 w=0.3
+[run] cmd_vel for 6 s: v=0.0 w=-0.6
+[run] cmd_vel for 8 s: v=0.12 w=0.0
+[run] driving finished
+[run] capturing graph, rates and one sample message per topic
+[run] waiting for the recorder to finish encoding
+[run] stopping the launch with SIGINT
+[run] shutdown recorded:
+signal: SIGINT to the ros2 launch process (pid 12106)
+result: still alive 90 s after SIGINT, exit code unknown
+exit_code: none
+webots_bin_processes_left: 1
+ros2_launch_processes_left: 1
+[run] movie: /home/genta/ros2-rust-robotics/sim/webots/evidence/2026-10-06-after-fix/phase3_smoke.mp4 (1999715 bytes)
+[run] done, evidence in /home/genta/ros2-rust-robotics/sim/webots/evidence/2026-10-06-after-fix
