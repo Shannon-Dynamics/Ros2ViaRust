@@ -1,0 +1,5 @@
+[scan-skew] starting the world with ground truth
+[scan-skew] recording
+[scan-skew] recorder exited with code 0
+[scan-skew] analysing
+[scan-skew] analysis exited with code 0; report in /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-10-scan-skew-probe/skew-report.yaml

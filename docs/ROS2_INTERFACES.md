@@ -44,7 +44,7 @@ frontier candidates) and will live in a single `robotics_interfaces` package.
 | `/slam/pose`, `/slam/path`, `/slam/graph` | `PoseWithCovarianceStamped`, `nav_msgs/Path`, `visualization_msgs/MarkerArray` | SLAM |
 | `/goal_pose` | `geometry_msgs/PoseStamped` | RViz / explorer → planner |
 | `/plan` | `nav_msgs/Path` | `planner_node` → `controller_node` |
-| `/esdf` | `nav_msgs/OccupancyGrid` (signed distance encoded) or custom | mapping → planner/controller |
+| `/esdf` | `sensor_msgs/Image`, `32FC1` (signed distance in metres, one float per cell, row 0 = grid row `j = 0`), paired by `header.stamp` with the `/map` it was computed from, whose grid geometry it shares | mapping → planner/controller; encoding decision D12 of `docs/phase-4-mapping/implementation.md` section 5.2 |
 | `/cmd_vel` | `geometry_msgs/Twist` (`TwistStamped` when the base supports it) | `controller_node` → base |
 | `/explore/frontiers` | `visualization_msgs/MarkerArray` | `explorer_node` |
 

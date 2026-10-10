@@ -1,10 +1,11 @@
 # Phase 4, implementation: the Rust side
 
-> **Status: plan only, nothing written in code.** No crate, package, script or launch file
-> named here exists yet. Where this file says "exists", it points at something that is
-> already in the repository and has been looked at; everything else is a plan, and where a
-> fact still has to be checked against the simulator or the code it says so. The decisions
-> recorded in section 5 were confirmed by the project owner on 2026-10-10.
+> **Status: decisions taken, code in progress.** Phase 3 closed on 2026-10-10 and the
+> open questions that could be settled without writing the mapper were settled the same day
+> (section 5.2): three from data recorded in the simulator, two by design. What is built is
+> listed in section 8 as it lands; anything this file calls a plan and section 8 does not list
+> does not exist yet. The decisions of section 5.1 were confirmed by the project owner on
+> 2026-10-10.
 
 ## 1. Already in the repository
 
@@ -113,7 +114,7 @@ the Webots world, unchanged.
 
 ## 5. Decisions, and what is still open
 
-Confirmed by the project owner on 2026-10-10:
+### 5.1 Confirmed by the project owner on 2026-10-10
 
 | Id | Decision |
 |---|---|
@@ -125,18 +126,109 @@ Confirmed by the project owner on 2026-10-10:
 | D6 | A second, more complex world is the backlog item *M1-extended*, after the Phase 3 trials. |
 | D7 | The analytic geometry of the world is the main baseline. The rclpy port and `nav2_costmap_2d` are additional information and do not block. |
 
-Still open, to be settled before they are coded:
+### 5.2 Questions settled on 2026-10-11, before any mapper code
 
-1. **MCL's route to `map -> odom`** (D3): which of the two.
-2. **No-return beams.** Whether a beam without a return clears free space up to the range
-   limit, or is dropped. Both are used in practice and differ near the sensor limit.
-3. **Scan skew.** At 5 Hz a sweep takes 0.2 s. Whether Webots stamps and simulates a scan as
-   one instant or as a rotation during motion has not been checked; if it is a rotation, a
-   robot at driving speed moves a large part of a cell during one sweep. To be measured on a
-   recorded scan, not assumed either way.
-4. **Lidar height against the world.** The walls are 0.5 m high and the pillars 0.6 m; that
-   the lidar plane is below both is expected from the model and has not been verified here.
-5. **The ESDF message encoding.**
+Decided on the project owner's instruction to decide and document them, so open to the
+owner's revision (unlike 5.1, they were not separately confirmed). The scan recording they
+rely on was made on 2026-10-10.
+
+| Id | Decision |
+|---|---|
+| D8 | The lidar plane (0.173 m) is below the walls (0.5 m) and the pillars (0.6 m): item 1. |
+| D9 | A Webots scan is one instant at its header stamp; the mapper does not deskew: item 2. |
+| D10 | A beam with no return clears free space to `range_max` by default, `drop` selectable: item 3. |
+| D11 | A cell is updated at most once per scan, occupied over free: item 4. |
+| D12 | The ESDF is a `sensor_msgs/Image` `32FC1` paired by stamp with `/map`: item 5. |
+
+
+The first four were open at the end of 5.1. Items 1 to 3 are answers from the simulator's
+own files and from a recorded run; the numbers are in
+`evidence/phase-4-mapping/2026-10-10-scan-skew-probe/skew-report.yaml`, written by
+[`scripts/phase4_scan_skew_analysis.py`](../../scripts/phase4_scan_skew_analysis.py), and are
+not repeated here.
+
+1. **Lidar height against the world (D8): the scan plane cuts every obstacle.** Read
+   statically from the world and the two protos Webots caches
+   (`TurtleBot3Burger.proto`, `RobotisLds01.proto`), not from a run: the lidar sits at
+   `0.153 + 0.02 = 0.173` m above the floor, with one layer and no tilt, and the walls
+   (`RectangleArena`, `wallHeight 0.5`, boxes centred at half height) and pillars
+   (`Cylinder height 0.6`, centred at 0.3 m) both span it. Nothing in the room can pass over
+   or under the scan plane, so a 2-D grid is an honest representation of this world. That is
+   a property of this world and says nothing about furniture of other heights.
+2. **Scan skew (D9): one scan is one instant, to within about one beam.** Recorded with the
+   robot still, driving straight at the route driver's 0.18 m/s, and turning in place at its
+   0.8 rad/s plus a 2.0 rad/s stress turn, against ground truth and the analytic room. Two
+   models of when the 360 beams were measured were fitted per scan (one instant; or beams
+   spread over a span `s`), and the method was first checked on synthetic scans with a
+   known span (0 s and 0.2 s, both recovered). Findings: the published
+   `time_increment` and `scan_time` are both `0`, so the driver asserts nothing about
+   sweep timing; the seam between the last and first beam, which point the same way, shows no
+   step at driving speed to within its standard error, where a 0.2 s sweep would show one
+   of about 36 mm; and in the turns the fitted span equals about one beam of heading, not
+   the nine and twenty-three beams a 0.2 s sweep would give, and it shrinks as the turn gets
+   faster, so it is not a sweep time. **Decision:** the mapper treats every scan as one
+   instant at its header stamp, looks the pose up at that stamp, and does no deskewing. The
+   skew that remains at route speed is far below one 5 cm cell. **Scope:** this is a
+   statement about the Webots LDS-01 model. The real LDS-01 rotates during the 0.2 s and a
+   robot at speed would smear a scan; nothing here covers that, and a real-robot mapper
+   would need the deskew this one omits. Not all phases of the recording could be used: the
+   three stopping phases are not evidence (two have no valid seam beams, one has a residual
+   several times the noise floor, so the robot had not settled), and the straight-line fit of
+   the span is poorly conditioned, which is why the seam test, not that fit, carries the
+   translation result.
+3. **Beams without a return (D10): clear free space up to the range limit.** In this
+   simulator a beam with nothing in range is published as `inf`; never as NaN, never as
+   `range_max`. Against the analytic room, the beams that came back `inf` are exactly the
+   beams whose true range exceeds 3.5 m (all but two of the standing-still ones, and those two
+   at 3.483 m, inside the range noise), and no beam that came back finite has a true range
+   above 3.5 m. So here `inf` is a real statement, "nothing within `range_max`", and
+   discarding those beams would throw away about 30 per cent of every scan (the corners of
+   the room are 4.24 m away) and leave the far part of the room unexplored for no reason.
+   **Decision:** an `inf` beam, and a finite one at or beyond `range_max`, clears the cells
+   along the beam up to `range_max` and marks nothing occupied; NaN and anything below
+   `range_min` are dropped. A parameter selects `drop` instead, for a sensor whose no-return
+   can also mean a surface that absorbed the beam; the default is `clear_to_max_range`, and the
+   evidence above is why. Consequence of the published angle grid (increment `-2 pi / 359`,
+   so beams 0 and 359 point the same way): it is correct, it was checked against the
+   alternative `2 pi / 360` and fits better, and it means one direction is sampled twice, which
+   the update below makes harmless.
+4. **Update rule (D11): each cell is updated at most once per scan.** The grid collects the
+   cells a scan found free and the cells it found occupied, and applies `l_free` to the
+   free ones not also occupied and `l_occ` to the occupied ones, once each. This is
+   Table 9.1 of Probabilistic Robotics (one update per cell in the perceptual field of the
+   scan, not one per beam), it stops the cells near the sensor, which hundreds of beams cross,
+   from saturating on a single scan, and it makes the result independent of beam order exactly
+   rather than approximately. A cell that one beam passes through and another ends in is
+   occupied: the hit is the stronger statement.
+5. **ESDF message (D12): `sensor_msgs/Image`, encoding `32FC1`, paired with `/map`.** One
+   `float32` per cell, in metres, row-major with row 0 at the grid's `j = 0` (the
+   `nav_msgs/OccupancyGrid` order, which is the opposite of an image's top-down order and is
+   stated here so that nobody flips it), positive in free space, negative inside an obstacle,
+   zero level at the cell faces (the signed convention of section 8.2), saturating at the
+   truncation distance, and `inf` where no obstacle exists. `header.frame_id` is the map's
+   and `header.stamp` is the stamp of the `/map` message it was computed from; its grid
+   geometry (width, height, resolution, origin) is **by contract that of `/map`**, so a
+   consumer checks the two stamps and sizes and reads the geometry from `/map`. Rejected:
+   `nav_msgs/OccupancyGrid` with the distance squeezed into `int8` (the type's semantics are 0
+   to 100 and -1, every viewer and every consumer that subscribes by type would read the
+   distances as probabilities, and `-1` is a legal signed distance); a `PointCloud2` (sparse
+   or organized, lossless but with the geometry implicit in point spacing); and a custom
+   message, which is what the established mappers ship (`nvblox_msgs/DistanceMapSlice`,
+   `grid_map_msgs/GridMap`) and is the right end state, but would add an interface package
+   and its Rust bindings to the underlay for a topic that nothing consumes before Phase 6.
+   **Revisit** when Phase 6 chooses how a planner reads it; the stamp-pairing contract is the
+   price of using a standard type until then.
+6. **MCL's route to `map -> odom` (D3): still undecided.** It does not block T1 to T9, and
+   nothing in this part reads an estimator's pose. It must be decided before T10 and the M5
+   runs, and the two options are the ones of [problem.md](problem.md) section 6. Recorded here
+   so that it is not forgotten: **T10 and M5 do not start until D3 is decided.**
+
+### 5.3 Still open
+
+* D3 above, and with it T10 and M5.
+* The occupancy thresholds, the clamps, `l_occ`, `l_free` and the resolution are *defaults*
+  in the library, chosen by reasoning in section 8.1 and fixed on the development run
+  (section 6); they are not tuned on an evaluation run.
 
 ## 6. Evidence, and how this part will be run
 

@@ -1,0 +1,11 @@
+date_utc: 2026-10-10T16:53:11Z
+kernel: 6.18.40.1-microsoft-standard-WSL2
+ros_distro: jazzy
+webots: Webots version: R2025a
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+recorder_sha256: c7aa0d8f7a280f382a08d124c9431f1f6fa3a62d7bfe014983b59f454f744489
+analysis_sha256: c22b6fe143120e1fc5e7f9dd87fca1b5b13bc28f1b5713ea08782ac81ebfb58e
+mode: realtime
+reanalysed_utc: 2026-10-10T16:59:21Z
+analysis_sha256_final: 58be096f752f97dc74f20fe50f119899a64d8b5a7004667e5ba86d2e2384c173
+note: skew-report-first-analysis.yaml is the report of the first version of the analysis script (fit only); skew-report.yaml adds the seam, angle-grid and no-return checks on the same unchanged recording

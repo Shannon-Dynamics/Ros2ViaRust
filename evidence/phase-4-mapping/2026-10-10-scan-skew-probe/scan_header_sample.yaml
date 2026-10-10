@@ -1,0 +1,5 @@
+stamp:
+  sec: 5
+  nanosec: 220000000
+frame_id: LDS-01
+---

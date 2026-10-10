@@ -1,0 +1,1 @@
+webots_bin_left: 0

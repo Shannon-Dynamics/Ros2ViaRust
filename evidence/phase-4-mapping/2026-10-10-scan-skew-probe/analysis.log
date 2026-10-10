@@ -1,0 +1,337 @@
+/usr/lib/python3/dist-packages/numpy/lib/function_base.py:1452: RuntimeWarning: invalid value encountered in subtract
+  a = op(a[slice1], a[slice2])
+# Written by scripts/phase4_scan_skew_analysis.py from scans.csv, gt.csv, phases.csv.
+# Nothing here was typed in. See that script's docstring for the two models.
+scans: 185
+frame_id: LDS-01
+n_beams: 360
+angle_min: 3.141590
+angle_increment: -0.017502
+time_increment_published: [0.0]
+scan_time_published: [0.0]
+stamp_period_s:
+  n: 184
+  median: 0.220000
+  p25: 0.200000
+  p75: 0.220000
+  min: 0.200000
+  max: 0.220000
+no_return_beams:
+  inf: 19925
+  nan: 0
+  above_range_max: 0
+  below_range_min: 0
+  beams_total: 66600
+lidar_mount_in_robot_frame_fitted_standing_still:
+  x_m: -0.027417
+  y_m: -0.000110
+  yaw_rad: -0.000850
+angle_grid_standing_still:
+  published_minus_2pi_over_359_rms_m: 0.006808
+  alternative_minus_2pi_over_360_rms_m: 0.009779
+no_return_standing_still:
+  inf_beams: 3334
+  finite_beams: 8906
+  inf_beams_min_predicted_range_m: 3.482877
+  inf_beams_with_predicted_range_above_range_max: 3332
+  inf_beams_with_predicted_range_below_range_max: 2
+  finite_beams_max_predicted_range_m: 3.495536
+  finite_beams_with_predicted_range_above_range_max: 0
+phases:
+  still:
+    seam_test:
+      n: 32
+      mean_m: 0.001029
+      standard_error_m: 0.001359
+    commanded_linear_m_s: 0.000000
+    commanded_angular_rad_s: 0.000000
+    scans_used: 32
+    instant_model_rms_m:
+      n: 32
+      median: 0.006756
+      p25: 0.006652
+      p75: 0.006947
+      min: 0.005985
+      max: 0.007818
+    instant_model_offset_d_s:
+      n: 32
+      median: -0.295000
+      p25: -0.300000
+      p75: -0.085000
+      min: -0.300000
+      max: 0.300000
+    swept_model_rms_m:
+      n: 32
+      median: 0.006756
+      p25: 0.006652
+      p75: 0.006920
+      min: 0.005985
+      max: 0.007818
+    swept_model_span_s:
+      n: 32
+      median: -0.500000
+      p25: -0.500000
+      p75: -0.300000
+      min: -0.520000
+      max: 0.440000
+    swept_model_offset_d_s:
+      n: 32
+      median: -0.200000
+      p25: -0.300000
+      p75: 0.262500
+      min: -0.300000
+      max: 0.310000
+  straight_0.18:
+    seam_test:
+      n: 10
+      mean_m: 0.001788
+      standard_error_m: 0.002199
+    commanded_linear_m_s: 0.180000
+    commanded_angular_rad_s: 0.000000
+    scans_used: 32
+    instant_model_rms_m:
+      n: 32
+      median: 0.008648
+      p25: 0.007307
+      p75: 0.009725
+      min: 0.006385
+      max: 0.014954
+    instant_model_offset_d_s:
+      n: 32
+      median: -0.061500
+      p25: -0.101000
+      p75: -0.032000
+      min: -0.164000
+      max: 0.032000
+    swept_model_rms_m:
+      n: 32
+      median: 0.008420
+      p25: 0.007280
+      p75: 0.009473
+      min: 0.006385
+      max: 0.014937
+    swept_model_span_s:
+      n: 32
+      median: 0.072000
+      p25: 0.018000
+      p75: 0.133000
+      min: -0.032000
+      max: 0.254000
+    swept_model_offset_d_s:
+      n: 32
+      median: -0.098000
+      p25: -0.146500
+      p75: -0.067500
+      min: -0.208000
+      max: 0.040000
+  stop_a:
+    seam_test:
+      n: 0
+    commanded_linear_m_s: 0.000000
+    commanded_angular_rad_s: 0.000000
+    scans_used: 8
+    instant_model_rms_m:
+      n: 8
+      median: 0.013962
+      p25: 0.012498
+      p75: 0.014160
+      min: 0.011661
+      max: 0.015002
+    instant_model_offset_d_s:
+      n: 8
+      median: -0.304000
+      p25: -0.310000
+      p75: -0.085000
+      min: -0.310000
+      max: 0.308000
+    swept_model_rms_m:
+      n: 8
+      median: 0.013504
+      p25: 0.012475
+      p75: 0.014135
+      min: 0.011661
+      max: 0.015002
+    swept_model_span_s:
+      n: 8
+      median: -0.247000
+      p25: -0.520000
+      p75: 0.460000
+      min: -0.520000
+      max: 0.520000
+    swept_model_offset_d_s:
+      n: 8
+      median: -0.091000
+      p25: -0.310000
+      p75: 0.286500
+      min: -0.310000
+      max: 0.308000
+  turn_0.8:
+    seam_test:
+      n: 21
+      mean_m: 0.008976
+      standard_error_m: 0.009434
+    commanded_linear_m_s: 0.000000
+    commanded_angular_rad_s: 0.800000
+    scans_used: 31
+    instant_model_rms_m:
+      n: 31
+      median: 0.016612
+      p25: 0.014841
+      p75: 0.017916
+      min: 0.010494
+      max: 0.024906
+    instant_model_offset_d_s:
+      n: 31
+      median: -0.063000
+      p25: -0.098000
+      p75: -0.035500
+      min: -0.164000
+      max: 0.018000
+    swept_model_rms_m:
+      n: 31
+      median: 0.013932
+      p25: 0.012958
+      p75: 0.015885
+      min: 0.008637
+      max: 0.016796
+    swept_model_span_s:
+      n: 31
+      median: 0.022000
+      p25: 0.016000
+      p75: 0.028000
+      min: 0.006000
+      max: 0.040000
+    swept_model_offset_d_s:
+      n: 31
+      median: -0.075000
+      p25: -0.113500
+      p75: -0.045000
+      min: -0.173000
+      max: 0.012000
+  stop_b:
+    seam_test:
+      n: 0
+    commanded_linear_m_s: 0.000000
+    commanded_angular_rad_s: 0.000000
+    scans_used: 8
+    instant_model_rms_m:
+      n: 8
+      median: 0.013359
+      p25: 0.013223
+      p75: 0.013909
+      min: 0.011411
+      max: 0.014019
+    instant_model_offset_d_s:
+      n: 8
+      median: 0.252500
+      p25: -0.125000
+      p75: 0.310000
+      min: -0.310000
+      max: 0.310000
+    swept_model_rms_m:
+      n: 8
+      median: 0.013359
+      p25: 0.013222
+      p75: 0.013762
+      min: 0.011187
+      max: 0.014019
+    swept_model_span_s:
+      n: 8
+      median: 0.423000
+      p25: 0.284500
+      p75: 0.478000
+      min: -0.520000
+      max: 0.520000
+    swept_model_offset_d_s:
+      n: 8
+      median: -0.310000
+      p25: -0.310000
+      p75: -0.248500
+      min: -0.310000
+      max: 0.146000
+  turn_2.0_stress:
+    seam_test:
+      n: 12
+      mean_m: 0.016674
+      standard_error_m: 0.013947
+    commanded_linear_m_s: 0.000000
+    commanded_angular_rad_s: 2.000000
+    scans_used: 22
+    instant_model_rms_m:
+      n: 22
+      median: 0.016519
+      p25: 0.014535
+      p75: 0.018699
+      min: 0.012362
+      max: 0.021743
+    instant_model_offset_d_s:
+      n: 22
+      median: -0.050500
+      p25: -0.080750
+      p75: -0.020250
+      min: -0.160000
+      max: 0.021000
+    swept_model_rms_m:
+      n: 22
+      median: 0.014260
+      p25: 0.012883
+      p75: 0.015943
+      min: 0.010930
+      max: 0.017129
+    swept_model_span_s:
+      n: 22
+      median: 0.008000
+      p25: 0.006000
+      p75: 0.009500
+      min: 0.004000
+      max: 0.014000
+    swept_model_offset_d_s:
+      n: 22
+      median: -0.053000
+      p25: -0.085000
+      p75: -0.023250
+      min: -0.163000
+      max: 0.019000
+  stop_c:
+    seam_test:
+      n: 8
+      mean_m: -0.097485
+      standard_error_m: 0.011349
+    commanded_linear_m_s: 0.000000
+    commanded_angular_rad_s: 0.000000
+    scans_used: 8
+    instant_model_rms_m:
+      n: 8
+      median: 0.023020
+      p25: 0.022467
+      p75: 0.023619
+      min: 0.021226
+      max: 0.024322
+    instant_model_offset_d_s:
+      n: 8
+      median: -0.100000
+      p25: -0.308500
+      p75: 0.255000
+      min: -0.310000
+      max: 0.310000
+    swept_model_rms_m:
+      n: 8
+      median: 0.023020
+      p25: 0.022467
+      p75: 0.023619
+      min: 0.021226
+      max: 0.024309
+    swept_model_span_s:
+      n: 8
+      median: -0.520000
+      p25: -0.520000
+      p75: 0.520000
+      min: -0.520000
+      max: 0.520000
+    swept_model_offset_d_s:
+      n: 8
+      median: -0.310000
+      p25: -0.310000
+      p75: -0.310000
+      min: -0.310000
+      max: -0.310000
