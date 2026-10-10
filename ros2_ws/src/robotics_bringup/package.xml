@@ -13,6 +13,7 @@
   <exec_depend>robotics_estimation</exec_depend>
   <exec_depend>robotics_sim_bridge</exec_depend>
   <exec_depend>robotics_localization_bridge</exec_depend>
+  <exec_depend>robotics_mapping_ros</exec_depend>
   <exec_depend>ros2launch</exec_depend>
 
   <export>

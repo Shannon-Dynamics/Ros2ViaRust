@@ -1,0 +1,27 @@
+[package]
+name = "robotics_mapping_ros"
+description = "Mapping nodes for ros2-rust-robotics: the occupancy mapper (TF in, map and ESDF out), the ground-truth TF adapter that stands in for an estimator in simulation, and the evaluator that grades the map against the world"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "ground_truth_tf_adapter"
+path = "src/ground_truth_tf_adapter.rs"
+
+[[bin]]
+name = "mapping_node"
+path = "src/mapping_node.rs"
+
+[[bin]]
+name = "mapping_evaluator"
+path = "src/mapping_evaluator.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_mapping = { workspace = true }
+robotics_ros_bridge = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }

@@ -1031,6 +1031,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "robotics_mapping"
+version = "0.1.0"
+dependencies = [
+ "approx",
+ "nalgebra",
+ "proptest",
+ "robotics_core",
+ "robotics_models",
+ "robotics_sim",
+ "thiserror",
+]
+
+[[package]]
+name = "robotics_mapping_ros"
+version = "0.1.0"
+dependencies = [
+ "rclrs",
+ "robotics_core",
+ "robotics_mapping",
+ "robotics_ros_bridge",
+ "ros-env",
+]
+
+[[package]]
 name = "robotics_models"
 version = "0.1.0"
 dependencies = [

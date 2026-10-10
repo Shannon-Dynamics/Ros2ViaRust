@@ -97,6 +97,23 @@ elided) · **P** prose/pseudocode only · **N** none (TypeScript only).
     ESS above a target, the annealed-particle-filter rule); the book calibrates `κ` offline
     only.
 
+## Worked examples reproduced as tests (phase 4)
+
+| Book example | Test |
+|---|---|
+| Ch. 9 log-odds update from the prior one half: hit weight 0.7 gives 0.7, a second hit `49/58`, two misses of weight 0.4 give `4/13` | `occupancy::tests::worked_example_log_odds_updates_match_the_odds_products` |
+| Clamps at probabilities 0.12 and 0.97: a saturated occupied cell flips after 11 misses, a saturated free one after 4 hits | `occupancy::tests::clamps_bound_the_log_odds_and_set_how_fast_a_cell_flips` |
+| Table 9.1 on one beam: sensor at (0.5, 0.5) facing +x, range 4.2, 1 m cells: cells (0,0) to (3,0) free, (4,0) occupied, nothing else moves | `integrate::tests::worked_example_one_beam_along_a_row` |
+| One update per cell per scan, and the result independent of beam order, bit for bit | `integrate::tests::{a_cell_is_updated_once_per_scan_however_many_beams_cross_it, beam_order_does_not_change_the_result}` |
+| Bresenham (0,0) to (5,2): (0,0) (1,0) (2,1) (3,1) (4,2) (5,2) | `raycast::tests::worked_example_bresenham_five_by_two` |
+| The segment (0.95, 0.95) to (2.05, 1.05) crosses (1, 0), which cell-centre Bresenham from (0, 0) to (2, 1) steps over | `raycast::tests::worked_example_bresenham_skips_a_cell_the_supercover_crosses`, `integrate::tests::the_tracer_decides_whether_a_corner_cell_is_cleared` |
+| The supercover visits exactly the cells a segment crosses, each once, in order, checked against Liang-Barsky clipping on random segments | `raycast::tests::supercover_visits_exactly_the_crossed_cells` |
+| Entropy of a cell at probability 0.7: `0.8812909` bits; an unobserved cell exactly 1 bit, so a fresh grid has as many bits as cells | `entropy::tests::{worked_example_a_cell_at_seven_tenths, an_unobserved_cell_is_exactly_one_bit}` |
+| Signed ESDF of one occupied cell (0.1 m cells): `-0.05` in it, `0.05` beside it, `0.1 sqrt 2 - 0.05` diagonally, `0.15` two cells away; the field equals its brute-force definition on random grids | `esdf::tests::{worked_example_a_single_occupied_cell, matches_the_brute_force_definition}` |
+| The ideal map of a 1 m room (40 wall cells, 81 free) scores perfectly; a phantom cell is 1 of 41 false occupied at 0.5 m; a wall hole is 2 of 80 false free | `eval::tests::{worked_example_the_ideal_map_scores_perfectly, a_phantom_cell_is_a_false_occupied_cell_and_moves_the_maximum, a_hole_in_a_wall_is_false_free_and_lowers_completeness}` |
+| Visibility: the near side of a pillar is seen, the far side and the wall behind it are not | `eval::tests::visibility_respects_facing_occlusion_range_and_side` |
+| The mapper is deterministic, its text form round-trips bit for bit, and the mapped room agrees with the analytic geometry | `tests/room_mapping.rs` |
+
 ## Worked examples reproduced as tests (phase 2)
 
 | Book example | Test |

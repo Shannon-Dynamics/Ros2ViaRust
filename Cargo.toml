@@ -15,12 +15,14 @@ members = [
     "crates/robotics_filters",
     "crates/robotics_sim",
     "crates/robotics_localization",
+    "crates/robotics_mapping",
     "ros2_ws/src/robotics_ros_bridge",
     "ros2_ws/src/robotics_examples",
     "ros2_ws/src/robotics_estimation",
     "ros2_ws/src/robotics_sim_bridge",
     "ros2_ws/src/robotics_localization_bridge",
     "ros2_ws/src/robotics_integration",
+    "ros2_ws/src/robotics_mapping_ros",
 ]
 default-members = [
     "crates/robotics_core",
@@ -28,6 +30,7 @@ default-members = [
     "crates/robotics_filters",
     "crates/robotics_sim",
     "crates/robotics_localization",
+    "crates/robotics_mapping",
 ]
 
 [workspace.package]
@@ -55,6 +58,7 @@ robotics_models = { path = "crates/robotics_models" }
 robotics_filters = { path = "crates/robotics_filters" }
 robotics_sim = { path = "crates/robotics_sim" }
 robotics_localization = { path = "crates/robotics_localization" }
+robotics_mapping = { path = "crates/robotics_mapping" }
 robotics_ros_bridge = { path = "ros2_ws/src/robotics_ros_bridge" }
 
 [profile.release]

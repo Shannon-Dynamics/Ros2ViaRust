@@ -81,7 +81,7 @@ No algorithmic code lives in a node. Packages are grouped by subsystem, not by a
 | `robotics_estimation` | ament_cargo bins | `wheel_odometry_node`, `state_estimator_node` ✅ | – |
 | `robotics_sim_bridge` | ament_cargo bins | `sim_node` (`/scan`, `/joint_states`, `/imu/data`, ground truth, static sensor TF), `estimator_evaluator` ✅ | – |
 | `robotics_integration` | ament_cargo lib + bins | `phase2_stack_test` (Rust `launch_testing` equivalent) ✅ | one test per phase |
-| `robotics_bringup` | ament_cmake | launch XML + YAML params (`pubsub_demo`, `wheel_odometry_demo`, `estimator_sim`) | per-phase launch files |
+| `robotics_bringup` | ament_cmake | launch XML + YAML params (`pubsub_demo`, `wheel_odometry_demo`, `estimator_sim`) and the per-phase Python launch files (`phase3_localization`, `phase4_mapping`) | per-phase launch files |
 | `robotics_localization` | ament_cargo | – | `localization_node` (phase 3) |
 | `robotics_mapping_ros` | ament_cargo | – | `ground_truth_tf_adapter` (phase 4, simulation only), `mapping_node`, `mapping_evaluator` (phase 4). Named `_ros` because a Cargo workspace cannot hold the crate `robotics_mapping` and a package of the same name |
 | `robotics_slam` | ament_cargo | – | `scan_matcher_node`, `pose_graph_node` (phase 5) |
