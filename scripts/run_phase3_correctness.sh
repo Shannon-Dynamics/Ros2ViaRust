@@ -1,11 +1,17 @@
 #!/usr/bin/env bash
-# One Phase 3 correctness run: EKF localization against simulator ground truth.
+# One Phase 3 correctness run: EKF and/or MCL localization against simulator ground truth.
 #
 #   bash scripts/run_phase3_correctness.sh <normal|kidnap> <output directory>
 #
+# The output directory may be given as a bare name with no slash in it, which is the form
+# to prefer: it resolves to <EVIDENCE_ROOT>/phase-3-correctness/<name>, and
+# scripts/evidence_root.sh points EVIDENCE_ROOT at the Windows checkout, so the run writes
+# across the mount instead of into the WSL mirror where a later rsync --delete could remove
+# it. A path containing a slash is used exactly as given, for the cases that need it.
+#
 # Both scenarios drive the identical route with the identical parameters. The only
 # difference is that `kidnap` teleports the robot once, part way through, through the
-# Webots Supervisor and without telling the estimator. Everything the run produces is a
+# Webots Supervisor and without telling either estimator. Everything the run produces is a
 # file in the output directory; no number is printed here and copied anywhere by hand.
 #
 # Environment overrides, all recorded in <scenario>-environment.txt so that a run can be
@@ -13,25 +19,30 @@
 #
 #   ROUTE_FILE    route the robot drives          (default sim/webots/config/route_long.yaml)
 #   LAPS          how many times to drive it      (default 1)
+#   ESTIMATORS    which estimator(s) to run, space separated: "ekf", "mcl", or "ekf mcl"
+#                                                 (default "ekf")
+#
+# Running both together, rather than as two separate invocations with the same configured
+# parameters, is deliberate whenever a direct comparison is the point (the MCL-vs-EKF and
+# the kidnap recovery evidence both do this): one Webots session means one ground truth
+# trajectory and, for the kidnap scenario, one teleport at one simulated instant, so the two
+# estimators are compared against literally the same event rather than against two separate
+# runs that only share a configured route file and a configured kidnap delay.
+#
+# Output file names: the EKF's are unsuffixed (<scenario>-run.csv/.json/-verdict.yaml), the
+# same names every run before 2026-10-10 used, so nothing that already points at them breaks.
+# The MCL's carry a -mcl suffix (<scenario>-run-mcl.csv/.json, <scenario>-verdict-mcl.yaml)
+# whether or not the EKF ran alongside it in the same invocation.
 #
 # What runs:
 #   Webots + official webots_ros2_turtlebot driver     (simulation, not Rust)
 #   evaluation_supervisor.py                           (ground truth + teleport, not Rust)
 #   route_driver                                       (Rust, drives the route; harness)
-#   localization_node                                  (Rust, the thing under test)
-#   localization_evaluator                             (Rust, grades it against ground truth)
+#   localization_node, and/or mcl_node                 (Rust, the thing(s) under test)
+#   one localization_evaluator per active estimator    (Rust, grades it against ground truth)
 
 set -u
-
-# Job control, so that every SIGINT this script sends is a real one. A non-interactive shell
-# starts a background job with SIGINT and SIGQUIT set to SIG_IGN, so that Ctrl-C on the
-# terminal cannot reach it, and CPython does not install its own handler over an inherited
-# SIG_IGN. Without `set -m` the `kill -INT` in `stop()` is a no-op for the launch and for
-# both Rust nodes: each one is reported as "still alive 30 s after SIGINT" and then killed
-# with SIGKILL, which is what the 2026-10-06 run recorded. That measured this script, not
-# the nodes. Verified on a live `ros2 launch` process as `SigIgn: ...1001006`, SIGINT bit
-# set. With job control each job gets its own process group and the default disposition.
-set -m
+set -m   # see the header comment of an earlier revision of this file, kept below at stop()
 
 SCENARIO=${1:?usage: run_phase3_correctness.sh <normal|kidnap> <output directory>}
 OUT=${2:?usage: run_phase3_correctness.sh <normal|kidnap> <output directory>}
@@ -44,18 +55,41 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/.." && pwd)
 # controllers_active and ground_truth_moved, shared with scripts/verify_phase3_localization.sh
 source "$SCRIPT_DIR/phase3_guards.sh"
+# EVIDENCE_ROOT; see that file for the runs this indirection exists because of
+source "$SCRIPT_DIR/evidence_root.sh"
 LAUNCH="$REPO/sim/webots/launch/localization_world.launch.py"
 MAP="$REPO/sim/webots/config/landmarks.yaml"
 ROUTE_FILE=${ROUTE_FILE:-$REPO/sim/webots/config/route_long.yaml}
 LAPS=${LAPS:-1}
+ESTIMATORS=${ESTIMATORS:-ekf}
+case "$OUT" in
+    */*) ;;                                              # a path, used as given
+    *) OUT="$EVIDENCE_ROOT/phase-3-correctness/$OUT" ;;  # a bare run name
+esac
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
-CSV="$OUT/$SCENARIO-run.csv"
-JSON="$OUT/$SCENARIO-run.json"
 
-# The odometry the filter predicts from and the evaluator grades as the baseline. One topic,
-# read by both: a filter fed one stream and graded against another would be a rigged
-# comparison. It is the odometry the simulator publishes, unmodified; see
+run_ekf=false
+run_mcl=false
+for e in $ESTIMATORS; do
+    case "$e" in
+        ekf) run_ekf=true ;;
+        mcl) run_mcl=true ;;
+        *) echo "ESTIMATORS must list only ekf and/or mcl, got $e" >&2; exit 2 ;;
+    esac
+done
+if ! $run_ekf && ! $run_mcl; then
+    echo "ESTIMATORS listed nothing to run" >&2; exit 2
+fi
+
+EKF_CSV="$OUT/$SCENARIO-run.csv"
+EKF_JSON="$OUT/$SCENARIO-run.json"
+MCL_CSV="$OUT/$SCENARIO-run-mcl.csv"
+MCL_JSON="$OUT/$SCENARIO-run-mcl.json"
+
+# The odometry both filters predict from and both evaluators grade as the baseline. One
+# topic, read by everyone: a filter fed one stream and graded against another would be a
+# rigged comparison. It is the odometry the simulator publishes, unmodified; see
 # docs/phase-3-localization/theory.md section 6 for why nothing is degraded on purpose.
 ODOM_TOPIC=/odom
 
@@ -67,13 +101,9 @@ KIDNAP_QZ=0.8414709848
 KIDNAP_QW=0.5403023059
 KIDNAP_AFTER=${KIDNAP_AFTER:-120}   # seconds into the route
 
-# Unbuffered output from every CLI tool this script captures. Both `timeout` calls below
-# end their child with SIGTERM, and a block-buffered stream loses everything still in the
-# buffer when that arrives: `tf2_echo` writes through the rcutils logger and `ros2 topic
-# echo` is Python, so without these two the capture is a file containing only `Terminated`,
-# which is what the first two runs of 2026-10-10 recorded for a TF tree that was in fact
-# complete. `set -m` above rules out `timeout -s INT` as the alternative fix, because that
-# SIGINT reaches this script as well.
+# Unbuffered output from every CLI tool this script captures; see the note at the bottom of
+# this file for why (a tf2_echo capture this script used to make lost its block buffer to
+# SIGTERM otherwise, see evidence/phase-3-correctness/2026-10-10-long-route/NOTE-tf-capture.md).
 export RCUTILS_LOGGING_BUFFERED_STREAM=0
 export PYTHONUNBUFFERED=1
 
@@ -104,6 +134,7 @@ fi
     echo "laps: $LAPS"
     echo "odometry_topic_under_test: $ODOM_TOPIC"
     echo "odometry_noise: off"
+    echo "estimators: $ESTIMATORS"
     if [ "$SCENARIO" = kidnap ]; then
         echo "kidnap_target: x=$KIDNAP_X y=$KIDNAP_Y yaw=$KIDNAP_YAW"
         echo "kidnap_after_s: $KIDNAP_AFTER"
@@ -149,18 +180,41 @@ fi
 ros2 control list_controllers > "$OUT/$SCENARIO-controllers.txt" 2>&1
 log "controllers are active"
 
-log "starting localization_node and localization_evaluator against $ODOM_TOPIC"
-ros2 run robotics_localization_bridge localization_node --ros-args \
-    -p "map_file:=$MAP" \
-    -p "topics.odom:=$ODOM_TOPIC" \
-    > "$OUT/$SCENARIO-localization_node.log" 2>&1 &
-NODE_PID=$!
-ros2 run robotics_localization_bridge localization_evaluator --ros-args \
-    -p "output_csv:=$CSV" -p "output_json:=$JSON" \
-    -p "topics.odom:=$ODOM_TOPIC" \
-    > "$OUT/$SCENARIO-evaluator.log" 2>&1 &
-EVAL_PID=$!
-wait_for 60 "the first pose estimate" has_topic /localization/pose || log "no estimate topic yet"
+EKF_NODE_PID=
+EKF_EVAL_PID=
+MCL_NODE_PID=
+MCL_EVAL_PID=
+
+if $run_ekf; then
+    log "starting localization_node (EKF) and its evaluator against $ODOM_TOPIC"
+    ros2 run robotics_localization_bridge localization_node --ros-args \
+        -p "map_file:=$MAP" \
+        -p "topics.odom:=$ODOM_TOPIC" \
+        > "$OUT/$SCENARIO-localization_node.log" 2>&1 &
+    EKF_NODE_PID=$!
+    ros2 run robotics_localization_bridge localization_evaluator --ros-args \
+        -r __node:=localization_evaluator_ekf \
+        -p "output_csv:=$EKF_CSV" -p "output_json:=$EKF_JSON" \
+        -p "topics.odom:=$ODOM_TOPIC" -p "topics.estimate:=localization/pose" \
+        > "$OUT/$SCENARIO-evaluator.log" 2>&1 &
+    EKF_EVAL_PID=$!
+fi
+if $run_mcl; then
+    log "starting mcl_node (MCL) and its evaluator against $ODOM_TOPIC"
+    ros2 run robotics_localization_bridge mcl_node --ros-args \
+        -p "map_file:=$MAP" \
+        -p "topics.odom:=$ODOM_TOPIC" \
+        > "$OUT/$SCENARIO-mcl_node.log" 2>&1 &
+    MCL_NODE_PID=$!
+    ros2 run robotics_localization_bridge localization_evaluator --ros-args \
+        -r __node:=localization_evaluator_mcl \
+        -p "output_csv:=$MCL_CSV" -p "output_json:=$MCL_JSON" \
+        -p "topics.odom:=$ODOM_TOPIC" -p "topics.estimate:=mcl/pose" \
+        > "$OUT/$SCENARIO-evaluator-mcl.log" 2>&1 &
+    MCL_EVAL_PID=$!
+fi
+$run_ekf && { wait_for 60 "the first EKF pose estimate" has_topic /localization/pose || log "no EKF estimate topic yet"; }
+$run_mcl && { wait_for 60 "the first MCL pose estimate" has_topic /mcl/pose || log "no MCL estimate topic yet"; }
 sleep 3
 
 # The route. route_driver closes the loop on ground truth and exits when the route is
@@ -191,7 +245,7 @@ if [ "$SCENARIO" = kidnap ]; then
     kill "$KIDNAP_PID" 2>/dev/null
     wait "$KIDNAP_PID" 2>/dev/null
 fi
-log "route finished, letting the filter settle"
+log "route finished, letting the filter(s) settle"
 sleep 5
 
 ros2 node list  > "$OUT/$SCENARIO-node_list.txt"  2>&1
@@ -199,12 +253,9 @@ ros2 topic list > "$OUT/$SCENARIO-topic_list.txt" 2>&1
 timeout 15 ros2 topic echo --once /diagnostics > "$OUT/$SCENARIO-diagnostics.yaml" 2>&1
 # No TF dump here. This script measures accuracy; whether the TF tree is complete is a
 # property of the launch, and scripts/verify_phase3_localization.sh checks it edge by edge
-# including the composed chains down to the sensor frames. Two attempts to capture it here
-# as well produced a file containing only `Terminated`: under the `set -m` this script needs,
-# the output of a `tf2_echo` ended by `timeout` does not survive, and a redundant capture is
-# not worth a third guess at why. That the node publishes the edge is still in this run, in
-# `<scenario>-localization_node.log` and in the `tf_sent` count of
-# `<scenario>-diagnostics.yaml`.
+# including the composed chains down to the sensor frames. See the NOTE-tf-capture.md of
+# evidence/phase-3-correctness/2026-10-10-long-route/ for why an earlier attempt to also
+# capture it here was abandoned rather than retried a third time.
 
 stop() {  # stop <name> <pid>
     local name=$1 pid=$2
@@ -231,31 +282,55 @@ stop() {  # stop <name> <pid>
     fi
 }
 
-log "stopping with SIGINT, evaluator first so that it writes its summary"
+log "stopping with SIGINT, evaluators first so that they write their summaries"
 {
-    stop localization_evaluator "$EVAL_PID"
-    stop localization_node "$NODE_PID"
+    stop localization_evaluator_ekf "$EKF_EVAL_PID"
+    stop localization_evaluator_mcl "$MCL_EVAL_PID"
+    stop localization_node "$EKF_NODE_PID"
+    stop mcl_node "$MCL_NODE_PID"
     stop ros2_launch "$LAUNCH_PID"
     echo "webots_bin_left: $(pgrep -c -x webots-bin || true)"
 } > "$OUT/$SCENARIO-shutdown.txt" 2>&1
 cat "$OUT/$SCENARIO-shutdown.txt" | tee -a "$OUT/$SCENARIO-run.log"
 
-if [ -s "$CSV" ]; then
-    log "rows written: $(( $(wc -l < "$CSV") - 1 ))"
-    # Last line of defence, independent of the controller check above: a run whose ground
-    # truth never moved is not a localization run, whatever its rows say.
-    log "ground_truth_max_displacement_m: $(ground_truth_displacement "$CSV")"
-    if ! ground_truth_moved "$CSV"; then
-        log "FAIL: the robot never moved; the rows in $(basename "$CSV") grade the filter"
-        log "FAIL: against a stationary ground truth"
+check_and_verdict() {  # check_and_verdict <label> <csv> <json> <verdict_out>
+    local label=$1 csv=$2 json=$3 verdict_out=$4
+    if [ ! -s "$csv" ]; then
+        log "FAIL ($label): no rows were written to $(basename "$csv")"
+        return 1
     fi
-    # Criterion P1 of docs/phase-3-localization/problem.md: the filter has to beat the dead
-    # reckoning it was given. The verdict is written to a file, not printed into prose, and
-    # it is read straight out of the summary the evaluator wrote.
-    python3 -I "$SCRIPT_DIR/phase3_verdict.py" "$JSON" "$CSV" \
-        "$OUT/$SCENARIO-environment.txt" > "$OUT/$SCENARIO-verdict.yaml" 2>&1
-    cat "$OUT/$SCENARIO-verdict.yaml" | tee -a "$OUT/$SCENARIO-run.log"
-else
-    log "FAIL: no rows were written to $CSV"
+    log "rows written ($label): $(( $(wc -l < "$csv") - 1 ))"
+    log "ground_truth_max_displacement_m ($label): $(ground_truth_displacement "$csv")"
+    if ! ground_truth_moved "$csv"; then
+        log "FAIL ($label): the robot never moved; $(basename "$csv") grades the filter"
+        log "FAIL ($label): against a stationary ground truth"
+    fi
+    if [ "$SCENARIO" = kidnap ]; then
+        # The kidnap-specific verdict: error before and after the teleport, and whether and
+        # when the estimate recovered. See scripts/phase3_kidnap_verdict.py for the
+        # recovery definition.
+        python3 -I "$SCRIPT_DIR/phase3_kidnap_verdict.py" "$json" "$csv" \
+            "$OUT/$SCENARIO-environment.txt" "$label" > "$verdict_out" 2>&1
+    else
+        # Criterion P1 of docs/phase-3-localization/problem.md: the filter has to beat the
+        # dead reckoning it was given.
+        python3 -I "$SCRIPT_DIR/phase3_verdict.py" "$json" "$csv" \
+            "$OUT/$SCENARIO-environment.txt" > "$verdict_out" 2>&1
+    fi
+    cat "$verdict_out" | tee -a "$OUT/$SCENARIO-run.log"
+}
+
+# The EKF's verdict file keeps the unsuffixed name for the normal scenario, the one every
+# run before 2026-10-10 used and that docs/evidence already link to; the kidnap scenario has
+# no such precedent, so its EKF verdict is named -ekf like the task that asked for it.
+if $run_ekf; then
+    if [ "$SCENARIO" = normal ]; then
+        check_and_verdict ekf "$EKF_CSV" "$EKF_JSON" "$OUT/$SCENARIO-verdict.yaml"
+    else
+        check_and_verdict ekf "$EKF_CSV" "$EKF_JSON" "$OUT/$SCENARIO-verdict-ekf.yaml"
+    fi
+fi
+if $run_mcl; then
+    check_and_verdict mcl "$MCL_CSV" "$MCL_JSON" "$OUT/$SCENARIO-verdict-mcl.yaml"
 fi
 log "done, evidence in $OUT"

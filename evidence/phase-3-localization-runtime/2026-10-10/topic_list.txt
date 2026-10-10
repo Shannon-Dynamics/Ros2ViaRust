@@ -21,6 +21,7 @@
 /kidnap/events [geometry_msgs/msg/PoseStamped]
 /kidnap/teleport [geometry_msgs/msg/PoseStamped]
 /localization/pose [geometry_msgs/msg/PoseWithCovarianceStamped]
+/mcl/pose [geometry_msgs/msg/PoseWithCovarianceStamped]
 /odom [nav_msgs/msg/Odometry]
 /parameter_events [rcl_interfaces/msg/ParameterEvent]
 /remove_urdf_robot [std_msgs/msg/String]

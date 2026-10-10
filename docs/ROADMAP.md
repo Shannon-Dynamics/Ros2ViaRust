@@ -56,10 +56,12 @@ Built and running: the EKF half, and the infrastructure around it.
   `ros2_ws/src/robotics_bringup/launch/phase3_localization.launch.py`, which includes the
   Webots world launch and starts the localizer, the evaluator, the route driver and the
   odometry noise injector behind one set of arguments.
-* The integration test, `scripts/verify_phase3_localization.sh`: 71 checks over the
-  installed binaries, the run guards, bringup, topics and types, publication, the whole TF
-  tree, the node's own diagnostics and parameters, the route driver and a clean shutdown.
-  All 71 pass; the run is `evidence/phase-3-localization-runtime/2026-10-10/`.
+* The integration test, `scripts/verify_phase3_localization.sh`: checks over the installed
+  binaries, the run guards, bringup, topics and types, publication, the whole TF tree, both
+  nodes' diagnostics and parameters, the route driver and a clean shutdown. Section G covers
+  the EKF, section H the MCL, and F11 asserts that `mcl_node` claims no TF edge. The check
+  count and the result of each check are in the `verify.log` and `summary.yaml` of the run
+  under `evidence/phase-3-localization-runtime/`, not in this line.
 * The measurement harness: the Webots world with its pillars, the ground truth and teleport
   supervisor, and `route_driver`, which drives a waypoint route closed loop on ground truth
   so that the geometry of a long route is a property of the route file rather than of how
@@ -67,21 +69,45 @@ Built and running: the EKF half, and the infrastructure around it.
   `evidence/phase-3-correctness/` and judged by `scripts/phase3_verdict.py`, never by a
   number typed into prose.
 
-Not built yet: MCL and Augmented MCL, and with them global localization and kidnap
-recovery; grid localization as a debug mode; `/particle_cloud`, `/amcl_pose` and
-`/initialpose`; the kidnap scenario has a harness but has never been run; and every
-benchmark row in `benchmarks/phase-3-localization.csv` is still empty, so no Rust against
-rclpy against Nav2 comparison exists yet.
+Also built and run: the MCL half. `crates/robotics_localization/src/mcl.rs` is particle
+filter localization on the same landmark map and the same pillar detector as the EKF, with
+low-variance resampling triggered by effective sample size and a fixed-fraction random
+injection recovery strategy, wired up as `mcl_node` publishing `/mcl/pose` and no TF. The
+kidnap scenario now has runs as well as a harness: `scripts/run_phase3_correctness.sh
+kidnap` drives the route and teleports the robot once through the Webots supervisor, and
+grades both estimators against that one event in one simulation session.
 
-Criterion P1 of `docs/phase-3-localization/problem.md` is met on the two parts a run can
-decide, on the odometry the simulator publishes with nothing injected: the filter's position
-RMSE is below the dead reckoning it was given, and its error is flat over distance while dead
-reckoning's grows. The NEES part of the same row is not evaluated, because it needs the full
-covariance of each estimate and the evaluator CSV carries only `sigma_xy`. Read the verdict
-file of the run rather than this paragraph; `docs/phase-3-localization/benchmark.md` section 6
-lists the runs, and `theory.md` section 6 explains why the route had to be lengthened to 51 m
-before the comparison meant anything. Details and the open decisions are in
-`docs/phase-3-localization/implementation.md`.
+Not built yet: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing, which
+`mcl.rs` justifies simplifying rather than silently omitting; dominant-cluster pose
+extraction; grid localization as a debug mode; `/particle_cloud`, `/amcl_pose` and
+`/initialpose`; and every benchmark row in `benchmarks/phase-3-localization.csv` is still
+empty, so no Rust against rclpy against Nav2 comparison exists yet.
+
+Where the two filters stand is split, and each half is a verdict file rather than a claim
+in this paragraph. Read them in
+`evidence/phase-3-correctness/2026-10-10-mcl-gated/`:
+
+* **P1, position tracking.** The EKF passes on the two parts a run can decide, on the
+  odometry the simulator publishes with nothing injected: its position RMSE is below the
+  dead reckoning it was given and its error is flat over distance while dead reckoning's
+  grows (`normal-verdict.yaml`). MCL on the same session fails both
+  (`normal-verdict-mcl.yaml`), and the reason is a known, located defect: its recovery
+  trigger still fires on a run with no kidnap in it, because the statistic it watches is a
+  plain mean over observations and one spurious pillar detection swamps a scan that
+  otherwise fits. `implementation.md` section 5.2 has the analysis and the fix it points at.
+* **P2, kidnap recovery.** MCL recovers from a teleport the EKF structurally cannot
+  (`kidnap-verdict-mcl.yaml` against `kidnap-verdict-ekf.yaml`, both from one teleport at
+  one simulated instant). The recovery is sustained rather than a lucky sample, and the
+  same trigger defect above also un-localizes the filter again later in that run; the
+  error trace in `kidnap-run-mcl.csv` is the record.
+
+The NEES part of the P1 row is not evaluated for either filter, because it needs the full
+covariance of each estimate and the evaluator CSV carries only `sigma_xy`. So Phase 3 has
+answered the kidnapped robot question it set out to answer and has one open defect standing
+between MCL and the tracking claim the EKF already holds.
+`docs/phase-3-localization/benchmark.md` section 6 lists the runs, and `theory.md` section 6
+explains why the route had to be lengthened before the comparison meant anything. Details
+and the open decisions are in `docs/phase-3-localization/implementation.md`.
 
 Inputs already available from Phase 2: `/scan` with a static `base_link → laser`, `/odom`
 and `odom → base_link`, the Rust `TfListener`, `World::raycast` as a `z*` source, beam /

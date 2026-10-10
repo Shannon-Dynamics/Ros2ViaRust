@@ -5,6 +5,7 @@
 /evaluation_supervisor
 /joint_state_broadcaster
 /localization_node
+/mcl_node
 /plugin_node_example
 /robot_state_publisher
-/static_transform_publisher_qZWqRTGv7apPJkww
+/static_transform_publisher_c5fLpCJvR7SKVfXt

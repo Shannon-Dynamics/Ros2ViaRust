@@ -1,6 +1,6 @@
 [package]
 name = "robotics_localization_bridge"
-description = "Localization nodes for ros2-rust-robotics: EKF localization against a known landmark map, and its evaluator against simulator ground truth"
+description = "Localization nodes for ros2-rust-robotics: EKF and MCL localization against a known landmark map, and the evaluator and route driver the comparison needs"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -10,6 +10,10 @@ authors.workspace = true
 [[bin]]
 name = "localization_node"
 path = "src/localization_node.rs"
+
+[[bin]]
+name = "mcl_node"
+path = "src/mcl_node.rs"
 
 [[bin]]
 name = "localization_evaluator"
@@ -25,5 +29,6 @@ robotics_models = { workspace = true }
 robotics_filters = { workspace = true }
 robotics_localization = { workspace = true }
 robotics_ros_bridge = { workspace = true }
+rand = { workspace = true }
 rclrs = { workspace = true }
 ros-env = { workspace = true }

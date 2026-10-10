@@ -23,13 +23,17 @@
 #   D  every expected topic exists with the right type  (12 checks)
 #   E  the topics actually publish                       (5 checks)
 #   F  the TF tree is complete, map -> odom -> base_link -> sensors  (10 checks)
-#   G  localization_node behaves and reports           (8 checks)
-#   H  route_driver drives and the robot moves         (6 checks)
-#   I  the stack shuts down and leaves nothing behind  (5 checks)
+#   G  localization_node (EKF) behaves and reports     (8 checks)
+#   H  mcl_node (MCL) behaves and reports              (7 checks)
+#   I  route_driver drives and the robot moves         (6 checks)
+#   J  the stack shuts down and leaves nothing behind  (5 checks)
 #
 # Evidence is written to the output directory, which defaults to
-# evidence/phase-3-localization-runtime/<date>, never to /tmp: WSL clears /tmp when the
-# distro stops and that has already cost one set of run logs.
+# <EVIDENCE_ROOT>/phase-3-localization-runtime/<date>, never to /tmp: WSL clears /tmp when
+# the distro stops and that has already cost one set of run logs. EVIDENCE_ROOT comes from
+# scripts/evidence_root.sh and is the evidence/ directory of the Windows checkout whenever
+# that checkout is mounted, so the output is not sitting in the WSL mirror where the next
+# rsync --delete of scripts/sync_to_wsl.sh could remove it.
 
 set -u
 # Deliberately no `set -m` here, unlike run_phase3_correctness.sh. The only signal this
@@ -43,7 +47,8 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/.." && pwd)
 source "$SCRIPT_DIR/phase3_guards.sh"
 
-OUT=${1:-$REPO/evidence/phase-3-localization-runtime/$(date +%Y-%m-%d)}
+source "$SCRIPT_DIR/evidence_root.sh"   # EVIDENCE_ROOT, the Windows checkout when mounted
+OUT=${1:-$EVIDENCE_ROOT/phase-3-localization-runtime/$(date +%Y-%m-%d)}
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
 LOG="$OUT/verify.log"
@@ -75,6 +80,21 @@ check_match() {  # check_match <name> <extended regex> <file>
     local name=$1 pattern=$2 file=$3
     if [ -s "$file" ] && grep -qE "$pattern" "$file"; then ok "$name"; else bad "$name"; fi
 }
+# Like check_match, but only within the few lines following a block-start pattern: /diagnostics
+# now carries interleaved status entries from both localization_node and mcl_node (and from
+# route_driver and controller_manager besides), and a plain grep for a generic field like
+# "message: RUNNING" would pass on either node's line regardless of which one this check means
+# to be about. DiagnosticStatus's field order (name, then message, see
+# robotics_ros_bridge::diagnostics::StatusBuilder::new) puts the two adjacent, so one line of
+# context after the name is enough.
+check_block_match() {  # check_block_match <name> <block_start_regex> <contains_regex> <file> [lines_after]
+    local name=$1 start=$2 contains=$3 file=$4 n=${5:-1}
+    if [ -s "$file" ] && grep -A"$n" -E "$start" "$file" | grep -qE "$contains"; then
+        ok "$name"
+    else
+        bad "$name"
+    fi
+}
 section() { printf '\n===== %s =====\n' "$1"; }
 
 printf '=== %s  ROS_DISTRO=%s  RMW=%s ===\n' \
@@ -84,7 +104,7 @@ printf 'repository: %s\noutput:     %s\n' "$REPO" "$OUT"
 # ----------------------------------------------------------------- A: the pieces exist
 section "A: the pieces exist and are installed"
 check "A1  the colcon install space exists" test -d "$REPO/ros2_ws/install"
-for exe in localization_node localization_evaluator route_driver; do
+for exe in localization_node mcl_node localization_evaluator route_driver; do
     check "A   $exe is installed and executable" test -x "$BIN/$exe"
 done
 check "A5  the bringup launch is installed" \
@@ -160,7 +180,7 @@ has_node()  { ros2 node list  2>/dev/null | grep -qx "$1"; }
 
 echo "--- ros2 launch robotics_bringup phase3_localization.launch.py (own process group) ---"
 setsid ros2 launch robotics_bringup phase3_localization.launch.py \
-    gui:=false mode:=realtime ground_truth:=true localize:=true drive:=false \
+    gui:=false mode:=realtime ground_truth:=true localize:=true mcl:=true drive:=false \
     > "$LAUNCH_LOG" 2>&1 &
 LAUNCH=$!
 
@@ -187,8 +207,9 @@ check "C2  /scan appears"                wait_for 120 has_topic /scan
 check "C3  /ground_truth/pose appears"   wait_for 60  has_topic /ground_truth/pose
 check "C4  both controllers become active" wait_for 90 controllers_active
 check "C5  localization_node is in the node list" wait_for 60 has_node /localization_node
-check "C6  robot_state_publisher is in the node list" has_node /robot_state_publisher
-check "C7  the Ros2Supervisor is in the node list" \
+check "C6  mcl_node is in the node list" wait_for 60 has_node /mcl_node
+check "C7  robot_state_publisher is in the node list" has_node /robot_state_publisher
+check "C8  the Ros2Supervisor is in the node list" \
     bash -c 'ros2 node list 2>/dev/null | grep -q Ros2Supervisor'
 ros2 node list    > "$OUT/node_list.txt"    2>&1
 ros2 topic list -t > "$OUT/topic_list.txt"  2>&1
@@ -209,12 +230,14 @@ check "D6  /ground_truth/pose is a geometry_msgs/PoseStamped" \
     has_type /ground_truth/pose geometry_msgs/msg/PoseStamped
 check "D7  /localization/pose is a geometry_msgs/PoseWithCovarianceStamped" \
     wait_for 60 has_type /localization/pose geometry_msgs/msg/PoseWithCovarianceStamped
-check "D8  /tf is a tf2_msgs/TFMessage" has_type /tf tf2_msgs/msg/TFMessage
-check "D9  /tf_static is a tf2_msgs/TFMessage" has_type /tf_static tf2_msgs/msg/TFMessage
-check "D10 /diagnostics is a diagnostic_msgs/DiagnosticArray" \
+check "D8  /mcl/pose is a geometry_msgs/PoseWithCovarianceStamped" \
+    wait_for 60 has_type /mcl/pose geometry_msgs/msg/PoseWithCovarianceStamped
+check "D9  /tf is a tf2_msgs/TFMessage" has_type /tf tf2_msgs/msg/TFMessage
+check "D10 /tf_static is a tf2_msgs/TFMessage" has_type /tf_static tf2_msgs/msg/TFMessage
+check "D11 /diagnostics is a diagnostic_msgs/DiagnosticArray" \
     has_type /diagnostics diagnostic_msgs/msg/DiagnosticArray
-check "D11 /kidnap/teleport is offered by the supervisor" has_topic /kidnap/teleport
-check "D12 /kidnap/events is offered by the supervisor" has_topic /kidnap/events
+check "D12 /kidnap/teleport is offered by the supervisor" has_topic /kidnap/teleport
+check "D13 /kidnap/events is offered by the supervisor" has_topic /kidnap/events
 
 # ----------------------------------------------------------------- E: they publish
 section "E: the topics actually publish"
@@ -226,8 +249,9 @@ check "E1  /scan publishes" publishes /scan --qos-reliability best_effort
 check "E2  /odom publishes" publishes /odom
 check "E3  /ground_truth/pose publishes" publishes /ground_truth/pose
 check "E4  /localization/pose publishes" publishes /localization/pose
-check "E5  /tf publishes" publishes /tf
-for t in /scan /odom /localization/pose /ground_truth/pose; do
+check "E5  /mcl/pose publishes" publishes /mcl/pose
+check "E6  /tf publishes" publishes /tf
+for t in /scan /odom /localization/pose /mcl/pose /ground_truth/pose; do
     printf -- '--- ros2 topic hz %s ---\n' "$t"
     timeout -s INT 8 ros2 topic hz "$t" --window 50 2>&1 | grep -E "average rate" | tail -1
 done > "$OUT/topic_hz.txt" 2>&1
@@ -262,6 +286,11 @@ check_match "F9  a transform with child_frame_id odom is broadcast" \
 ros2 topic info -v /tf > "$OUT/tf_publishers.txt" 2>&1
 check_match "F10 localization_node is a publisher on /tf" \
     "localization_node" "$OUT/tf_publishers.txt"
+# mcl_node subscribes to /tf (its TfListener looks up base_link -> laser), so a plain grep
+# for its name over the whole `ros2 topic info -v` output would match the subscriber
+# section even though it never publishes; isolate the publisher section first.
+refute "F11 mcl_node is not a publisher on /tf (by design, see mcl_node.rs)" \
+    bash -c "awk '/Publisher count:/,/Subscription count:/' '$OUT/tf_publishers.txt' | grep -q mcl_node"
 {
     for pair in "map odom" "map base_link" "odom base_link" "base_link LDS-01" \
                 "base_link imu_link" "map LDS-01"; do
@@ -277,13 +306,14 @@ section "G: localization_node behaves and reports"
 timeout 20 ros2 topic echo /diagnostics > "$OUT/diagnostics.yaml" 2>&1
 check_match "G1  localization_node reports its status" \
     "localization_node: ekf" "$OUT/diagnostics.yaml"
-check_match "G2  its status is RUNNING" "message: RUNNING" "$OUT/diagnostics.yaml"
+check_block_match "G2  its status is RUNNING" \
+    "name: 'localization_node: ekf'" "message: RUNNING" "$OUT/diagnostics.yaml"
 check_match "G3  it reports map -> odom as published" \
     "value: published" "$OUT/diagnostics.yaml"
 check_match "G4  it reports a non-zero tf_sent" \
     "key: tf_sent" "$OUT/diagnostics.yaml"
-check_match "G5  the laser mount came from TF, not from parameters" \
-    "value: tf" "$OUT/diagnostics.yaml"
+check_block_match "G5  the laser mount came from TF, not from parameters" \
+    "key: sensor_pose_source" "value: tf" "$OUT/diagnostics.yaml"
 {
     ros2 param list /localization_node
     for prm in publish_tf frames.map frames.odom topics.odom map_file; do
@@ -298,32 +328,54 @@ check_match "G7  topics.odom points at the odometry the simulator publishes" \
 check_match "G8  the read-only parameters refuse to be set" \
     "Setting parameter failed|read-only|not set" "$OUT/params.txt"
 
-# ----------------------------------------------------------------- H: route_driver
-section "H: route_driver drives and the robot moves"
+# ----------------------------------------------------------------- H: mcl_node
+section "H: mcl_node (MCL) behaves and reports"
+timeout 20 ros2 topic echo /diagnostics > "$OUT/diagnostics_mcl.yaml" 2>&1
+check_match "H1  mcl_node reports its status" \
+    "mcl_node: particle filter" "$OUT/diagnostics_mcl.yaml"
+check_block_match "H2  its status is RUNNING (no injection should have fired yet)" \
+    "name: 'mcl_node: particle filter'" "message: RUNNING" "$OUT/diagnostics_mcl.yaml"
+check_match "H3  it reports its particle count" "key: particles" "$OUT/diagnostics_mcl.yaml"
+check_match "H4  it reports an effective sample size" "key: ess" "$OUT/diagnostics_mcl.yaml"
+check_block_match "H5  the laser mount came from TF, not from parameters" \
+    "key: sensor_pose_source" "value: tf" "$OUT/diagnostics_mcl.yaml"
+{
+    ros2 param list /mcl_node
+    for prm in particles.count measurement.sigma_range recovery.sustained_updates topics.odom map_file; do
+        printf '%s: ' "$prm"; ros2 param get /mcl_node "$prm"
+    done
+} > "$OUT/params_mcl.txt" 2>&1
+check_match "H6  particles.count matches McLocalizer's documented default" \
+    "particles.count:.*Integer value is: 300" "$OUT/params_mcl.txt"
+check_match "H7  topics.odom points at the odometry the simulator publishes" \
+    "topics.odom:.*String value is: /?odom$" "$OUT/params_mcl.txt"
+
+# ----------------------------------------------------------------- I: route_driver
+section "I: route_driver drives and the robot moves"
 GT_BEFORE=$(timeout 10 ros2 topic echo --once /ground_truth/pose --field pose.position.x 2>/dev/null | head -1)
 ros2 run robotics_localization_bridge route_driver --ros-args \
     -p "route_file:=$ROUTE" -p laps:=1 > "$OUT/route_driver.log" 2>&1 &
 ROUTE_PID=$!
-check "H1  route_driver appears in the node list" wait_for 30 has_node /route_driver
-check "H2  /cmd_vel is a geometry_msgs/TwistStamped" \
+check "I1  route_driver appears in the node list" wait_for 30 has_node /route_driver
+check "I2  /cmd_vel is a geometry_msgs/TwistStamped" \
     wait_for 30 has_type /cmd_vel geometry_msgs/msg/TwistStamped
-check "H3  /cmd_vel publishes" publishes /cmd_vel
+check "I3  /cmd_vel publishes" publishes /cmd_vel
 timeout 20 ros2 topic echo /diagnostics > "$OUT/diagnostics_driving.yaml" 2>&1
-check_match "H4  route_driver reports that it is driving" \
+check_match "I4  route_driver reports that it is driving" \
     "route_driver: waypoint follower" "$OUT/diagnostics_driving.yaml"
 echo "--- waiting for the smoke route to finish ---"
 wait "$ROUTE_PID"; ROUTE_RC=$?
 echo "route_driver exit code: $ROUTE_RC"
 if [ "$ROUTE_RC" = 0 ]; then
-    ok "H5  route_driver exits 0 when the route is finished"
+    ok "I5  route_driver exits 0 when the route is finished"
 else
-    bad "H5  route_driver exits 0 when the route is finished"
+    bad "I5  route_driver exits 0 when the route is finished"
 fi
-check_match "H6  the robot reached the waypoints of the route" \
+check_match "I6  the robot reached the waypoints of the route" \
     "route .*finished|waypoint 3/3" "$OUT/route_driver.log"
 
-# ----------------------------------------------------------------- I: shutdown
-section "I: the stack shuts down and leaves nothing behind"
+# ----------------------------------------------------------------- J: shutdown
+section "J: the stack shuts down and leaves nothing behind"
 trap - EXIT INT TERM    # from here on the shutdown below is the one that runs
 echo "--- SIGINT to the launch process group ---"
 T0=$(date +%s.%N)
@@ -331,17 +383,17 @@ kill -INT -- -"$LAUNCH"
 wait "$LAUNCH"; LAUNCH_RC=$?
 echo "launch exit code: $LAUNCH_RC after $(awk "BEGIN {printf \"%.1f\", $(date +%s.%N) - $T0}") s"
 if [ "$LAUNCH_RC" -le 1 ]; then
-    ok "I1  the launch exits on SIGINT"
+    ok "J1  the launch exits on SIGINT"
 else
-    bad "I1  the launch exits on SIGINT"
+    bad "J1  the launch exits on SIGINT"
 fi
 sleep 3
-refute "I2  no webots-bin is left holding the controller port" pgrep -x webots-bin
-refute "I3  no localization or harness node is left running" \
+refute "J2  no webots-bin is left holding the controller port" pgrep -x webots-bin
+refute "J3  no localization or harness node is left running" \
     pgrep -f "lib/robotics_localization_bridge/"
-check_match "I4  the launch log records how Webots was stopped" \
+check_match "J4  the launch log records how Webots was stopped" \
     "shutdown: webots (exited on SIGTERM|ignored SIGTERM)" "$LAUNCH_LOG"
-check "I5  the evidence files were written" \
+check "J5  the evidence files were written" \
     bash -c "test -s '$OUT/node_list.txt' && test -s '$OUT/tf.txt' && test -s '$OUT/diagnostics.yaml'"
 
 # ----------------------------------------------------------------- summary

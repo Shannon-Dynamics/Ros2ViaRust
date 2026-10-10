@@ -1009,6 +1009,7 @@ version = "0.1.0"
 dependencies = [
  "approx",
  "nalgebra",
+ "rand 0.10.3",
  "robotics_core",
  "robotics_filters",
  "robotics_models",
@@ -1019,6 +1020,7 @@ dependencies = [
 name = "robotics_localization_bridge"
 version = "0.1.0"
 dependencies = [
+ "rand 0.10.3",
  "rclrs",
  "robotics_core",
  "robotics_filters",

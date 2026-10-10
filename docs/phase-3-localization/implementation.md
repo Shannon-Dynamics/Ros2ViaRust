@@ -1,19 +1,32 @@
 # Phase 3, implementation: the Rust side
 
-> **State.** The first half of Phase 3 exists and runs: EKF position tracking against the
-> pillar map, in [`crates/robotics_localization`](../../crates/robotics_localization/)
-> (`map`, `pillars`, `ekf`) and wired to the topics by
+> **State.** Both filters exist and run, against the same pillar map, in
+> [`crates/robotics_localization`](../../crates/robotics_localization/): `map`, `pillars`,
+> [`ekf`](../../crates/robotics_localization/src/ekf.rs) (one Gaussian belief) and
+> [`mcl`](../../crates/robotics_localization/src/mcl.rs) (a particle population). They are
+> wired to the topics by
 > [`localization_node`](../../ros2_ws/src/robotics_localization_bridge/src/localization_node.rs)
-> in `ros2_ws/src/robotics_localization_bridge`, graded against the simulator's ground
-> truth by `localization_evaluator` next to it. Runs and their raw output live in
+> and [`mcl_node`](../../ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs), and each
+> is graded against the simulator's ground truth by its own `localization_evaluator`
+> instance. Runs and their raw output live in
 > [`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/).
 >
-> The second half does not exist yet: Monte Carlo localization, and with it global
-> localization and kidnap recovery (`lib.rs` of the crate says so too), plus the grid
-> localization debugging mode, the `robotics_bringup` launch and parameter files, and the
-> integration test. Sections 2 and 3 below are still the plan, and the paths they name are
-> the planned ones, not always the ones that were built. See [ROADMAP.md](../ROADMAP.md)
-> for the phase contract.
+> What the evidence supports is split, and section 5 below is the detail:
+>
+> * **P1, position tracking: the EKF passes, MCL does not.** Read
+>   `normal-verdict.yaml` and `normal-verdict-mcl.yaml` of
+>   [`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) for
+>   both verdicts from one simulation session.
+> * **P2, kidnap recovery: MCL recovers, the EKF does not.** Read
+>   `kidnap-verdict-mcl.yaml` and `kidnap-verdict-ekf.yaml` of the same directory, which
+>   grade both estimators against one teleport at one simulated instant.
+>
+> Still absent: Augmented MCL's `w_fast`/`w_slow` injection and KLD adaptive sizing (the
+> fixed-count, fixed-fraction simplification actually built is justified in `mcl.rs`),
+> dominant-cluster pose extraction, the grid localization debugging mode, `/particle_cloud`,
+> `/amcl_pose` and `/initialpose`, and every benchmark row. Sections 2 and 3 below name
+> some paths that were planned rather than built; where they differ, the parenthetical says
+> so. See [ROADMAP.md](../ROADMAP.md) for the phase contract.
 
 ## 1. Already in the repository
 
@@ -38,14 +51,22 @@ them rather than starting over.
 **TODO**, planned shape only, to be replaced by a walkthrough of the merged code:
 
 * `crates/robotics_localization`, a ROS-free crate: EKF localization with maximum
-  likelihood association and a chi-square gate (**built**), MCL and augmented MCL with KLD
-  sizing and dominant-cluster pose extraction, grid localization kept as a debugging mode
-  (**not built**).
+  likelihood association and a chi-square gate (**built**), MCL with the same landmark
+  model, low-variance resampling triggered by effective sample size, and a fixed-fraction
+  random-injection recovery strategy (**built**, as
+  [`mcl.rs`](../../crates/robotics_localization/src/mcl.rs)); Augmented MCL's
+  `w_fast`/`w_slow` injection with KLD sizing and dominant-cluster pose extraction, and
+  grid localization kept as a debugging mode (**not built**, and `mcl.rs` says which
+  simplification it made instead of each and why).
 * The thin rclrs node that wires it to the topics in [ros-graph.md](ros-graph.md)
   (**built**, as
   [`ros2_ws/src/robotics_localization_bridge/src/localization_node.rs`](../../ros2_ws/src/robotics_localization_bridge/src/localization_node.rs),
   not as the `robotics_localization` package this section originally planned; the crate name
-  is taken by the ROS-free crate above).
+  is taken by the ROS-free crate above). The MCL half is a second node next to it,
+  [`mcl_node.rs`](../../ros2_ws/src/robotics_localization_bridge/src/mcl_node.rs),
+  publishing `/mcl/pose` and deliberately broadcasting no TF at all, so that running both
+  in one launch to compare them head to head cannot produce two owners of `map -> odom`;
+  its file header gives the reasoning.
 * A map source. The four pillars of
   [the world](../../sim/webots/worlds/turtlebot3_localization_room.wbt) are available as
   landmarks today ([landmarks.yaml](../../sim/webots/config/landmarks.yaml)); an occupancy
@@ -61,7 +82,12 @@ them rather than starting over.
   topics, frames, rates, TF ownership and clean shutdown asserted check by check (**built**,
   as [`scripts/verify_phase3_localization.sh`](../../scripts/verify_phase3_localization.sh)
   rather than a Rust binary; the reasoning is in that file's header, and in short it is that
-  most of what Phase 3 adds lives between nodes rather than inside one).
+  most of what Phase 3 adds lives between nodes rather than inside one). It covers both
+  nodes: section G is the EKF's behaviour and diagnostics, section H the MCL's, and F11
+  asserts that `mcl_node` is not a `/tf` publisher. The check count and the pass or fail of
+  each check are in the `verify.log` and `summary.yaml` of the run directory under
+  [`../../evidence/phase-3-localization-runtime/`](../../evidence/phase-3-localization-runtime/),
+  not in this sentence.
 * The harness the measurements are made with:
   [`route_driver`](../../ros2_ws/src/robotics_localization_bridge/src/route_driver.rs), which
   drives a waypoint route closed loop on ground truth. It is not part of the stack under
@@ -95,8 +121,15 @@ measurement, not with an opinion:
    worse than none; the edge is now verified, by checks F1 to F10 of
    [`scripts/verify_phase3_localization.sh`](../../scripts/verify_phase3_localization.sh),
    which resolve it and compose the whole chain down to the sensor frames.
-4. What the node does when the chi-square gate rejects everything for several seconds:
-   report degraded on `/diagnostics`, trigger injection, or both.
+4. **Partly settled, and the unsettled part is a measured defect.** What the node does
+   when the chi-square gate rejects everything for several seconds: report degraded on
+   `/diagnostics`, trigger injection, or both. `mcl_node` does both: a sustained low-fit
+   streak injects particles and the node reports the injection on `/diagnostics`. The
+   number of consecutive scans required and the fraction injected are
+   `MclConfig::recovery_sustained_updates` and `recovery_injection_fraction`, each justified
+   in `mcl.rs` against the EKF's own gate rather than tuned until a demo looked right. What
+   is **not** settled is the statistic the trigger watches, which section 5 shows firing on
+   a run with no kidnap in it at all.
 5. Particle count floor and ceiling, and what gets published on `/particle_cloud` at what
    rate, so visualization does not dominate the measured cost.
 
@@ -114,7 +147,102 @@ The integration test keeps its own evidence, under
 the full check list as `verify.log`, the launch log, the node and topic listings, the TF
 dump, the diagnostics and a `summary.yaml` with the counts and the verdict.
 
-## 5. How this part will be written
+## 5. Two defects this phase found, and what was done about each
+
+Kept because the reasoning is the material: both were found by a measurement disagreeing
+with an expectation, and one of them is still open.
+
+### 5.1 MCL diverged for want of a per-observation gate (fixed, and measured)
+
+MCL was implemented, its unit tests passed, and it then diverged to route-scale error the
+first time it was driven in simulation. The symptom was not "less precise than the EKF";
+read `normal-verdict-mcl.yaml` next to `normal-verdict.yaml` in
+[`2026-10-10-mcl-comparison`](../../evidence/phase-3-correctness/2026-10-10-mcl-comparison)
+for the two numbers from that one session.
+
+The cause was a missing gate. The EKF's `observe()` rejects an observation no landmark
+explains within its chi-square gate: it *skips* it, and counts it in `rejected`. MCL had no
+equivalent, so every particle's weight carried the full unbounded penalty of every
+observation, including the occasional spurious cluster from `pillars::detect`, a reflection,
+or a wall edge briefly read as a pillar. That penalty is identical for every particle
+whatever its pose, so it does not change which particles resampling favours. What it does
+change is how the scan *looks*: it makes the scan appear to fit nothing at all, which is
+exactly the statistic the recovery trigger watches, so the filter's own corrective mechanism
+became its largest error source.
+
+The fix is [`McLocalizer::gated_log_likelihood`](../../crates/robotics_localization/src/mcl.rs):
+reweighting scores an observation only if its best landmark clears the same threshold the
+EKF's gate uses, and an observation that fails contributes nothing instead of its
+arbitrarily negative raw value. The recovery trigger deliberately keeps reading the raw,
+ungated `total_log_likelihood`, so that gating cannot blind the filter to a real kidnapping.
+Both functions and the reason they have to be two different numbers are documented at their
+definitions. Compare `normal-verdict-mcl.yaml` of
+[`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) against
+the pre-fix directory above for the size of the improvement.
+
+One earlier attempt is worth recording because it failed: widening the initial particle
+spread. It is not in the code. The spread was a real bug of its own, which is why
+`MclConfig::initial_sigma_xy` exists and says so, but fixing it did not fix the divergence,
+because the divergence was never about the prior.
+
+### 5.2 The recovery trigger still misfires on a healthy run (open)
+
+The gate above fixed reweighting and did not fix everything. On a normal run with no
+teleport anywhere in it, `mcl_node` still logs sustained-low-fit injections, and
+`normal-verdict-mcl.yaml` of
+[`2026-10-10-mcl-gated`](../../evidence/phase-3-correctness/2026-10-10-mcl-gated) therefore
+still fails criterion P1: the count is in that run's `normal-mcl_node.log`, and the error
+trace in `normal-run-mcl.csv` shows the filter tracking tightly between injections and
+being kicked off the truth by each one.
+
+The reason is structural rather than a bad constant. The trigger compares
+`total_log_likelihood / observations.len()`, a plain mean over every observation in the
+scan, against a per-observation threshold. A mean is not robust: one unexplainable detection
+at a few hundred nats swamps three good ones at a fraction of a nat each, so a single
+spurious cluster drags the statistic far below the threshold no matter how well the rest of
+the scan fits. Five such scans in a row fire an injection. This is the raw, ungated number
+by design, for the reason 5.1 gives, so the defect is not that it is ungated; it is that the
+mean is the wrong summary of an ungated score.
+
+The fix this points at, not yet implemented or measured, is to keep the trigger ungated but
+make its summary robust: judge a scan by how many of its observations the best particle can
+explain, or take a median rather than a mean, so that a kidnapping (where *no* observation
+fits *any* particle) still fires while one bad detection in an otherwise good scan does not.
+That is a change to the trigger statistic alone and leaves `gated_log_likelihood` as it is.
+
+Until it is made, the honest reading of the two verdicts is the one at the top of this file:
+MCL earns the P2 claim the EKF structurally cannot, and does not yet earn the P1 claim the
+EKF already holds.
+
+### 5.3 Evidence kept being destroyed by the build mirror (fixed)
+
+Not an algorithm defect, and it cost more runs than either of the above. Builds happen in a
+WSL mirror while the git repository lives on the Windows side, and
+[`scripts/wsl_run.sh`](../../scripts/wsl_run.sh) calls
+[`scripts/sync_to_wsl.sh`](../../scripts/sync_to_wsl.sh), an `rsync -a --delete` from
+Windows into the mirror, at the start of every run. Run output was written in the mirror, so
+anything not yet copied to the Windows side was deleted by the next sync. That destroyed a
+6270-row evaluation, a partial integration-test log, and later a set of MCL measurement runs.
+
+Two changes close the window, and both are in place rather than one:
+
+1. [`scripts/evidence_root.sh`](../../scripts/evidence_root.sh) resolves `EVIDENCE_ROOT` to
+   the `evidence/` directory of the Windows checkout whenever it is mounted, and
+   [`run_phase3_correctness.sh`](../../scripts/run_phase3_correctness.sh) and
+   [`verify_phase3_localization.sh`](../../scripts/verify_phase3_localization.sh) both write
+   there. A run's results cross the mount as they are produced, so there is no moment at
+   which the only copy is in the mirror and no copy-back step to forget.
+2. `sync_to_wsl.sh` excludes `evidence/` and `benchmarks/` from the rsync, so `--delete`
+   cannot reach run output even for a run that did write into the mirror, which still
+   happens when the mount is absent or an explicit output path is given.
+
+The cost of (2) is that the mirror's `evidence/` no longer mirrors anything, and
+`sync_to_wsl.sh` says so where someone would look. The Windows checkout is the only
+authoritative copy. Evidence is small text, so writing it across the mount costs nothing
+that matters; what makes builds stay in the mirror is cargo's and colcon's many-small-file
+churn, which this is not.
+
+## 6. How this part will be written
 
 Same pattern as the rest of the material: every claim points at a file and a line that can
 be read, every number comes from a run recorded in [benchmark.md](benchmark.md), and

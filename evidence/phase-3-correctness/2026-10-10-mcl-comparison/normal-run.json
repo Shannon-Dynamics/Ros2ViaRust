@@ -1,0 +1,10 @@
+{
+  "csv": "/home/genta/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-mcl-comparison/normal-run.csv",
+  "estimates_received": 5908,
+  "rows": 5908,
+  "unpaired_estimates": 0,
+  "pair_tolerance_s": 0.05,
+  "kidnap": null,
+  "before_kidnap": {"samples": 5908, "rmse_position_m": 0.009133, "rmse_yaw_rad": 0.022042, "max_position_error_m": 0.027501, "final_position_error_m": 0.005215, "odom_only_rmse_position_m": 0.017125},
+  "after_kidnap": {"samples": 0, "rmse_position_m": null, "rmse_yaw_rad": null, "max_position_error_m": null, "final_position_error_m": null, "odom_only_rmse_position_m": null, "best_position_error_after_kidnap": null}
+}

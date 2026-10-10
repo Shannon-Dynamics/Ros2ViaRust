@@ -1,6 +1,6 @@
 [package]
 name = "robotics_localization"
-description = "Localization against a known map: landmark extraction from a laser scan and EKF localization on SE(2). No ROS dependency."
+description = "Localization against a known map: landmark extraction from a laser scan, EKF and particle filter (MCL) localization on SE(2). No ROS dependency."
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -12,6 +12,7 @@ robotics_core = { workspace = true }
 robotics_models = { workspace = true }
 robotics_filters = { workspace = true }
 nalgebra = { workspace = true }
+rand = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

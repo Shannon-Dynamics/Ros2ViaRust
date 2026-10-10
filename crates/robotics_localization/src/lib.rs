@@ -5,25 +5,31 @@
 //! absolute information to stay located, and a way to find itself when it has no idea
 //! where it is.
 //!
-//! This crate is the first half of the answer, position tracking with a Gaussian belief:
+//! This crate answers the question two ways:
 //!
 //! * [`map`]: the landmark map, read from the simulation's own ground truth file so that
 //!   the map and the world cannot drift apart.
 //! * [`pillars`]: range and bearing observations of the round pillars, extracted from a
 //!   laser scan.
 //! * [`ekf`]: EKF localization on SE(2), with maximum likelihood association and a
-//!   chi-square gate.
+//!   chi-square gate. One Gaussian belief: tracks a known pose well, and structurally
+//!   cannot recover from a kidnapping, which is its own test's point.
+//! * [`mcl`]: particle filter localization with the same landmark model and a documented
+//!   random-injection recovery strategy. A population of hypotheses: tracks a known pose
+//!   about as well, and can recover from a kidnapping because losing a wrong hypothesis
+//!   costs it nothing.
 //!
-//! The second half, a belief that can be multimodal and can therefore solve global
-//! localization and recover from a kidnapping, is Monte Carlo localization and is not in
-//! this crate yet. The pieces it needs (`ParticleSet`, KLD sampling, beam and likelihood
-//! field models) are already in `robotics_filters` and `robotics_models`.
+//! Both read the same map and the same sensor model; only the representation of the
+//! belief, and what each can do with it, differs. That comparison is Phase 3's answer to
+//! the kidnapped robot problem (Thrun and Fox), and it is measured, not asserted, in
+//! `evidence/phase-3-correctness/`.
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
 pub mod ekf;
 pub mod map;
+pub mod mcl;
 pub mod pillars;
 
 pub use ekf::{
@@ -31,4 +37,5 @@ pub use ekf::{
     OdometryMotion, UpdateReport,
 };
 pub use map::{LandmarkEntry, MapError, MapFile};
+pub use mcl::{McLocalizer, McUpdateReport, MclConfig, MclStats};
 pub use pillars::{detect, Detection, PillarDetector};

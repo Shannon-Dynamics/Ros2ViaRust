@@ -1,0 +1,93 @@
+[kidnap] starting the world with ground truth
+[kidnap] simulation is up
+[kidnap] controllers are active
+[kidnap] starting localization_node (EKF) and its evaluator against /odom
+[kidnap] starting mcl_node (MCL) and its evaluator against /odom
+[kidnap] driving route /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml (1 lap(s))
+[kidnap] teleporting the robot to (-1.5, -1.5, 2.0)
+[kidnap] route_driver exited with code 0
+[kidnap] route finished, letting the filter(s) settle
+[kidnap] stopping with SIGINT, evaluators first so that they write their summaries
+localization_evaluator_ekf: exit code 0
+localization_evaluator_mcl: exit code 0
+localization_node: exit code 0
+mcl_node: exit code 0
+ros2_launch: exit code 0
+webots_bin_left: 0
+[kidnap] rows written (ekf): 6226
+[kidnap] ground_truth_max_displacement_m (ekf): 2.121
+# Kidnap recovery verdict, derived from
+# /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-mcl-gated/kidnap-run.json and /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-mcl-gated/kidnap-run.csv by scripts/phase3_kidnap_verdict.py.
+# Not the P1 verdict of scripts/phase3_verdict.py; see this script's docstring
+# for why recovery needs its own definition and its own file.
+run:
+  estimator: ekf
+  scenario: kidnap
+  date_utc: 2026-10-10T06:14:33Z
+  route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml
+  route_sha256: 25343233801bff225ac65898dfdaac2dd24ccace818b9bfa7288f4455a4d6a9b
+  route_waypoints: 21
+  laps: 1
+  kidnap_after_s: 120
+  samples_total: 6226
+kidnap_event:
+  seconds_into_run: 121.700000
+  target_x: -1.500000
+  target_y: -1.500000
+  target_theta: 2.000000
+before_kidnap:
+  samples: 1976
+  rmse_position_m: 0.009059
+  final_position_error_m: 0.004223
+after_kidnap:
+  samples: 4250
+  rmse_position_m: 3.050773
+  max_position_error_m: 3.437718
+  final_position_error_m: 2.953103
+  best_position_error_m: {'position_error_m': 2.44232, 'seconds_into_run': 365.4}
+recovery:
+  threshold_m: 0.15
+  sustained_samples_required: 10
+  recovered: false
+  recovered_at_seconds_into_run: null
+  recovery_time_s: null
+  verdict: DID_NOT_RECOVER
+[kidnap] rows written (mcl): 6434
+[kidnap] ground_truth_max_displacement_m (mcl): 2.121
+# Kidnap recovery verdict, derived from
+# /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-mcl-gated/kidnap-run-mcl.json and /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-mcl-gated/kidnap-run-mcl.csv by scripts/phase3_kidnap_verdict.py.
+# Not the P1 verdict of scripts/phase3_verdict.py; see this script's docstring
+# for why recovery needs its own definition and its own file.
+run:
+  estimator: mcl
+  scenario: kidnap
+  date_utc: 2026-10-10T06:14:33Z
+  route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml
+  route_sha256: 25343233801bff225ac65898dfdaac2dd24ccace818b9bfa7288f4455a4d6a9b
+  route_waypoints: 21
+  laps: 1
+  kidnap_after_s: 120
+  samples_total: 6434
+kidnap_event:
+  seconds_into_run: 121.700000
+  target_x: -1.500000
+  target_y: -1.500000
+  target_theta: 2.000000
+before_kidnap:
+  samples: 2024
+  rmse_position_m: 0.118927
+  final_position_error_m: 0.304409
+after_kidnap:
+  samples: 4410
+  rmse_position_m: 1.163958
+  max_position_error_m: 3.260474
+  final_position_error_m: 0.293553
+  best_position_error_m: {'position_error_m': 0.000273, 'seconds_into_run': 291.76}
+recovery:
+  threshold_m: 0.15
+  sustained_samples_required: 10
+  recovered: true
+  recovered_at_seconds_into_run: 168.700000
+  recovery_time_s: 47.000000
+  verdict: RECOVERED
+[kidnap] done, evidence in /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-mcl-gated

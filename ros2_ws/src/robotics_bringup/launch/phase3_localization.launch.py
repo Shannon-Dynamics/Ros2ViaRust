@@ -11,8 +11,9 @@ What it starts, and who owns what:
     evaluation_supervisor.py  (ground truth)         /ground_truth/pose, /kidnap/events
                               (teleport)             subscribes /kidnap/teleport
     route_driver              optional, harness      /ground_truth/pose -> /cmd_vel
-    localization_node         THE STACK UNDER TEST   /localization/pose, TF map -> odom
-    localization_evaluator    optional, harness      the run CSV and its JSON summary
+    localization_node         THE EKF STACK UNDER TEST   /localization/pose, TF map -> odom
+    mcl_node                  THE MCL STACK UNDER TEST   /mcl/pose, no TF (see mcl_node.rs)
+    localization_evaluator    optional, harness, one instance per estimator started
 
 This replaces the combination of `sim/webots/launch/localization_world.launch.py` plus the
 three or four `ros2 run` calls that `scripts/run_phase3_correctness.sh` used to make by
@@ -57,11 +58,15 @@ ARGS = {
     'map_file': ('', 'landmark map; default <repo>/sim/webots/config/landmarks.yaml'),
     'route_file': ('', 'route for drive:=true; default <repo>/sim/webots/config/route_long.yaml'),
     'ground_truth': ('true', 'publish /ground_truth/pose and accept /kidnap/teleport'),
-    'localize': ('true', 'start localization_node, the stack under test'),
+    'localize': ('true', 'start localization_node (EKF), one of the stacks under test'),
     'publish_tf': ('true', 'localization_node broadcasts map -> odom'),
-    'evaluate': ('false', 'start localization_evaluator; needs output_csv and output_json'),
-    'output_csv': ('', 'per sample rows for evaluate:=true'),
-    'output_json': ('', 'run summary for evaluate:=true'),
+    'evaluate': ('false', 'start an evaluator for localization_node; needs output_csv/json'),
+    'output_csv': ('', 'per sample rows for evaluate:=true (EKF)'),
+    'output_json': ('', 'run summary for evaluate:=true (EKF)'),
+    'mcl': ('false', 'start mcl_node, the other stack under test'),
+    'mcl_evaluate': ('false', 'start an evaluator for mcl_node; needs mcl_output_csv/json'),
+    'mcl_output_csv': ('', 'per sample rows for mcl_evaluate:=true (MCL)'),
+    'mcl_output_json': ('', 'run summary for mcl_evaluate:=true (MCL)'),
     'drive': ('false', 'start route_driver and drive route_file'),
     'laps': ('1', 'how many times route_driver drives the route'),
 }
@@ -130,8 +135,39 @@ def setup(context):
             output='screen',
             parameters=[{
                 'topics.odom': odom_topic,
+                'topics.estimate': 'localization/pose',
                 'output_csv': lc['output_csv'],
                 'output_json': lc['output_json'],
+            }],
+        ))
+
+    if truthy('mcl'):
+        actions.append(Node(
+            package='robotics_localization_bridge',
+            executable='mcl_node',
+            name='mcl_node',
+            output='screen',
+            parameters=[{
+                'map_file': map_file,
+                'topics.odom': odom_topic,
+            }],
+        ))
+
+    if truthy('mcl_evaluate'):
+        if not lc['mcl_output_csv'] or not lc['mcl_output_json']:
+            raise RuntimeError('mcl_evaluate:=true requires mcl_output_csv:= and mcl_output_json:=')
+        # A second instance of the same evaluator node, grading mcl_node instead of
+        # localization_node; it needs a distinct node name or the two collide in the graph.
+        actions.append(Node(
+            package='robotics_localization_bridge',
+            executable='localization_evaluator',
+            name='localization_evaluator_mcl',
+            output='screen',
+            parameters=[{
+                'topics.odom': odom_topic,
+                'topics.estimate': 'mcl/pose',
+                'output_csv': lc['mcl_output_csv'],
+                'output_json': lc['mcl_output_json'],
             }],
         ))
 
