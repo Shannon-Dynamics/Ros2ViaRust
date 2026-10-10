@@ -1,0 +1,2694 @@
+header:
+  stamp:
+    sec: 1791638023
+    nanosec: 477741105
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1194'
+  - key: detections
+    value: '4776'
+  - key: published
+    value: '1194'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1191'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4776'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638023
+    nanosec: 478193127
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1194'
+  - key: detections
+    value: '4776'
+  - key: published
+    value: '4307'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '-0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4801.7'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1194'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '106.08'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 259
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.85 [5.98 - 3063.10] us, StdDev: 50.43'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.90 [10.82 - 1853.99] us, StdDev: 37.07'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638024
+    nanosec: 477751127
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1199'
+  - key: detections
+    value: '4796'
+  - key: published
+    value: '1199'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1196'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4796'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638024
+    nanosec: 508981594
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1199'
+  - key: detections
+    value: '4796'
+  - key: published
+    value: '4322'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '-0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4742.4'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1199'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '100.56'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 260
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.84 [5.98 - 3063.10] us, StdDev: 50.35'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.89 [10.82 - 1853.99] us, StdDev: 37.02'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638025
+    nanosec: 477792828
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1203'
+  - key: detections
+    value: '4812'
+  - key: published
+    value: '1203'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1200'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4812'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638025
+    nanosec: 478219331
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1203'
+  - key: detections
+    value: '4812'
+  - key: published
+    value: '4338'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '-0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4717.4'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1203'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '102.78'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 261
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.83 [5.98 - 3063.10] us, StdDev: 50.27'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.88 [10.82 - 1853.99] us, StdDev: 36.96'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638026
+    nanosec: 477704749
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1208'
+  - key: detections
+    value: '4832'
+  - key: published
+    value: '1208'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1205'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4832'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638026
+    nanosec: 508433151
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1208'
+  - key: detections
+    value: '4832'
+  - key: published
+    value: '4354'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '-0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4678.2'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1208'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '101.75'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 262
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.83 [5.98 - 3063.10] us, StdDev: 50.20'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.88 [10.82 - 1853.99] us, StdDev: 36.90'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638027
+    nanosec: 477695538
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1212'
+  - key: detections
+    value: '4848'
+  - key: published
+    value: '1212'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1209'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4848'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638027
+    nanosec: 478196586
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1212'
+  - key: detections
+    value: '4848'
+  - key: published
+    value: '4371'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '-0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4652.9'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1212'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '101.07'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 263
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.85 [5.98 - 3063.10] us, StdDev: 50.14'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.87 [10.82 - 1853.99] us, StdDev: 36.84'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638028
+    nanosec: 477683085
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1217'
+  - key: detections
+    value: '4868'
+  - key: published
+    value: '1217'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1214'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4868'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638028
+    nanosec: 528770958
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1217'
+  - key: detections
+    value: '4868'
+  - key: published
+    value: '4387'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '-0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4623.9'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1217'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '98.46'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 264
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.83 [5.98 - 3063.10] us, StdDev: 50.05'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.86 [10.82 - 1853.99] us, StdDev: 36.77'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638029
+    nanosec: 477691285
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1221'
+  - key: detections
+    value: '4884'
+  - key: published
+    value: '1221'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1218'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4884'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638029
+    nanosec: 478197300
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1221'
+  - key: detections
+    value: '4884'
+  - key: published
+    value: '4404'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4587.7'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1221'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '99.75'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 265
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.81 [5.98 - 3063.10] us, StdDev: 49.96'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.85 [10.82 - 1853.99] us, StdDev: 36.70'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638030
+    nanosec: 477713991
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1226'
+  - key: detections
+    value: '4904'
+  - key: published
+    value: '1226'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1223'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4904'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.292'
+---
+header:
+  stamp:
+    sec: 1791638030
+    nanosec: 542360061
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1226'
+  - key: detections
+    value: '4904'
+  - key: published
+    value: '4419'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4558.4'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1226'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '110.36'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 266
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.80 [5.98 - 3063.10] us, StdDev: 49.87'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.85 [10.82 - 1853.99] us, StdDev: 36.64'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638031
+    nanosec: 477775913
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1230'
+  - key: detections
+    value: '4920'
+  - key: published
+    value: '1230'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1227'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4920'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638031
+    nanosec: 478142560
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1230'
+  - key: detections
+    value: '4920'
+  - key: published
+    value: '4436'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4500.4'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1230'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '96.20'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 267
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.77 [5.98 - 3063.10] us, StdDev: 49.79'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.83 [10.82 - 1853.99] us, StdDev: 36.57'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638032
+    nanosec: 477679830
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1235'
+  - key: detections
+    value: '4940'
+  - key: published
+    value: '1235'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1232'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4940'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638032
+    nanosec: 538942097
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1235'
+  - key: detections
+    value: '4940'
+  - key: published
+    value: '4452'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4481.6'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1235'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '103.71'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 268
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.78 [5.98 - 3063.10] us, StdDev: 49.70'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.83 [10.82 - 1853.99] us, StdDev: 36.51'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638033
+    nanosec: 477812916
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1239'
+  - key: detections
+    value: '4956'
+  - key: published
+    value: '1239'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1236'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4956'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638033
+    nanosec: 478227995
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1239'
+  - key: detections
+    value: '4956'
+  - key: published
+    value: '4470'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4444.8'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1239'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '103.73'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 269
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.76 [5.98 - 3063.10] us, StdDev: 49.61'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.82 [10.82 - 1853.99] us, StdDev: 36.44'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638035
+    nanosec: 573346770
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1244'
+  - key: detections
+    value: '4976'
+  - key: published
+    value: '1244'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1241'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4976'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638035
+    nanosec: 644667010
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1244'
+  - key: detections
+    value: '4976'
+  - key: published
+    value: '4486'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4415.1'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1244'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '93.91'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 270
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.73 [5.98 - 3063.10] us, StdDev: 49.53'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.81 [10.82 - 1853.99] us, StdDev: 36.38'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638036
+    nanosec: 573421908
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1248'
+  - key: detections
+    value: '4992'
+  - key: published
+    value: '1248'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1245'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4992'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638036
+    nanosec: 573916103
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1248'
+  - key: detections
+    value: '4992'
+  - key: published
+    value: '4503'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0000'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4389.0'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1248'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '96.37'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 271
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.72 [5.98 - 3063.10] us, StdDev: 49.44'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.80 [10.82 - 1853.99] us, StdDev: 36.31'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638037
+    nanosec: 573406972
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1253'
+  - key: detections
+    value: '5012'
+  - key: published
+    value: '1253'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1250'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '5012'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638037
+    nanosec: 654688827
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1253'
+  - key: detections
+    value: '5012'
+  - key: published
+    value: '4520'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0001'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4337.4'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1253'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '112.04'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 272
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.71 [5.98 - 3063.10] us, StdDev: 49.36'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.81 [10.82 - 1853.99] us, StdDev: 36.30'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638038
+    nanosec: 573367389
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1257'
+  - key: detections
+    value: '5028'
+  - key: published
+    value: '1257'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1254'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '5028'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638038
+    nanosec: 573907820
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1257'
+  - key: detections
+    value: '5028'
+  - key: published
+    value: '4537'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0001'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4322.1'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1257'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '98.52'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 273
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.69 [5.98 - 3063.10] us, StdDev: 49.27'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.80 [10.82 - 1853.99] us, StdDev: 36.24'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638039
+    nanosec: 573429812
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1262'
+  - key: detections
+    value: '5048'
+  - key: published
+    value: '1262'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1259'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '5048'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638039
+    nanosec: 655961101
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1262'
+  - key: detections
+    value: '5048'
+  - key: published
+    value: '4553'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0001'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4259.4'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1262'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '93.49'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 274
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.66 [5.98 - 3063.10] us, StdDev: 49.18'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.78 [10.82 - 1853.99] us, StdDev: 36.17'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638040
+    nanosec: 573459957
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1266'
+  - key: detections
+    value: '5064'
+  - key: published
+    value: '1266'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1263'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '5064'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638040
+    nanosec: 573923204
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1266'
+  - key: detections
+    value: '5064'
+  - key: published
+    value: '4569'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0001'
+  - key: sigma_xy
+    value: '0.0026'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4244.1'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1266'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '101.77'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 275
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.66 [5.98 - 3063.10] us, StdDev: 49.10'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.78 [10.82 - 1853.99] us, StdDev: 36.11'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638041
+    nanosec: 573420763
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1271'
+  - key: detections
+    value: '5084'
+  - key: published
+    value: '1271'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1268'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '5084'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638041
+    nanosec: 660503031
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1271'
+  - key: detections
+    value: '5084'
+  - key: published
+    value: '4586'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0001'
+  - key: sigma_xy
+    value: '0.0027'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4203.2'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1271'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '96.41'
+  - key: observe_ms_max
+    value: '200.61'
+---
+header:
+  stamp:
+    sec: 276
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 48.64 [5.98 - 3063.10] us, StdDev: 49.02'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 34.76 [10.82 - 1853.99] us, StdDev: 36.05'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791638042
+    nanosec: 573473723
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1275'
+  - key: detections
+    value: '5100'
+  - key: published
+    value: '1275'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1272'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0009'
+  - key: sigma_theta
+    value: '0.0007'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '5100'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.291'
+---
+header:
+  stamp:
+    sec: 1791638042
+    nanosec: 573926203
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'mcl_node: particle filter'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1275'
+  - key: detections
+    value: '5100'
+  - key: published
+    value: '4602'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.008'
+  - key: y
+    value: '0.000'
+  - key: theta
+    value: '0.0001'
+  - key: sigma_xy
+    value: '0.0027'
+  - key: sigma_theta
+    value: '0.0010'
+  - key: ess
+    value: '4177.0'
+  - key: predictions
+    value: '0'
+  - key: scored_updates
+    value: '1275'
+  - key: resamples
+    value: '6'
+  - key: injections
+    value: '0'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '102.45'
+  - key: observe_ms_max
+    value: '200.61'
+---

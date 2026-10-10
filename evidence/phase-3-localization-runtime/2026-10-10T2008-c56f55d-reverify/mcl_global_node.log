@@ -1,0 +1,8 @@
+[INFO] [1791638055.342765600] [mcl_global]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791638055.347981352] [mcl_global]: mcl_node up: scan + odom -> mcl_global/pose (frame map), 43 parameters
+[INFO] [1791638055.404218288] [mcl_global]: MCL started from a UNIFORM PRIOR over the free space (no initial pose) with 3000 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[INFO] [1791638055.406445689] [mcl_global]: GLOBAL_LOCALIZATION_STARTED stamp_s=288.760 particles=3000
+[INFO] [1791638059.015046275] [mcl_global]: GLOBAL_LOCALIZATION_CONVERGED stamp_s=292.260 started_stamp_s=288.760 scored_updates=17 travel_odom_m=0.392 sigma_xy=0.0055 sigma_theta=0.0051 particles_before=3000 particles_after=3000
+[WARN] [1791638068.846577330] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[WARN] [1791638102.424906305] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[INFO] [1791638103.858092078] [mcl_global]: mcl_node shutting down

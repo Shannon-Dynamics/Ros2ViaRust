@@ -1,0 +1,134 @@
+=== 2026-10-10T20:08:58+07:00  ROS_DISTRO=jazzy  RMW=rmw_cyclonedds_cpp ===
+repository: /home/genta/ros2-rust-robotics
+output:     /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-localization-runtime/2026-10-10T2008-c56f55d-reverify
+
+===== A: the pieces exist and are installed =====
+PASS  A1  the colcon install space exists
+PASS  A   localization_node is installed and executable
+PASS  A   mcl_node is installed and executable
+PASS  A   localization_evaluator is installed and executable
+PASS  A   route_driver is installed and executable
+PASS  A5  the bringup launch is installed
+PASS  A6  the world launch exists
+PASS  A7  the landmark map is readable
+PASS  A8  the smoke route is readable
+PASS  A9  the measurement route has at least 10 waypoints
+
+===== B: the run guards accept and reject correctly =====
+PASS  B1  controllers_active_in accepts both active
+PASS  B2  controllers_active_in rejects an unconfigured diffdrive_controller
+PASS  B3  controllers_active_in rejects a missing joint_state_broadcaster
+PASS  B4  controllers_active_in rejects an empty listing
+PASS  B5  ground_truth_moved accepts a run that moved
+PASS  B6  ground_truth_moved rejects a stationary run
+PASS  B7  ground_truth_moved rejects a missing CSV
+PASS  B8  ground_truth_displacement measures the travel it should
+
+===== C: the stack comes up through the bringup launch =====
+PASS  C0  no webots-bin was running before the test
+--- ros2 launch robotics_bringup phase3_localization.launch.py (own process group) ---
+PASS  C1  /clock appears
+PASS  C2  /scan appears
+PASS  C3  /ground_truth/pose appears
+PASS  C4  both controllers become active
+PASS  C5  localization_node is in the node list
+PASS  C6  mcl_node is in the node list
+PASS  C7  robot_state_publisher is in the node list
+PASS  C8  the Ros2Supervisor is in the node list
+
+===== D: every expected topic exists with the right type =====
+PASS  D1  /scan is a sensor_msgs/LaserScan
+PASS  D2  /odom is a nav_msgs/Odometry
+PASS  D3  /imu is a sensor_msgs/Imu
+PASS  D4  /joint_states is a sensor_msgs/JointState
+PASS  D5  /clock is a rosgraph_msgs/Clock
+PASS  D6  /ground_truth/pose is a geometry_msgs/PoseStamped
+PASS  D7  /localization/pose is a geometry_msgs/PoseWithCovarianceStamped
+PASS  D8  /mcl/pose is a geometry_msgs/PoseWithCovarianceStamped
+PASS  D9  /tf is a tf2_msgs/TFMessage
+PASS  D10 /tf_static is a tf2_msgs/TFMessage
+PASS  D11 /diagnostics is a diagnostic_msgs/DiagnosticArray
+PASS  D12 /kidnap/teleport is offered by the supervisor
+PASS  D13 /kidnap/events is offered by the supervisor
+
+===== E: the topics actually publish =====
+PASS  E1  /scan publishes
+PASS  E2  /odom publishes
+PASS  E3  /ground_truth/pose publishes
+PASS  E4  /localization/pose publishes
+PASS  E5  /mcl/pose publishes
+PASS  E6  /tf publishes
+
+===== F: the TF tree is complete =====
+PASS  F1  map -> odom resolves
+PASS  F2  odom -> base_link resolves
+PASS  F3  base_link -> LDS-01 resolves
+PASS  F4  base_link -> imu_link resolves
+PASS  F5  base_link -> base_footprint resolves
+PASS  F6  map -> base_link resolves through the chain
+PASS  F7  map -> LDS-01 resolves through the chain
+PASS  F8  map -> imu_link resolves through the chain
+PASS  F9  a transform with child_frame_id odom is broadcast
+PASS  F10 localization_node is a publisher on /tf
+PASS  F11 mcl_node is not a publisher on /tf (by design, see mcl_node.rs)
+
+===== G: localization_node behaves and reports =====
+PASS  G1  localization_node reports its status
+PASS  G2  its status is RUNNING
+PASS  G3  it reports map -> odom as published
+PASS  G4  it reports a non-zero tf_sent
+PASS  G5  the laser mount came from TF, not from parameters
+PASS  G6  publish_tf is true
+PASS  G7  topics.odom points at the odometry the simulator publishes
+PASS  G8  the read-only parameters refuse to be set
+
+===== H: mcl_node (MCL) behaves and reports =====
+PASS  H1  mcl_node reports its status
+PASS  H2  its status is RUNNING (no injection should have fired yet)
+PASS  H3  it reports its particle count
+PASS  H4  it reports an effective sample size
+PASS  H5  the laser mount came from TF, not from parameters
+PASS  H6  particles.count matches McLocalizer's documented default
+PASS  H7  topics.odom points at the odometry the simulator publishes
+PASS  H8  initial_pose.mode defaults to known (global localization is opt-in)
+PASS  H9  the default node reports initial_pose_mode known
+PASS  H10 the default node reports phase tracking
+PASS  H11 it reports what one update costs (observe_ms_max)
+
+===== I: route_driver drives and the robot moves =====
+PASS  I1  route_driver appears in the node list
+PASS  I2  /cmd_vel is a geometry_msgs/TwistStamped
+PASS  I3  /cmd_vel publishes
+PASS  I4  route_driver reports that it is driving
+--- waiting for the smoke route to finish ---
+route_driver exit code: 0
+PASS  I5  route_driver exits 0 when the route is finished
+PASS  I6  the robot reached the waypoints of the route
+
+===== K: global localization from a uniform prior =====
+PASS  K1  the uniform-prior node is in the node list
+PASS  K2  it publishes its own pose topic
+PASS  K3  its status reports initial_pose_mode uniform_prior
+PASS  K4  it holds the particle count it was asked for
+PASS  K5  converged: the phase is tracking and the status is not SEARCHING
+PASS  K6  converged: a convergence stamp was reported
+PASS  K7  the kidnap trigger never fired during the search (injections=0)
+PASS  K8  it reports the cloud spread it judges convergence by
+PASS  K9  the uniform-prior node is not a publisher on /tf either
+PASS  K10 an unknown initial_pose.mode is rejected with a message
+PASS  K11 the uniform-prior node exits on SIGINT
+
+===== J: the stack shuts down and leaves nothing behind =====
+--- SIGINT to the launch process group ---
+launch exit code: 0 after 5.5 s
+PASS  J1  the launch exits on SIGINT
+PASS  J2  no webots-bin is left holding the controller port
+PASS  J3  no localization or harness node is left running
+PASS  J4  the launch log records how Webots was stopped
+PASS  J5  the evidence files were written
+
+===== summary =====
+checks: 98
+passed: 98
+failed: 0
+evidence: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-localization-runtime/2026-10-10T2008-c56f55d-reverify
