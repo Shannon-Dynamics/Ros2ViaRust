@@ -133,6 +133,8 @@ mod tests {
         .unwrap();
         let l = g.params().l_occ;
         for &(i, j) in occupied {
+            // Two hits: one is not enough to call a cell occupied (see OccupancyParams).
+            g.add_evidence(i, j, l);
             g.add_evidence(i, j, l);
         }
         g

@@ -673,6 +673,7 @@ mod tests {
             for i in 0..=10 {
                 if i == 0 || i == 10 || j == 0 || j == 10 {
                     g.add_evidence(i, j, lo);
+                    g.add_evidence(i, j, lo);
                 } else {
                     g.add_evidence(i, j, lf);
                     g.add_evidence(i, j, lf);
@@ -722,8 +723,10 @@ mod tests {
     fn a_phantom_cell_is_a_false_occupied_cell_and_moves_the_maximum() {
         let (mut g, t) = ideal();
         let lo = g.params().l_occ;
-        g.add_evidence(5, 5, lo);
-        g.add_evidence(5, 5, lo);
+        // The cell was free (two misses); it takes three hits to turn it occupied.
+        for _ in 0..3 {
+            g.add_evidence(5, 5, lo);
+        }
         let m = evaluate(&g, &t, &[v(0.0, 0.0)], &params()).unwrap();
         assert_eq!(m.occupied_cells, 41);
         assert_eq!(m.false_occupied_cells, 1);
@@ -746,7 +749,7 @@ mod tests {
     fn a_hole_in_a_wall_is_false_free_and_lowers_completeness() {
         let (mut g, t) = ideal();
         let lf = g.params().l_free;
-        for _ in 0..4 {
+        for _ in 0..6 {
             g.add_evidence(10, 5, lf);
         }
         assert_eq!(g.state(10, 5), Some(CellState::Free));
@@ -764,7 +767,7 @@ mod tests {
     fn the_tolerance_changes_completeness_but_not_false_free() {
         let (mut g, t) = ideal();
         let lf = g.params().l_free;
-        for _ in 0..4 {
+        for _ in 0..6 {
             g.add_evidence(10, 5, lf);
         }
         let mut p = params();
@@ -784,6 +787,7 @@ mod tests {
         for j in 0..=10 {
             for i in 0..=10 {
                 if i == 0 || i == 10 || j == 0 || j == 10 {
+                    g.add_evidence(i, j, lo);
                     g.add_evidence(i, j, lo);
                 }
             }

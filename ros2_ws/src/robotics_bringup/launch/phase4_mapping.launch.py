@@ -62,6 +62,7 @@ ARGS = {
     'tau_cells': ('1.0', 'evaluation tolerance in cells; scripts/phase4_verdict.py checks it'),
     'no_return': ('clear_to_max_range', 'mapper policy for beams with no return'),
     'tracer': ('supercover', 'mapper ray traversal: supercover | bresenham'),
+    'scan_time_offset': ('-0.06', 'mapper: seconds added to a scan stamp to get its measurement instant; -0.06 is the Webots lidar (docs/phase-4-mapping/implementation.md 5.2 item 2)'),
     'clear_margin': ('0.10', 'mapper: a no-return beam clears up to range_max less this (m)'),
 }
 
@@ -118,6 +119,7 @@ def setup(context):
         'model.no_return': lc['no_return'],
         'model.tracer': lc['tracer'],
         'model.clear_margin_m': float(lc['clear_margin']),
+        'scan_time_offset_s': float(lc['scan_time_offset']),
     }
     if truthy('capture'):
         mapper_params.update({

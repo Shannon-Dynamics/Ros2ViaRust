@@ -302,7 +302,7 @@ impl ScanIntegrator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::occupancy::{CellState, OccupancyParams};
+    use crate::occupancy::OccupancyParams;
     use robotics_core::{FrameId, Timestamp};
 
     fn geom(w: usize, h: usize) -> GridGeometry {
@@ -356,13 +356,9 @@ mod tests {
             assert_eq!(g.log_odds(i, 0), Some(p.l_free), "cell {i}");
         }
         assert_eq!(g.log_odds(4, 0), Some(p.l_occ));
-        let (free, occ, unk) = g.count_states();
-        assert_eq!(
-            (free, occ),
-            (0, 1),
-            "one miss is not enough to call a cell free"
-        );
-        assert_eq!(unk, 32 - 1);
+        // One scan is one observation: one miss does not make a cell free and one hit does not
+        // make it occupied (it takes two of each).
+        assert_eq!(g.count_states(), (0, 0, 32));
         assert_eq!(g.log_odds(5, 0), Some(0.0), "behind the hit stays unknown");
         assert_eq!(g.log_odds(2, 1), Some(0.0), "off the beam stays unknown");
     }
@@ -413,8 +409,9 @@ mod tests {
         rotated.rotate_left(3);
         let c = run(first + inc * 3.0, inc, &rotated);
         assert!(as_given.bit_identical(&c));
+        let l_occ = as_given.params().l_occ;
         assert!(
-            as_given.count_states().1 > 0,
+            as_given.log_odds_slice().contains(&l_occ),
             "the scan did mark something occupied"
         );
     }
@@ -625,7 +622,7 @@ mod tests {
         assert_eq!(a.log_odds(1, 0), Some(a.params().l_free));
         assert_eq!(b.log_odds(1, 0), Some(0.0));
         for g in [&a, &b] {
-            assert_eq!(g.state(2, 1), Some(CellState::Occupied));
+            assert_eq!(g.log_odds(2, 1), Some(g.params().l_occ));
             assert_eq!(g.log_odds(0, 0), Some(g.params().l_free));
             assert_eq!(g.log_odds(1, 1), Some(g.params().l_free));
         }
@@ -679,10 +676,8 @@ mod tests {
             )
             .unwrap();
         assert!(a.bit_identical(&b));
-        let (free, occ, _) = a.count_states();
-        assert!(
-            occ > 0 && free == 0,
-            "one scan: cells are occupied or still unknown"
-        );
+        let l_occ = a.params().l_occ;
+        assert!(a.log_odds_slice().contains(&l_occ), "the scan marked hits");
+        assert_eq!(a.count_states().0, 0, "one scan cannot call a cell free");
     }
 }

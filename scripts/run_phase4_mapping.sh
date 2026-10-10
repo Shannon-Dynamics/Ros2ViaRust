@@ -37,6 +37,7 @@ LAPS=${LAPS:-1}
 NO_RETURN=${NO_RETURN:-clear_to_max_range}
 TRACER=${TRACER:-supercover}
 CLEAR_MARGIN=${CLEAR_MARGIN:-0.10}
+SCAN_TIME_OFFSET=${SCAN_TIME_OFFSET:--0.06}
 OUT="$EVIDENCE_ROOT/phase-4-mapping/$NAME"
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
@@ -95,7 +96,7 @@ fi
 log "starting the world, the adapter, the mapper and the evaluator"
 ros2 launch robotics_bringup phase4_mapping.launch.py gui:=false mode:=realtime \
     owner:=ground_truth evaluate:=true capture:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
-    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" > "$OUT/launch.log" 2>&1 &
+    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" scan_time_offset:="$SCAN_TIME_OFFSET" > "$OUT/launch.log" 2>&1 &
 LAUNCH_PID=$!
 
 wait_for() {  # wait_for <seconds> <description> <command...>
@@ -189,7 +190,7 @@ fi
     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
     echo "route_driver_exit_code: $ROUTE_RC"
     echo "replay_scans: $REPLAY_SCANS"
-    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
+    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN scan_time_offset=$SCAN_TIME_OFFSET tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
     grep -E '^(source_git_commit|source_git_dirty|mapping_node_executable_sha256|route_sha256|world_sha256):' "$OUT/environment.txt"
 } > "$OUT/summary.yaml"
 

@@ -122,8 +122,9 @@ pub enum CellState {
 
 /// The numbers of the inverse sensor model and of the read-out, all as log-odds.
 ///
-/// These are defaults chosen by reasoning, not tuned on a result, and they are fixed on the
-/// development run of `docs/phase-4-mapping/benchmark.md` and not touched after it:
+/// These are the defaults the development run of `docs/phase-4-mapping/benchmark.md` left, and
+/// they are not touched after it. All but the occupied threshold were chosen by reasoning before
+/// any run; that one is the first parameter a run changed (its row says why):
 ///
 /// | quantity | probability | log-odds | why |
 /// |---|---|---|---|
@@ -131,8 +132,8 @@ pub enum CellState {
 /// | `l_free` | 0.4 | `ln(2/3)` | the usual miss weight (OctoMap's 0.4): a miss is weaker than a hit because the beam may have been blocked by something nearer |
 /// | `l_min` | 0.12 | `ln(0.12/0.88)` | OctoMap's clamp: a saturated free cell flips after four hits |
 /// | `l_max` | 0.97 | `ln(0.97/0.03)` | OctoMap's clamp: a saturated occupied cell flips after eleven misses |
-/// | occupied threshold | 0.65 | `ln(65/35)` | one hit already makes a cell occupied, so a planner errs toward caution |
-/// | free threshold | 0.35 | `-ln(65/35)` | symmetric: two misses are needed, one is not enough |
+/// | occupied threshold | 0.75 | `ln 3` | **two hits** make a cell occupied (one hit is 0.7, two are 0.845). Set on the first development run, `evidence/phase-4-mapping/2026-10-11-development-route-long`: with one hit it left 113 cells occupied one and a half cells beyond the walls, each one hit from a pose that was a few centimetres off, and nothing ever crosses a cell outside a wall to clear it |
+/// | free threshold | 0.35 | `-ln(65/35)` | two misses are needed, one is not enough |
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct OccupancyParams {
     /// Log-odds added to a cell a beam ended in.
@@ -217,7 +218,7 @@ impl OccupancyParams {
 
 impl Default for OccupancyParams {
     fn default() -> Self {
-        Self::from_probabilities(0.7, 0.4, 0.12, 0.97, 0.65, 0.35)
+        Self::from_probabilities(0.7, 0.4, 0.12, 0.97, 0.75, 0.35)
     }
 }
 
@@ -551,10 +552,14 @@ mod tests {
         assert_relative_eq!(g.probability(2, 2).unwrap(), 4.0 / 13.0, epsilon = 1e-6);
     }
 
+    /// Two hits make a cell occupied (the second takes it from 0.7 to 0.845, past the 0.75
+    /// threshold) and one is not enough; two misses make it free and one is not enough.
     #[test]
-    fn one_hit_makes_a_cell_occupied_and_one_miss_does_not_make_it_free() {
+    fn two_hits_make_a_cell_occupied_and_two_misses_make_it_free() {
         let p = OccupancyParams::default();
         let mut g = grid();
+        g.add_evidence(0, 0, p.l_occ);
+        assert_eq!(g.state(0, 0), Some(CellState::Unknown));
         g.add_evidence(0, 0, p.l_occ);
         assert_eq!(g.state(0, 0), Some(CellState::Occupied));
         g.add_evidence(1, 0, p.l_free);
@@ -647,6 +652,7 @@ mod tests {
     fn ros_data_has_exactly_the_three_values() {
         let p = OccupancyParams::default();
         let mut g = grid();
+        g.add_evidence(0, 0, p.l_occ);
         g.add_evidence(0, 0, p.l_occ);
         g.add_evidence(1, 0, p.l_free);
         g.add_evidence(1, 0, p.l_free);

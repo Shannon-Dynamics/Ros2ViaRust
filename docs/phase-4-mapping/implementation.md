@@ -126,7 +126,7 @@ the Webots world, unchanged.
 | D6 | A second, more complex world is the backlog item *M1-extended*, after the Phase 3 trials. |
 | D7 | The analytic geometry of the world is the main baseline. The rclpy port and `nav2_costmap_2d` are additional information and do not block. |
 
-### 5.2 Questions settled on 2026-10-11: items 1 to 6 before any mapper code, items 7 to 9 after the first runs
+### 5.2 Questions settled on 2026-10-11: items 1 to 6 before any mapper code, items 7 to 10 after the first runs
 
 Decided on the project owner's instruction to decide and document them, so open to the
 owner's revision (unlike 5.1, they were not separately confirmed). The scan recording they
@@ -141,6 +141,9 @@ rely on was made on 2026-10-10.
 | D12 | The ESDF is a `sensor_msgs/Image` `32FC1` paired by stamp with `/map`: item 5. |
 | D13 | Because the stamp lags the measurement by up to a scan period, the mapper skips a scan when the sensor moved more than 5 cm or turned more than 0.015 rad across the window `[stamp - 0.2 s, stamp]`: item 7. |
 | D14 | A no-return beam clears free space up to `range_max - 0.10 m`, not to `range_max`: item 8. |
+| D15 | Scans are integrated at the pose `0.06 s` before their stamp (`scan_time_offset_s`, the Webots lidar's mean lag), not at the stamp: item 10. |
+| D16 | A cell is occupied after two hits, not one (`p_occupied` 0.75, was 0.65): item 10. |
+| D17 | A scan taken from where the last integrated one was taken is skipped (`motion_filter`, 2 cm or 0.02 rad): item 10. |
 
 
 The first four were open at the end of 5.1. Items 1 to 3 are answers from the simulator's
@@ -289,18 +292,54 @@ not repeated here.
    where the exact grid says 4). The evaluator now restores the resolution to seven decimals,
    and the rule's tolerance is a ten-thousandth of a cell.
 
+10. **Three changes made after the first development run, and why each is not a tuning of the
+    result (D15 to D17).** The run `2026-10-11-development-route-long` failed M1 on five of seven
+    checks (false occupied 13 per cent, 95th percentile of the surface error 1.5 cells, maximum
+    9.5 cells, false free 6.6 per cent). Its recording was analysed before anything was changed,
+    and replaying it offline with other read-out parameters reproduced its metrics exactly
+    (904 occupied cells, 119 false), which makes the offline numbers below comparable to it. What
+    the analysis found: of 904 occupied cells, 117 lie farther than a cell from any surface and
+    115 of those are in the row of cells just outside a wall, mostly with a **single** hit. The
+    hits that land there are 636 of 332 635 (0.19 per cent), taken while driving straight at
+    0.18 m/s with a yaw rate near zero, on every wall, from every part of the route, in scans
+    whose stamp lag is spread uniformly over its range. That is the translation timing error
+    along the heading, up to 0.18 s x 0.18 m/s = 3.2 cm, on top of the range noise, and nothing
+    ever crosses a cell outside a wall to clear it. Three changes, each aimed at one mechanism:
+
+    * **D15, the mean stamp lag.** The lag was measured on the scan-skew recording
+      (0.061 s on average), not on a mapping run, and it is a property of the driver. The mapper
+      takes `scan_time_offset_s` (default 0: nothing is assumed of a driver it was not told
+      about) and the Phase 4 launch sets it to -0.06. It halves the worst-case translation
+      error (the lag then lies in [-0.08, 0.12] s) and leaves the motion gate as the bound for
+      what is left.
+    * **D16, two hits.** The occupied threshold goes from probability 0.65 to 0.75, so a cell
+      needs two hits; the free threshold is unchanged. Replaying the recording offline with only
+      this change, the false-occupied cells fall from 119 to 59 and the surface error does not
+      move, which is why it is not the whole answer.
+    * **D17, no repeats from a standing pose.** The log-odds update treats every scan as
+      independent, and scans from one pose are not (the first smoke runs saturated a lidar
+      "flying pixel", a depth-edge artefact of the rendered lidar, at a pillar's silhouette that
+      way). `motion_filter` integrates a scan only if the sensor moved 2 cm or turned 0.02 rad
+      since the last integrated scan; a robot at 0.18 m/s moves 3.6 cm per scan and is never
+      affected. Scans it skips are counted and written out.
+
+    These are decisions of a development run, which is what that run is for ("fixed on the
+    development run, not tuned on the evaluation runs", section 2); the tolerances of the verdict
+    were committed before any run and are not touched. They are made on one run, so whether they
+    generalize is what the evaluation runs are for. If the second development run still fails,
+    that failure is the result.
+
 ### 5.3 Still open
 
-* **Flying pixels and repeated scans.** The Webots lidar returns ranges between a foreground
-  and a background surface at depth edges (the silhouette of a pillar), and a robot standing
-  still integrates the same one every scan until its cell saturates as occupied
-  (`evidence/phase-4-mapping/2026-10-11-smoke-with-margin`, `NOTE-what-this-run-found.md`).
-  Not handled: a range-jump filter would also drop thin or grazing real surfaces, and a motion
-  filter (integrate only after the sensor moved a minimum distance) changes what the evidence
-  runs measure. Both are decisions for after the development run has shown their size. Until
-  then they appear in `surface_error_max_cells`, which is why that is a maximum and is reported
-  next to the 95th percentile.
-
+* **Flying pixels.** The Webots lidar returns ranges between a foreground and a background
+  surface at depth edges, such as the silhouette of a pillar (the 2.75 m return between a pillar
+  at 2.31 m and the wall behind it at 3.23 m, `evidence/phase-4-mapping/2026-10-11-smoke-with-margin`,
+  `NOTE-what-this-run-found.md`). Repeats from a standing pose are now filtered (D17) and one hit
+  no longer makes a cell occupied (D16), which together keep an isolated flying pixel from
+  becoming an obstacle; a pixel that is hit twice from two different poses still would. A range-jump
+  filter was not added, because it would also drop thin or grazing real surfaces. What is left
+  shows in `surface_error_max_cells`, which is why that is a maximum and is reported next to the
+  95th percentile.
 * D3 above, and with it T10 and M5.
 * The occupancy thresholds, the clamps, `l_occ`, `l_free` and the resolution are *defaults*
   in the library, chosen by reasoning in section 8.1 and fixed on the development run

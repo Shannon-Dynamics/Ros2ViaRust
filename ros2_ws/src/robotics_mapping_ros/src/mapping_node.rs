@@ -35,8 +35,8 @@ use rclrs::*;
 use robotics_core::tf::{LookupTime, TransformBuffer, TransformBufferConfig};
 use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
 use robotics_mapping::{
-    grid_entropy, signed_esdf, GridGeometry, MotionGate, NoReturn, OccupancyGrid, OccupancyParams,
-    RayTracer, ScanIntegrator,
+    grid_entropy, signed_esdf, GridGeometry, MotionFilter, MotionGate, NoReturn, OccupancyGrid,
+    OccupancyParams, RayTracer, ScanIntegrator,
 };
 use robotics_ros_bridge::convert::{header, laser_scan_from_ros, now, pose_to_ros};
 use robotics_ros_bridge::diagnostics::{DiagnosticLevel, DiagnosticsPublisher, StatusBuilder};
@@ -62,6 +62,7 @@ struct Counters {
     skipped_malformed: u64,
     skipped_no_transform: u64,
     skipped_motion: u64,
+    skipped_stationary: u64,
     skipped_sensor_outside_grid: u64,
     hits: u64,
     no_return_cleared: u64,
@@ -75,6 +76,10 @@ struct State {
     esdf_truncation: f64,
     /// Window of a scan's timestamp uncertainty and the gate over it; `None` disables the gate.
     gate: Option<(f64, MotionGate)>,
+    /// Seconds added to a scan's stamp to get the instant its beams were measured (<= 0).
+    time_offset: f64,
+    motion_filter: Option<MotionFilter>,
+    last_integrated: Option<Se2>,
     pending: VecDeque<Pending>,
     max_pending: usize,
     max_age: Duration,
@@ -118,6 +123,8 @@ enum Outcome {
     Integrated,
     /// The pose changed too much across the scan's timestamp window: skipped, by design.
     SkippedMotion,
+    /// The sensor has not moved since the last integrated scan: skipped, by design.
+    SkippedStationary,
     /// A transform is missing (yet).
     NotReady,
 }
@@ -135,7 +142,21 @@ impl State {
             Ok(t) => t,
             Err(_) => return Ok(Outcome::NotReady),
         };
-        let sensor: Se2 = t.transform;
+        let at_stamp: Se2 = t.transform;
+        // The pose the scan is integrated at: where the sensor was when the beams were
+        // measured, which is `time_offset` before the stamp (decision D15).
+        let sensor: Se2 = if self.time_offset == 0.0 {
+            at_stamp
+        } else {
+            match self.buffer.lock().lookup_transform(
+                &self.map_frame,
+                &p.scan.frame,
+                LookupTime::At(p.scan.stamp.plus_secs_f64(self.time_offset)),
+            ) {
+                Ok(t) => t.transform,
+                Err(_) => return Ok(Outcome::NotReady),
+            }
+        };
         let mut window_change: Option<(f64, f64)> = None;
         if let Some((window, gate)) = self.gate {
             // The beams were measured somewhere in [stamp - window, stamp] (see the gate's
@@ -148,11 +169,11 @@ impl State {
                 Ok(t) => t.transform,
                 Err(_) => return Ok(Outcome::NotReady),
             };
-            window_change = Some(MotionGate::change(&earlier, &sensor));
-            if !gate.admits(&earlier, &sensor) {
+            window_change = Some(MotionGate::change(&earlier, &at_stamp));
+            if !gate.admits(&earlier, &at_stamp) {
                 self.c.skipped_motion += 1;
                 if let Some(w) = self.latency_csv.as_mut() {
-                    let (dt, dy) = MotionGate::change(&earlier, &sensor);
+                    let (dt, dy) = MotionGate::change(&earlier, &at_stamp);
                     let _ = writeln!(
                         w,
                         "{:.6},skipped_motion,{:.1},{:.1},{},,,,,,{dt:.4},{dy:.4}",
@@ -163,6 +184,25 @@ impl State {
                     );
                 }
                 return Ok(Outcome::SkippedMotion);
+            }
+        }
+        if let Some(filter) = self.motion_filter {
+            if !filter.admits(self.last_integrated.as_ref(), &sensor) {
+                self.c.skipped_stationary += 1;
+                if let Some(w) = self.latency_csv.as_mut() {
+                    let (dt, dy) = self
+                        .last_integrated
+                        .map_or((0.0, 0.0), |last| MotionGate::change(&last, &sensor));
+                    let _ = writeln!(
+                        w,
+                        "{:.6},skipped_stationary,{:.1},{:.1},{},,,,,,{dt:.4},{dy:.4}",
+                        p.scan.stamp.as_secs_f64(),
+                        started.elapsed().as_secs_f64() * 1e6,
+                        p.received.elapsed().as_secs_f64() * 1e6,
+                        p.scan.ranges.len()
+                    );
+                }
+                return Ok(Outcome::SkippedStationary);
             }
         }
         let report = match self.integrator.integrate(&mut self.grid, &sensor, &p.scan) {
@@ -176,6 +216,7 @@ impl State {
         let latency_us = started.elapsed().as_secs_f64() * 1e6;
         let wait_us = p.received.elapsed().as_secs_f64() * 1e6;
         self.c.integrated += 1;
+        self.last_integrated = Some(sensor);
         self.c.hits += report.hits as u64;
         self.c.no_return_cleared += report.no_return_cleared as u64;
         self.c.invalid_beams += report.invalid as u64;
@@ -226,7 +267,9 @@ impl State {
     fn drain(&mut self) {
         while let Some(front) = self.pending.pop_front() {
             match self.try_integrate(&front) {
-                Ok(Outcome::Integrated) | Ok(Outcome::SkippedMotion) => {}
+                Ok(Outcome::Integrated)
+                | Ok(Outcome::SkippedMotion)
+                | Ok(Outcome::SkippedStationary) => {}
                 Ok(Outcome::NotReady) => {
                     if front.received.elapsed() > self.max_age {
                         self.c.skipped_no_transform += 1;
@@ -499,6 +542,30 @@ fn main() -> Result<(), RclrsError> {
         3.2,
         "Skip a scan if the sensor turned more than this across the window (rad)",
     )?;
+    let time_offset = p.f64(
+        &node,
+        "scan_time_offset_s",
+        0.0,
+        -1.0,
+        0.0,
+        "Seconds added to a scan's stamp to get the instant it was measured (the Webots lidar: -0.06)",
+    )?;
+    let filter_translation = p.f64(
+        &node,
+        "motion_filter.min_translation_m",
+        0.02,
+        0.0,
+        10.0,
+        "Integrate only if the sensor moved this far since the last integrated scan (m); 0 turns the filter off",
+    )?;
+    let filter_yaw = p.f64(
+        &node,
+        "motion_filter.min_yaw_rad",
+        0.02,
+        0.0,
+        3.2,
+        "... or turned this far (rad); 0 turns the filter off",
+    )?;
     let esdf_truncation = p.f64(
         &node,
         "esdf.truncation_m",
@@ -579,6 +646,14 @@ fn main() -> Result<(), RclrsError> {
     } else {
         None
     };
+    let motion_filter = if filter_translation > 0.0 && filter_yaw > 0.0 {
+        Some(
+            MotionFilter::new(filter_translation, filter_yaw)
+                .map_err(|e| invalid(&node, &format!("motion filter: {e}")))?,
+        )
+    } else {
+        None
+    };
     let params =
         OccupancyParams::from_probabilities(p_hit, p_miss, p_min, p_max, p_occupied, p_free);
     let grid = OccupancyGrid::new(geometry, params)
@@ -619,6 +694,9 @@ fn main() -> Result<(), RclrsError> {
         map_frame: FrameId::new(&map_frame),
         esdf_truncation,
         gate,
+        time_offset,
+        motion_filter,
+        last_integrated: None,
         pending: VecDeque::new(),
         max_pending,
         max_age: Duration::from_secs_f64(max_age),
@@ -727,6 +805,7 @@ fn main() -> Result<(), RclrsError> {
                 .value("scans_integrated", st.c.integrated)
                 .value("skipped_no_transform", st.c.skipped_no_transform)
                 .value("skipped_motion", st.c.skipped_motion)
+                .value("skipped_stationary", st.c.skipped_stationary)
                 .value("skipped_malformed", st.c.skipped_malformed)
                 .value(
                     "skipped_sensor_outside_grid",
@@ -798,10 +877,11 @@ fn main() -> Result<(), RclrsError> {
         }
         log_info!(
             node.logger(),
-            "mapping_node shutting down: {} scans received, {} integrated, {} skipped for motion, {} skipped for want of a transform",
+            "mapping_node shutting down: {} scans received, {} integrated, {} skipped for motion, {} skipped as stationary repeats, {} skipped for want of a transform",
             st.c.received,
             st.c.integrated,
             st.c.skipped_motion,
+            st.c.skipped_stationary,
             st.c.skipped_no_transform
         );
     }

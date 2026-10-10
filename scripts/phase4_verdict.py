@@ -112,6 +112,9 @@ INTEGRATED_FRACTION_MIN = 0.98
 # this bounds them. The route turns in place 21 times; a quarter to a third of its scans fall
 # in those turns and in heading corrections, which is why half is the bound and not a tenth.
 #
+# A scan skipped as a stationary repeat (`motion_filter`, decision D17) is neither a loss nor a
+# motion skip: it is redundancy removed by design, counted in neither fraction and reported.
+#
 # ADDED AFTER THE HARNESS SMOKE RUN (evidence/phase-4-mapping/2026-10-11-harness-smoke),
 # which exposed that the lidar's stamp lags its measurement and led to the gate. It is a
 # validity bound and not an accuracy tolerance, no development or evaluation run existed
@@ -231,7 +234,7 @@ def grade(run):
             travel = max(math.hypot(x - pts[0][0], y - pts[0][1]) for x, y in pts)
     if travel is None or travel < MIN_TRAVEL_M:
         reasons.append(f"the robot did not move (largest displacement {travel}, needs {MIN_TRAVEL_M} m)")
-    integrated = skipped = skipped_motion = 0
+    integrated = skipped = skipped_motion = skipped_stationary = 0
     lat = []
     lat_p = need("update-latency.csv")
     if lat_p:
@@ -242,6 +245,8 @@ def grade(run):
                     lat.append(float(r["latency_us"]) * 1e-6)
                 elif r["outcome"] == "skipped_motion":
                     skipped_motion += 1
+                elif r["outcome"] == "skipped_stationary":
+                    skipped_stationary += 1
                 else:
                     skipped += 1
     tried = integrated + skipped
@@ -263,6 +268,7 @@ def grade(run):
         f"scans_integrated: {integrated}",
         f"scans_lost_to_missing_transforms: {skipped}",
         f"scans_skipped_for_motion: {skipped_motion}",
+        f"scans_skipped_as_stationary_repeats: {skipped_stationary}",
         f"largest_displacement_m: {travel}",
     ]
 

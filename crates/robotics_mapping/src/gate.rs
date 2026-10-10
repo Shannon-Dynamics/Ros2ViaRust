@@ -77,6 +77,60 @@ impl MotionGate {
     }
 }
 
+/// Refusing scans that repeat the last integrated one because the sensor has not moved.
+///
+/// The log-odds update treats every scan as an independent measurement. Sixty scans from one
+/// standing pose are one measurement repeated sixty times: they drive every cell they touch to
+/// saturation, including a cell that holds a sensor artefact (the first Webots runs saturated a
+/// "flying pixel" at a pillar's silhouette that way, 0.28 m from the pillar), and a saturated
+/// cell takes eleven contradicting scans to undo. A motion filter integrates a scan only if the
+/// sensor has moved at least `min_translation` metres or turned at least `min_yaw` radians since
+/// the last scan that was integrated; it is the usual remedy (Cartographer calls it a motion
+/// filter). A robot at its cruise speed of 0.18 m/s moves 3.6 cm per scan, so a threshold of
+/// 2 cm never skips a moving scan.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct MotionFilter {
+    min_translation: f64,
+    min_yaw: f64,
+}
+
+impl Default for MotionFilter {
+    fn default() -> Self {
+        Self {
+            min_translation: 0.02,
+            min_yaw: 0.02,
+        }
+    }
+}
+
+impl MotionFilter {
+    /// A filter with the given minimum motion (metres, radians); both must be finite and
+    /// positive.
+    pub fn new(min_translation: f64, min_yaw: f64) -> Result<Self, MappingError> {
+        for (what, v) in [("min_translation", min_translation), ("min_yaw", min_yaw)] {
+            if !(v.is_finite() && v > 0.0) {
+                return Err(MappingError::InvalidParameter { what, value: v });
+            }
+        }
+        Ok(Self {
+            min_translation,
+            min_yaw,
+        })
+    }
+
+    /// Whether a scan taken from `now` is worth integrating, given the pose of the last scan
+    /// that was integrated (`None` if there is none yet: the first scan always is).
+    pub fn admits(&self, last_integrated: Option<&Se2>, now: &Se2) -> bool {
+        match last_integrated {
+            None => true,
+            Some(last) => {
+                let (dt, dy) = MotionGate::change(last, now);
+                dt >= self.min_translation || dy >= self.min_yaw
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -132,5 +186,31 @@ mod tests {
         assert!(MotionGate::new(0.0, 0.1).is_err());
         assert!(MotionGate::new(0.1, -1.0).is_err());
         assert!(MotionGate::new(f64::NAN, 0.1).is_err());
+    }
+
+    #[test]
+    fn the_motion_filter_skips_a_repeat_and_keeps_every_moving_scan() {
+        let f = MotionFilter::default();
+        let here = Se2::new(1.0, 1.0, 0.5);
+        assert!(f.admits(None, &here), "the first scan is always integrated");
+        assert!(!f.admits(Some(&here), &here), "a repeat from the same pose");
+        assert!(
+            !f.admits(Some(&here), &Se2::new(1.005, 1.0, 0.505)),
+            "millimetres of jitter"
+        );
+        // A robot at 0.18 m/s moves 3.6 cm between scans: always kept.
+        assert!(f.admits(Some(&here), &Se2::new(1.036, 1.0, 0.5)));
+        // A turn of 0.02 rad is kept, and the wrap across pi is handled.
+        assert!(f.admits(Some(&here), &Se2::new(1.0, 1.0, 0.52)));
+        assert!(f.admits(
+            Some(&Se2::new(0.0, 0.0, PI - 0.005)),
+            &Se2::new(0.0, 0.0, -(PI - 0.025))
+        ));
+        assert!(!f.admits(
+            Some(&Se2::new(0.0, 0.0, PI - 0.005)),
+            &Se2::new(0.0, 0.0, -(PI - 0.01))
+        ));
+        assert!(MotionFilter::new(0.0, 0.02).is_err());
+        assert!(MotionFilter::new(0.02, f64::NAN).is_err());
     }
 }
