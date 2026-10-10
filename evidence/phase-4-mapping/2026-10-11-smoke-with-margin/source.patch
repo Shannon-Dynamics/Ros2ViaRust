@@ -1,0 +1,739 @@
+diff --git a/crates/robotics_mapping/examples/replay_scans.rs b/crates/robotics_mapping/examples/replay_scans.rs
+index 8c3cd2e..d705aab 100644
+--- a/crates/robotics_mapping/examples/replay_scans.rs
++++ b/crates/robotics_mapping/examples/replay_scans.rs
+@@ -1,7 +1,7 @@
+ //! Replay the scans a `mapping_node` integrated and write the grid they produce.
+ //!
+ //!     cargo run --release -p robotics_mapping --example replay_scans -- \
+-//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham]
++//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham] [clear margin, m]
+ //!
+ //! This is the check of claim M2, determinism, on real simulator data: the recording holds
+ //! every scan the mapper integrated, in the order it integrated them, each with the sensor pose
+@@ -20,8 +20,8 @@ use std::process::ExitCode;
+ 
+ fn run() -> Result<(), String> {
+     let args: Vec<String> = std::env::args().skip(1).collect();
+-    if args.len() < 3 || args.len() > 5 {
+-        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal]".into());
++    if args.len() < 3 || args.len() > 6 {
++        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal] [clear margin]".into());
+     }
+     let no_return = match args.get(3).map(String::as_str) {
+         None | Some("clear_to_max_range") => NoReturn::ClearToMaxRange,
+@@ -37,7 +37,15 @@ fn run() -> Result<(), String> {
+     let template = OccupancyGrid::from_text(&read(&args[1])?).map_err(|e| e.to_string())?;
+     let mut grid =
+         OccupancyGrid::new(*template.geometry(), *template.params()).map_err(|e| e.to_string())?;
+-    let mut integrator = ScanIntegrator::new(no_return, tracer);
++    let margin: f64 = match args.get(5) {
++        None => robotics_mapping::DEFAULT_CLEAR_MARGIN,
++        Some(v) => v
++            .parse()
++            .map_err(|_| format!("clear margin {v:?} is not a number"))?,
++    };
++    let mut integrator = ScanIntegrator::new(no_return, tracer)
++        .with_clear_margin(margin)
++        .map_err(|e| e.to_string())?;
+ 
+     let mut scans = 0usize;
+     for (n, line) in read(&args[0])?.lines().enumerate() {
+diff --git a/crates/robotics_mapping/src/eval.rs b/crates/robotics_mapping/src/eval.rs
+index 4be310a..b9e878f 100644
+--- a/crates/robotics_mapping/src/eval.rs
++++ b/crates/robotics_mapping/src/eval.rs
+@@ -350,7 +350,7 @@ pub struct MapMetrics {
+ }
+ 
+ /// The cells of the grid whose closed box contains `p`: one cell normally, two or four when
+-/// `p` lies on a lattice line or corner (within a millionth of a cell). Empty outside the grid.
++/// `p` lies on a lattice line or corner (within a ten-thousandth of a cell, 5 micrometres at 5 cm; a grid whose resolution went through a `float32` is off by about 2e-6 cells at the far edge). Empty outside the grid.
+ fn closed_cells(g: &crate::occupancy::GridGeometry, p: &V2) -> Vec<(usize, usize)> {
+     let axis = |v: f64, origin: f64, n: usize| -> Vec<usize> {
+         let f = (v - origin) / g.resolution;
+@@ -359,7 +359,7 @@ fn closed_cells(g: &crate::occupancy::GridGeometry, p: &V2) -> Vec<(usize, usize
+         }
+         let r = f.round();
+         let mut idx = vec![f.floor() as i64];
+-        if (f - r).abs() < 1e-6 {
++        if (f - r).abs() < 1e-4 {
+             idx = vec![r as i64 - 1, r as i64];
+         }
+         idx.into_iter()
+@@ -862,6 +862,27 @@ mod tests {
+         );
+     }
+ 
++    /// A grid whose resolution went through a `float32` (a `nav_msgs/OccupancyGrid` carries it
++    /// so) has resolution 0.05000000074505806 for 0.05, which puts the lattice line x = 3.0 of a
++    /// grid from -3.5 at cell coordinate 129.999998 and not 130. The wall must still be found on
++    /// the line, between cells 129 and 130.
++    #[test]
++    fn a_float32_resolution_does_not_hide_a_lattice_line() {
++        let g = GridGeometry {
++            width: 140,
++            height: 140,
++            resolution: 0.05f32 as f64,
++            origin: v(-3.5, -3.5),
++        };
++        assert_ne!(g.resolution, 0.05);
++        assert_eq!(
++            closed_cells(&g, &v(3.0, 0.0125)),
++            vec![(129, 70), (130, 70)]
++        );
++        // An interior point is one cell.
++        assert_eq!(closed_cells(&g, &v(2.99, 0.0125)), vec![(129, 70)]);
++    }
++
+     #[test]
+     fn invalid_evaluation_parameters_are_refused() {
+         let (g, t) = ideal();
+diff --git a/crates/robotics_mapping/src/integrate.rs b/crates/robotics_mapping/src/integrate.rs
+index 02f62b5..5c6f05c 100644
+--- a/crates/robotics_mapping/src/integrate.rs
++++ b/crates/robotics_mapping/src/integrate.rs
+@@ -25,10 +25,15 @@
+ //! # Beams that returned nothing
+ //!
+ //! A beam whose range is `+inf`, or finite and at or beyond `range_max`, says that nothing was
+-//! within range. With [`NoReturn::ClearToMaxRange`] (the default) the cells it crossed up to
+-//! `range_max` are free; the cell at `range_max` itself is left alone, as the cell of a hit is
+-//! marked but the cell of a no-return is only partly observed. With [`NoReturn::Drop`] such a
+-//! beam is ignored. `NaN`, `-inf`, zero, negative and below-`range_min` ranges carry no
++//! within range. With [`NoReturn::ClearToMaxRange`] (the default) the cells it crossed are free
++//! up to **`range_max` less a margin** ([`DEFAULT_CLEAR_MARGIN`], 0.10 m); the cell at the end
++//! of the cleared segment is left alone, as the cell of a hit is marked but the cell of a
++//! no-return is only partly observed. The margin is not a nicety. A beam that came back `inf`
++//! may have a wall only centimetres beyond the limit, and a pose that is a few centimetres
++//! off (the motion gate admits up to 5 cm) would draw its free segment across that wall: the
++//! first Webots runs wrote free space into wall cells that way. The margin covers the range
++//! noise at the limit (3 sigma of 0.0043 of 3.5 m is 4.5 cm) and the admitted pose error. With
++//! [`NoReturn::Drop`] such a beam is ignored. `NaN`, `-inf`, zero, negative and below-`range_min` ranges carry no
+ //! information and are always dropped. The default is justified by measurement in
+ //! `docs/phase-4-mapping/implementation.md` section 5.2: in the Webots world `inf` is
+ //! reported only for beams whose true range exceeds `range_max`.
+@@ -80,19 +85,29 @@ pub struct ScanReport {
+     pub cells_occupied: usize,
+ }
+ 
++/// How far short of `range_max` a no-return beam stops clearing (m).
++pub const DEFAULT_CLEAR_MARGIN: f64 = 0.10;
++
+ const FREE: u8 = 1;
+ const OCCUPIED: u8 = 2;
+ 
+ /// Integrates laser scans into an [`OccupancyGrid`]. Holds only scratch space, so one
+ /// integrator can serve any number of grids of the same size, and allocates once.
+-#[derive(Debug, Clone, Default)]
++#[derive(Debug, Clone)]
+ pub struct ScanIntegrator {
+     no_return: NoReturn,
+     tracer: RayTracer,
++    clear_margin: f64,
+     marks: Vec<u8>,
+     touched: Vec<usize>,
+ }
+ 
++impl Default for ScanIntegrator {
++    fn default() -> Self {
++        Self::new(NoReturn::default(), RayTracer::default())
++    }
++}
++
+ fn floor_cell(g: &GridGeometry, p: &Vector2<f64>) -> (i32, i32) {
+     let f = |v: f64| (v.floor().clamp(-1e9, 1e9)) as i32;
+     (
+@@ -107,11 +122,30 @@ impl ScanIntegrator {
+         Self {
+             no_return,
+             tracer,
++            clear_margin: DEFAULT_CLEAR_MARGIN,
+             marks: Vec::new(),
+             touched: Vec::new(),
+         }
+     }
+ 
++    /// Change how far short of `range_max` a no-return beam stops clearing (m, finite, not
++    /// negative). Zero reproduces clearing right up to the limit.
++    pub fn with_clear_margin(mut self, margin: f64) -> Result<Self, MappingError> {
++        if !(margin.is_finite() && margin >= 0.0) {
++            return Err(MappingError::InvalidParameter {
++                what: "clear margin",
++                value: margin,
++            });
++        }
++        self.clear_margin = margin;
++        Ok(self)
++    }
++
++    /// The clear margin (m).
++    pub fn clear_margin(&self) -> f64 {
++        self.clear_margin
++    }
++
+     /// The no-return policy.
+     pub fn no_return(&self) -> NoReturn {
+         self.no_return
+@@ -234,9 +268,14 @@ impl ScanIntegrator {
+                 // `+inf`, or a finite range at or beyond the limit.
+                 match self.no_return {
+                     NoReturn::ClearToMaxRange => {
+-                        report.no_return_cleared += 1;
+-                        let end = origin + dir * scan.range_max;
+-                        self.trace(&g, &origin, origin_cell, &end, false);
++                        let reach = scan.range_max - self.clear_margin;
++                        if reach > scan.range_min {
++                            report.no_return_cleared += 1;
++                            let end = origin + dir * reach;
++                            self.trace(&g, &origin, origin_cell, &end, false);
++                        } else {
++                            report.no_return_dropped += 1;
++                        }
+                     }
+                     NoReturn::Drop => report.no_return_dropped += 1,
+                 }
+@@ -443,6 +482,30 @@ mod tests {
+         assert!(g.bit_identical(&g2));
+     }
+ 
++    /// The margin: from x = 0.5 with `range_max` 3.0, clearing to 3.0 less 0.6 ends at x = 2.9,
++    /// the middle of cell 2, so only cells 0 and 1 are cleared; with no margin the segment ends
++    /// at x = 3.5 and cells 0 to 2 are. A margin as long as the range clears nothing.
++    #[test]
++    fn the_clear_margin_stops_a_no_return_beam_short_of_the_limit() {
++        let beam = scan(0.0, 0.0, &[f32::INFINITY], 3.0);
++        let sensor = Se2::new(0.5, 0.5, 0.0);
++        let run = |margin: f64| {
++            let mut g = grid(8, 4);
++            let mut integ = integrator().with_clear_margin(margin).unwrap();
++            integ.integrate(&mut g, &sensor, &beam).unwrap();
++            let free = (0..8)
++                .filter(|&i| g.log_odds(i, 0) == Some(g.params().l_free))
++                .count();
++            free
++        };
++        assert_eq!(run(0.0), 3);
++        assert_eq!(run(0.6), 2);
++        assert_eq!(run(3.0), 0);
++        assert!(integrator().with_clear_margin(-0.1).is_err());
++        assert!(integrator().with_clear_margin(f64::NAN).is_err());
++        assert_eq!(integrator().clear_margin(), DEFAULT_CLEAR_MARGIN);
++    }
++
+     #[test]
+     fn the_drop_policy_ignores_no_return_beams() {
+         let mut g = grid(8, 4);
+diff --git a/crates/robotics_mapping/src/lib.rs b/crates/robotics_mapping/src/lib.rs
+index 070ed73..da41556 100644
+--- a/crates/robotics_mapping/src/lib.rs
++++ b/crates/robotics_mapping/src/lib.rs
+@@ -9,6 +9,8 @@
+ //!   `nav_msgs/OccupancyGrid` values (Probabilistic Robotics, Chapter 9, Table 9.1).
+ //! * [`raycast`]: the two ways of walking a beam through the grid, Bresenham between cell
+ //!   centres and the exact supercover of the continuous segment.
++//! * [`gate`]: the refusal of scans whose timestamp cannot be trusted while the pose changes,
++//!   a measured property of the Webots lidar driver and not a general nicety.
+ //! * [`integrate`]: the hand-crafted inverse sensor model and the integration of one laser
+ //!   scan, one update per cell per scan, with a documented policy for beams that returned
+ //!   nothing.
+@@ -27,6 +29,7 @@
+ pub mod entropy;
+ pub mod esdf;
+ pub mod eval;
++pub mod gate;
+ pub mod integrate;
+ pub mod occupancy;
+ pub mod raycast;
+@@ -34,7 +37,8 @@ pub mod raycast;
+ pub use entropy::{cell_entropy_bits, grid_entropy, GridEntropy};
+ pub use esdf::{signed_esdf, EsdfGrid};
+ pub use eval::{evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample};
+-pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport};
++pub use gate::MotionGate;
++pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport, DEFAULT_CLEAR_MARGIN};
+ pub use occupancy::{CellState, GridGeometry, OccupancyGrid, OccupancyParams};
+ 
+ /// Errors of the mapping library.
+diff --git a/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py b/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+index 72faf80..6f49793 100644
+--- a/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
++++ b/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+@@ -58,10 +58,11 @@ ARGS = {
+     'laps': ('1', 'how many times route_driver drives the route'),
+     'evaluate': ('false', 'start mapping_evaluator; needs output_dir'),
+     'output_dir': ('', 'directory the evaluator and the mapper write their files to'),
+-    'record': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
++    'capture': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
+     'tau_cells': ('1.0', 'evaluation tolerance in cells; scripts/phase4_verdict.py checks it'),
+     'no_return': ('clear_to_max_range', 'mapper policy for beams with no return'),
+     'tracer': ('supercover', 'mapper ray traversal: supercover | bresenham'),
++    'clear_margin': ('0.10', 'mapper: a no-return beam clears up to range_max less this (m)'),
+ }
+ 
+ 
+@@ -84,8 +85,8 @@ def setup(context):
+             + f'\nrepo was resolved to {repo!r}. Pass repo:=/path/to/ros2-rust-robotics.')
+     if lc['owner'] not in ('ground_truth', 'ekf'):
+         raise RuntimeError(f"owner:= must be ground_truth or ekf, not {lc['owner']!r}")
+-    if (truthy('evaluate') or truthy('record')) and not lc['output_dir']:
+-        raise RuntimeError('evaluate:=true and record:=true require output_dir:=')
++    if (truthy('evaluate') or truthy('capture')) and not lc['output_dir']:
++        raise RuntimeError('evaluate:=true and capture:=true require output_dir:=')
+     out = lc['output_dir']
+ 
+     actions = [
+@@ -116,8 +117,9 @@ def setup(context):
+     mapper_params = {
+         'model.no_return': lc['no_return'],
+         'model.tracer': lc['tracer'],
++        'model.clear_margin_m': float(lc['clear_margin']),
+     }
+-    if truthy('record'):
++    if truthy('capture'):
+         mapper_params.update({
+             'output.latency_csv': os.path.join(out, 'update-latency.csv'),
+             'output.trace_csv': os.path.join(out, 'entropy-trace.csv'),
+diff --git a/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs b/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
+index 98b1f69..c1042c4 100644
+--- a/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
++++ b/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
+@@ -235,7 +235,10 @@ fn main() -> Result<(), RclrsError> {
+                     geometry: GridGeometry {
+                         width: msg.info.width as usize,
+                         height: msg.info.height as usize,
+-                        resolution: msg.info.resolution as f64,
++                        // The message carries the resolution as a float32, which turns 0.05 into
++                        // 0.0500000007 and moves a surface on a lattice line 2e-6 cells off it
++                        // at the far edge of a 140 cell grid. Restore the value that was meant.
++                        resolution: (msg.info.resolution as f64 * 1e7).round() / 1e7,
+                         origin: Vector2::new(o.position.x, o.position.y),
+                     },
+                     data: msg.data.clone(),
+diff --git a/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs b/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
+index 32beeb8..9f94eba 100644
+--- a/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
++++ b/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
+@@ -35,8 +35,8 @@ use rclrs::*;
+ use robotics_core::tf::{LookupTime, TransformBuffer, TransformBufferConfig};
+ use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
+ use robotics_mapping::{
+-    grid_entropy, signed_esdf, GridGeometry, NoReturn, OccupancyGrid, OccupancyParams, RayTracer,
+-    ScanIntegrator,
++    grid_entropy, signed_esdf, GridGeometry, MotionGate, NoReturn, OccupancyGrid, OccupancyParams,
++    RayTracer, ScanIntegrator,
+ };
+ use robotics_ros_bridge::convert::{header, laser_scan_from_ros, now, pose_to_ros};
+ use robotics_ros_bridge::diagnostics::{DiagnosticLevel, DiagnosticsPublisher, StatusBuilder};
+@@ -61,6 +61,7 @@ struct Counters {
+     integrated: u64,
+     skipped_malformed: u64,
+     skipped_no_transform: u64,
++    skipped_motion: u64,
+     skipped_sensor_outside_grid: u64,
+     hits: u64,
+     no_return_cleared: u64,
+@@ -72,6 +73,8 @@ struct State {
+     integrator: ScanIntegrator,
+     map_frame: FrameId,
+     esdf_truncation: f64,
++    /// Window of a scan's timestamp uncertainty and the gate over it; `None` disables the gate.
++    gate: Option<(f64, MotionGate)>,
+     pending: VecDeque<Pending>,
+     max_pending: usize,
+     max_age: Duration,
+@@ -111,10 +114,18 @@ fn invalid(node: &Node, what: &str) -> RclrsError {
+     }
+ }
+ 
++enum Outcome {
++    Integrated,
++    /// The pose changed too much across the scan's timestamp window: skipped, by design.
++    SkippedMotion,
++    /// A transform is missing (yet).
++    NotReady,
++}
++
+ impl State {
+-    /// Look the sensor pose up at the scan's stamp and integrate. `Ok(true)` integrated,
+-    /// `Ok(false)` the transform is not there (yet), `Err` the scan cannot ever be integrated.
+-    fn try_integrate(&mut self, p: &Pending) -> Result<bool, String> {
++    /// Look the sensor pose up at the scan's stamp, check that it was steady across the window
++    /// the stamp leaves open, and integrate. `Err` means the scan can never be integrated.
++    fn try_integrate(&mut self, p: &Pending) -> Result<Outcome, String> {
+         let started = Instant::now();
+         let t = match self.buffer.lock().lookup_transform(
+             &self.map_frame,
+@@ -122,9 +133,38 @@ impl State {
+             LookupTime::At(p.scan.stamp),
+         ) {
+             Ok(t) => t,
+-            Err(_) => return Ok(false),
++            Err(_) => return Ok(Outcome::NotReady),
+         };
+         let sensor: Se2 = t.transform;
++        let mut window_change: Option<(f64, f64)> = None;
++        if let Some((window, gate)) = self.gate {
++            // The beams were measured somewhere in [stamp - window, stamp] (see the gate's
++            // module documentation), so the pose at the start of that window bounds the error.
++            let earlier = match self.buffer.lock().lookup_transform(
++                &self.map_frame,
++                &p.scan.frame,
++                LookupTime::At(p.scan.stamp.plus_secs_f64(-window)),
++            ) {
++                Ok(t) => t.transform,
++                Err(_) => return Ok(Outcome::NotReady),
++            };
++            window_change = Some(MotionGate::change(&earlier, &sensor));
++            if !gate.admits(&earlier, &sensor) {
++                self.c.skipped_motion += 1;
++                if let Some(w) = self.latency_csv.as_mut() {
++                    let (dt, dy) = MotionGate::change(&earlier, &sensor);
++                    let _ = writeln!(
++                        w,
++                        "{:.6},skipped_motion,{:.1},{:.1},{},,,,,,{dt:.4},{dy:.4}",
++                        p.scan.stamp.as_secs_f64(),
++                        started.elapsed().as_secs_f64() * 1e6,
++                        p.received.elapsed().as_secs_f64() * 1e6,
++                        p.scan.ranges.len()
++                    );
++                }
++                return Ok(Outcome::SkippedMotion);
++            }
++        }
+         let report = match self.integrator.integrate(&mut self.grid, &sensor, &p.scan) {
+             Ok(r) => r,
+             Err(robotics_mapping::MappingError::SensorOutsideGrid { .. }) => {
+@@ -147,14 +187,16 @@ impl State {
+         if let Some(w) = self.latency_csv.as_mut() {
+             let _ = writeln!(
+                 w,
+-                "{:.6},integrated,{latency_us:.1},{wait_us:.1},{},{},{},{},{},{}",
++                "{:.6},integrated,{latency_us:.1},{wait_us:.1},{},{},{},{},{},{},{}",
+                 p.scan.stamp.as_secs_f64(),
+                 report.beams,
+                 report.hits,
+                 report.no_return_cleared,
+                 report.invalid,
+                 report.cells_free,
+-                report.cells_occupied
++                report.cells_occupied,
++                window_change
++                    .map_or_else(|| ",".to_string(), |(dt, dy)| format!("{dt:.4},{dy:.4}"))
+             );
+         }
+         if let Some(w) = self.record_csv.as_mut() {
+@@ -177,21 +219,21 @@ impl State {
+             }
+             let _ = writeln!(w);
+         }
+-        Ok(true)
++        Ok(Outcome::Integrated)
+     }
+ 
+     /// Try the oldest pending scans in order; drop the ones that waited too long.
+     fn drain(&mut self) {
+         while let Some(front) = self.pending.pop_front() {
+             match self.try_integrate(&front) {
+-                Ok(true) => {}
+-                Ok(false) => {
++                Ok(Outcome::Integrated) | Ok(Outcome::SkippedMotion) => {}
++                Ok(Outcome::NotReady) => {
+                     if front.received.elapsed() > self.max_age {
+                         self.c.skipped_no_transform += 1;
+                         if let Some(w) = self.latency_csv.as_mut() {
+                             let _ = writeln!(
+                                 w,
+-                                "{:.6},skipped_no_transform,,{:.1},{},,,,,",
++                                "{:.6},skipped_no_transform,,{:.1},{},,,,,,,",
+                                 front.scan.stamp.as_secs_f64(),
+                                 front.received.elapsed().as_secs_f64() * 1e6,
+                                 front.scan.ranges.len()
+@@ -407,6 +449,14 @@ fn main() -> Result<(), RclrsError> {
+             ))
+         }
+     };
++    let clear_margin = p.f64(
++        &node,
++        "model.clear_margin_m",
++        robotics_mapping::DEFAULT_CLEAR_MARGIN,
++        0.0,
++        10.0,
++        "A no-return beam clears free space up to range_max less this margin (m)",
++    )?;
+     let tracer = match p
+         .string(
+             &node,
+@@ -425,6 +475,30 @@ fn main() -> Result<(), RclrsError> {
+             ))
+         }
+     };
++    let gate_window = p.f64(
++        &node,
++        "motion_gate.window_s",
++        0.2,
++        0.0,
++        10.0,
++        "Window the scan stamp leaves open for the measurement instant (s); 0 turns the gate off",
++    )?;
++    let gate_translation = p.f64(
++        &node,
++        "motion_gate.max_translation_m",
++        0.05,
++        1e-4,
++        10.0,
++        "Skip a scan if the sensor moved farther than this across the window (m)",
++    )?;
++    let gate_yaw = p.f64(
++        &node,
++        "motion_gate.max_yaw_rad",
++        0.015,
++        1e-5,
++        3.2,
++        "Skip a scan if the sensor turned more than this across the window (rad)",
++    )?;
+     let esdf_truncation = p.f64(
+         &node,
+         "esdf.truncation_m",
+@@ -496,6 +570,15 @@ fn main() -> Result<(), RclrsError> {
+         resolution,
+         origin: robotics_core::nalgebra::Vector2::new(origin_x, origin_y),
+     };
++    let gate = if gate_window > 0.0 {
++        Some((
++            gate_window,
++            MotionGate::new(gate_translation, gate_yaw)
++                .map_err(|e| invalid(&node, &format!("motion gate: {e}")))?,
++        ))
++    } else {
++        None
++    };
+     let params =
+         OccupancyParams::from_probabilities(p_hit, p_miss, p_min, p_max, p_occupied, p_free);
+     let grid = OccupancyGrid::new(geometry, params)
+@@ -505,7 +588,7 @@ fn main() -> Result<(), RclrsError> {
+     if let Some(w) = latency_csv_w.as_mut() {
+         let _ = writeln!(
+             w,
+-            "stamp_s,outcome,latency_us,queue_wait_us,beams,hits,no_return_cleared,invalid,cells_free,cells_occupied"
++            "stamp_s,outcome,latency_us,queue_wait_us,beams,hits,no_return_cleared,invalid,cells_free,cells_occupied,window_translation_m,window_yaw_rad"
+         );
+     }
+     let mut trace_csv_w = open(&trace_csv)?;
+@@ -530,9 +613,12 @@ fn main() -> Result<(), RclrsError> {
+     let diagnostics = DiagnosticsPublisher::new(&node)?;
+     let shared = Shared::new(State {
+         grid,
+-        integrator: ScanIntegrator::new(no_return, tracer),
++        integrator: ScanIntegrator::new(no_return, tracer)
++            .with_clear_margin(clear_margin)
++            .map_err(|e| invalid(&node, &format!("model.clear_margin_m: {e}")))?,
+         map_frame: FrameId::new(&map_frame),
+         esdf_truncation,
++        gate,
+         pending: VecDeque::new(),
+         max_pending,
+         max_age: Duration::from_secs_f64(max_age),
+@@ -640,6 +726,7 @@ fn main() -> Result<(), RclrsError> {
+                 .value("scans_received", st.c.received)
+                 .value("scans_integrated", st.c.integrated)
+                 .value("skipped_no_transform", st.c.skipped_no_transform)
++                .value("skipped_motion", st.c.skipped_motion)
+                 .value("skipped_malformed", st.c.skipped_malformed)
+                 .value(
+                     "skipped_sensor_outside_grid",
+@@ -711,9 +798,10 @@ fn main() -> Result<(), RclrsError> {
+         }
+         log_info!(
+             node.logger(),
+-            "mapping_node shutting down: {} scans received, {} integrated, {} skipped for want of a transform",
++            "mapping_node shutting down: {} scans received, {} integrated, {} skipped for motion, {} skipped for want of a transform",
+             st.c.received,
+             st.c.integrated,
++            st.c.skipped_motion,
+             st.c.skipped_no_transform
+         );
+     }
+diff --git a/scripts/phase4_scan_skew_analysis.py b/scripts/phase4_scan_skew_analysis.py
+index 31f69a2..0def41b 100644
+--- a/scripts/phase4_scan_skew_analysis.py
++++ b/scripts/phase4_scan_skew_analysis.py
+@@ -38,6 +38,12 @@ on the fit above:
+                with the alternative -2 pi / 360, to say which grid the beams really lie on
+   no return    for beams that came back `inf`, the exact range the analytic world predicts,
+                to say what `inf` means in this simulator
++  stamp lag    the constant offset `d` of the instant model, per scan, in the turning phases
++               (where a rotation pins it to a few milliseconds): how far the header stamp lags
++               the instant the beams were measured at, and whether those instants lie on a
++               regular lattice (resultant length R of their phase modulo a trial period; 1 is
++               perfectly periodic, 0 is uniform). Added after the first Webots mapping run
++               showed that the stamp is not the measurement time.
+ """
+ import csv
+ import math
+@@ -236,6 +242,42 @@ def no_return_check(track, scans, mount, t0, dur):
+     }
+ 
+ 
++def stamp_lag(track, scans, mount, phases):
++    """Offset between each scan's stamp and its measurement instant, and its periodicity."""
++    stamps, offsets = [], []
++    for name, t0, dur, lin, ang in phases:
++        if ang == 0.0:
++            continue  # only turning phases pin d down tightly
++        for sc in scans:
++            if t0 + 1.0 <= sc["t"] <= t0 + dur - 0.3:
++                f = fit_scan(track, sc, mount, with_s=False)
++                if f:
++                    stamps.append(sc["t"])
++                    offsets.append(f["d"])
++    s_, d_ = np.array(stamps), np.array(offsets)
++    tm = s_ + d_  # the instant the beams were measured at, on the ground-truth clock
++    out = {"scans": int(s_.size)}
++    lag = -d_
++    out["stamp_minus_measurement_s"] = {
++        "mean": float(lag.mean()), "sd": float(lag.std()),
++        "min": float(lag.min()), "max": float(lag.max())}
++
++    def lattice(times, period):
++        a = 2 * math.pi * np.mod(times, period) / period
++        r = abs(np.mean(np.exp(1j * a)))
++        mean = (math.atan2(np.mean(np.sin(a)), np.mean(np.cos(a))) % (2 * math.pi)) * period / (2 * math.pi)
++        dev = (np.mod(times, period) - mean + period / 2) % period - period / 2
++        return float(r), float(mean), float(dev.std())
++
++    for period in (0.19, 0.2, 0.21, 0.22):
++        r, mean, sd = lattice(tm, period)
++        out[f"measurement_instants_period_{period}"] = {
++            "resultant_length": r, "mean_phase_s": mean, "phase_sd_s": sd}
++    r, _, _ = lattice(s_, 0.2)
++    out["header_stamps_period_0.2"] = {"resultant_length": r}
++    return out
++
++
+ def summarize(vals):
+     a = np.array(vals)
+     if a.size == 0:
+@@ -279,6 +321,7 @@ def main():
+             "x_m": mount[0], "y_m": mount[1], "yaw_rad": mount[2]},
+         "angle_grid_standing_still": angle_grid_check(track, scans, mount, still[1], still[2]),
+         "no_return_standing_still": no_return_check(track, scans, mount, still[1], still[2]),
++        "stamp_lag_turning_phases": stamp_lag(track, scans, mount, phases),
+         "phases": {},
+     }
+     for name, t0, dur, lin, ang in phases:
+diff --git a/scripts/phase4_verdict.py b/scripts/phase4_verdict.py
+index 84b9ec6..ece80f6 100644
+--- a/scripts/phase4_verdict.py
++++ b/scripts/phase4_verdict.py
+@@ -99,11 +99,25 @@ OBSERVABLE_FRACTION_MIN = 0.5
+ SCAN_PERIOD_S = 0.2
+ UPDATE_LATENCY_P99_MAX_S = 0.5 * SCAN_PERIOD_S
+ 
+-# Validity: at least this fraction of the scans the mapper received must have been integrated
+-# (a scan is skipped when its transform never arrives). A map from a stream that lost more
+-# than two per cent of its scans is a map of a different experiment.
++# Validity: of the scans the mapper tried to integrate (those not skipped for motion, below), at
++# least this fraction must have been integrated: a scan is lost when its transform never
++# arrives. A map from a stream that lost more than two per cent of its scans to missing
++# transforms is a map of a different experiment.
+ INTEGRATED_FRACTION_MIN = 0.98
+ 
++# Validity: scans skipped *by design* because the sensor moved too much across the window the
++# scan's stamp leaves open (`mapping_node` motion gate; docs/phase-4-mapping/implementation.md
++# section 5.2 items 2 and 6). They are not losses and do not count against the fraction above,
++# but a mapper that discarded more than half of what it was given did not map the route, so
++# this bounds them. The route turns in place 21 times; a quarter to a third of its scans fall
++# in those turns and in heading corrections, which is why half is the bound and not a tenth.
++#
++# ADDED AFTER THE HARNESS SMOKE RUN (evidence/phase-4-mapping/2026-10-11-harness-smoke),
++# which exposed that the lidar's stamp lags its measurement and led to the gate. It is a
++# validity bound and not an accuracy tolerance, no development or evaluation run existed
++# when it was added, and this paragraph is the record of that edit.
++MOTION_SKIPPED_FRACTION_MAX = 0.5
++
+ # Validity: the robot must have moved. Every route is several metres long; this is the
+ # threshold of scripts/phase3_guards.sh for the same reason (the 2026-10-06 run in which the
+ # robot never moved and nothing said so).
+@@ -217,7 +231,7 @@ def grade(run):
+             travel = max(math.hypot(x - pts[0][0], y - pts[0][1]) for x, y in pts)
+     if travel is None or travel < MIN_TRAVEL_M:
+         reasons.append(f"the robot did not move (largest displacement {travel}, needs {MIN_TRAVEL_M} m)")
+-    integrated = skipped = 0
++    integrated = skipped = skipped_motion = 0
+     lat = []
+     lat_p = need("update-latency.csv")
+     if lat_p:
+@@ -226,12 +240,18 @@ def grade(run):
+                 if r["outcome"] == "integrated":
+                     integrated += 1
+                     lat.append(float(r["latency_us"]) * 1e-6)
++                elif r["outcome"] == "skipped_motion":
++                    skipped_motion += 1
+                 else:
+                     skipped += 1
+-    total = integrated + skipped
+-    frac = integrated / total if total else None
++    tried = integrated + skipped
++    frac = integrated / tried if tried else None
+     if frac is None or frac < INTEGRATED_FRACTION_MIN:
+-        reasons.append(f"too many scans were not integrated: {integrated} of {total}")
++        reasons.append(f"too many scans were lost to missing transforms: {integrated} integrated of {tried}")
++    seen = integrated + skipped + skipped_motion
++    motion_frac = skipped_motion / seen if seen else None
++    if motion_frac is None or motion_frac > MOTION_SKIPPED_FRACTION_MAX:
++        reasons.append(f"too many scans were skipped for motion: {skipped_motion} of {seen}")
+     if metrics and num(metrics.get("tau_cells")) != TAU_CELLS:
+         reasons.append(f"the metrics used tau_cells {metrics.get('tau_cells')}, this script grades {TAU_CELLS}")
+     valid = not reasons
+@@ -241,7 +261,8 @@ def grade(run):
+         lines += [f"  - {r}" for r in reasons]
+     lines += [
+         f"scans_integrated: {integrated}",
+-        f"scans_not_integrated: {skipped}",
++        f"scans_lost_to_missing_transforms: {skipped}",
++        f"scans_skipped_for_motion: {skipped_motion}",
+         f"largest_displacement_m: {travel}",
+     ]
+ 
+diff --git a/scripts/run_phase4_mapping.sh b/scripts/run_phase4_mapping.sh
+index 6cb2550..67ad72f 100644
+--- a/scripts/run_phase4_mapping.sh
++++ b/scripts/run_phase4_mapping.sh
+@@ -36,6 +36,7 @@ ROUTE_FILE=${3:-$REPO/sim/webots/config/route_long.yaml}
+ LAPS=${LAPS:-1}
+ NO_RETURN=${NO_RETURN:-clear_to_max_range}
+ TRACER=${TRACER:-supercover}
++CLEAR_MARGIN=${CLEAR_MARGIN:-0.10}
+ OUT="$EVIDENCE_ROOT/phase-4-mapping/$NAME"
+ mkdir -p "$OUT"
+ OUT=$(cd "$OUT" && pwd)
+@@ -93,8 +94,8 @@ fi
+ 
+ log "starting the world, the adapter, the mapper and the evaluator"
+ ros2 launch robotics_bringup phase4_mapping.launch.py gui:=false mode:=realtime \
+-    owner:=ground_truth evaluate:=true record:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
+-    no_return:="$NO_RETURN" tracer:="$TRACER" > "$OUT/launch.log" 2>&1 &
++    owner:=ground_truth evaluate:=true capture:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
++    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" > "$OUT/launch.log" 2>&1 &
+ LAUNCH_PID=$!
+ 
+ wait_for() {  # wait_for <seconds> <description> <command...>
+@@ -178,7 +179,7 @@ if [ -s "$OUT/integrated-scans.csv" ] && [ -s "$OUT/final-grid.txt" ]; then
+     log "replaying the recorded scans (claim M2)"
+     ( cd "$REPO" && cargo run -q --release -p robotics_mapping --example replay_scans -- \
+         "$OUT/integrated-scans.csv" "$OUT/final-grid.txt" "$OUT/replay-grid.txt" \
+-        "$NO_RETURN" "$TRACER" ) > "$OUT/replay.log" 2>&1
++        "$NO_RETURN" "$TRACER" "$CLEAR_MARGIN" ) > "$OUT/replay.log" 2>&1
+     REPLAY_SCANS=$(grep -o 'replayed [0-9]*' "$OUT/replay.log" | grep -o '[0-9]*' || echo none)
+ fi
+ 
+@@ -188,7 +189,7 @@ fi
+     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
+     echo "route_driver_exit_code: $ROUTE_RC"
+     echo "replay_scans: $REPLAY_SCANS"
+-    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
++    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
+     grep -E '^(source_git_commit|source_git_dirty|mapping_node_executable_sha256|route_sha256|world_sha256):' "$OUT/environment.txt"
+ } > "$OUT/summary.yaml"
+ 

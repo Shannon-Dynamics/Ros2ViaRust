@@ -37,6 +37,31 @@ no_return_standing_still:
   inf_beams_with_predicted_range_below_range_max: 2
   finite_beams_max_predicted_range_m: 3.495536
   finite_beams_with_predicted_range_above_range_max: 0
+stamp_lag_turning_phases:
+  scans: 53
+  stamp_minus_measurement_s:
+    mean: 0.060792
+    sd: 0.051600
+    min: -0.021000
+    max: 0.164000
+  measurement_instants_period_0.19:
+    resultant_length: 0.071267
+    mean_phase_s: 0.083997
+    phase_sd_s: 0.052446
+  measurement_instants_period_0.2:
+    resultant_length: 0.994969
+    mean_phase_s: 0.060337
+    phase_sd_s: 0.003198
+  measurement_instants_period_0.21:
+    resultant_length: 0.053875
+    mean_phase_s: 0.136142
+    phase_sd_s: 0.057807
+  measurement_instants_period_0.22:
+    resultant_length: 0.013011
+    mean_phase_s: 0.134489
+    phase_sd_s: 0.063361
+  header_stamps_period_0.2:
+    resultant_length: 0.174209
 phases:
   still:
     seam_test:

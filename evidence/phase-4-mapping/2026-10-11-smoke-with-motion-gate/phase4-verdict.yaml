@@ -1,0 +1,45 @@
+# Written by scripts/phase4_verdict.py from the files in this directory.
+# Every tolerance lives in that script, which was committed before the first evidence run.
+run: 2026-10-11-smoke-with-motion-gate
+verdict_script_sha256: 9aa3578e140e5487cc758b9ec03adeb2c917a35b18834b4e62ed5939ef5c823d
+role: development
+owner_of_map_odom: ground_truth_tf_adapter
+valid: true
+scans_integrated: 163
+scans_lost_to_missing_transforms: 2
+scans_skipped_for_motion: 27
+largest_displacement_m: 0.547053766286351
+M1: FAIL
+M1_checks:
+    surface_error_p95_cells: {value: 0.5000019371509263, limit: 1.0, op: '<=', pass: true}
+    surface_error_max_cells: {value: 1.5000019371509263, limit: 1.5, op: '<=', pass: false}
+    false_occupied_fraction: {value: 0.009208103130755065, limit: 0.02, op: '<=', pass: true}
+    completeness: {value: 0.9580679405520169, limit: 0.95, op: '>=', pass: true}
+    false_free_fraction: {value: 0.2208067940552017, limit: 0.05, op: '<=', pass: false}
+    coverage: {value: 0.9936195766401441, limit: 0.9, op: '>=', pass: true}
+    observable_fraction: {value: 0.6776978417266187, limit: 0.5, op: '>=', pass: true}
+M1_reported_not_graded:
+    surface_error_mean_cells: 0.5022174752979012
+    surface_error_mean_m: 0.02511087413907624
+    false_occupied_cells: 5
+    false_free_samples: 416
+    samples_observable: 1884
+    samples_total: 2780
+    samples_outside_grid: 0
+    occupied_cells: 543
+    free_cells: 13139
+    unknown_cells: 5918
+    reachable_cells: 13322
+M2: PASS
+M2_final_grid_equals_replay_byte_for_byte: true
+M2_replayed_scans_equal_integrated_scans: true
+M4: PASS
+M4_checks:
+    update_latency_p99_s: {value: 0.0023283, limit: 0.1, op: '<=', pass: true}
+M4_reported_not_graded:
+    update_latency_p50_s: 0.0013543
+    update_latency_p95_s: 0.0016519999999999998
+    update_latency_max_s: 0.0023355999999999997
+    scans: 163
+    scan_period_s: 0.2
+    build: debug (colcon default), not a release build

@@ -9,3 +9,6 @@ mode: realtime
 reanalysed_utc: 2026-10-10T16:59:21Z
 analysis_sha256_final: 58be096f752f97dc74f20fe50f119899a64d8b5a7004667e5ba86d2e2384c173
 note: skew-report-first-analysis.yaml is the report of the first version of the analysis script (fit only); skew-report.yaml adds the seam, angle-grid and no-return checks on the same unchanged recording
+reanalysed_again_utc: 2026-10-10T17:44:04Z
+analysis_sha256_final: 8cf77ca311f8ff800b667eda3a540ff02cbcf920e12a7841ea702fd3059eca81
+note: skew-report-second-analysis.yaml is the report before the stamp_lag block was added; the recording (scans.csv, gt.csv, phases.csv) is unchanged

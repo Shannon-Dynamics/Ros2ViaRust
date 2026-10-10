@@ -1,0 +1,46 @@
+diff --git a/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py b/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+index 72faf80..1764657 100644
+--- a/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
++++ b/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+@@ -58,7 +58,7 @@ ARGS = {
+     'laps': ('1', 'how many times route_driver drives the route'),
+     'evaluate': ('false', 'start mapping_evaluator; needs output_dir'),
+     'output_dir': ('', 'directory the evaluator and the mapper write their files to'),
+-    'record': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
++    'capture': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
+     'tau_cells': ('1.0', 'evaluation tolerance in cells; scripts/phase4_verdict.py checks it'),
+     'no_return': ('clear_to_max_range', 'mapper policy for beams with no return'),
+     'tracer': ('supercover', 'mapper ray traversal: supercover | bresenham'),
+@@ -84,8 +84,8 @@ def setup(context):
+             + f'\nrepo was resolved to {repo!r}. Pass repo:=/path/to/ros2-rust-robotics.')
+     if lc['owner'] not in ('ground_truth', 'ekf'):
+         raise RuntimeError(f"owner:= must be ground_truth or ekf, not {lc['owner']!r}")
+-    if (truthy('evaluate') or truthy('record')) and not lc['output_dir']:
+-        raise RuntimeError('evaluate:=true and record:=true require output_dir:=')
++    if (truthy('evaluate') or truthy('capture')) and not lc['output_dir']:
++        raise RuntimeError('evaluate:=true and capture:=true require output_dir:=')
+     out = lc['output_dir']
+ 
+     actions = [
+@@ -117,7 +117,7 @@ def setup(context):
+         'model.no_return': lc['no_return'],
+         'model.tracer': lc['tracer'],
+     }
+-    if truthy('record'):
++    if truthy('capture'):
+         mapper_params.update({
+             'output.latency_csv': os.path.join(out, 'update-latency.csv'),
+             'output.trace_csv': os.path.join(out, 'entropy-trace.csv'),
+diff --git a/scripts/run_phase4_mapping.sh b/scripts/run_phase4_mapping.sh
+index 6cb2550..28e2e9e 100644
+--- a/scripts/run_phase4_mapping.sh
++++ b/scripts/run_phase4_mapping.sh
+@@ -93,7 +93,7 @@ fi
+ 
+ log "starting the world, the adapter, the mapper and the evaluator"
+ ros2 launch robotics_bringup phase4_mapping.launch.py gui:=false mode:=realtime \
+-    owner:=ground_truth evaluate:=true record:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
++    owner:=ground_truth evaluate:=true capture:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
+     no_return:="$NO_RETURN" tracer:="$TRACER" > "$OUT/launch.log" 2>&1 &
+ LAUNCH_PID=$!
+ 

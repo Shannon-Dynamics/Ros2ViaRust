@@ -1,0 +1,21 @@
+date_utc: 2026-10-10T17:38:41Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.40.1-microsoft-standard-WSL2
+os: Ubuntu 24.04.2 LTS
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+governor: unavailable
+ros_distro: jazzy
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+build_profile: debug (colcon default)
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+landmarks_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_smoke.yaml
+route_sha256: 2b555a3f8a2f1fc7c1b131a4bb542a1ee1e69403eb806ca5b98069462f1bf85b
+laps: 1
+mapping_node_executable: /home/genta/ros2-rust-robotics/ros2_ws/install/robotics_mapping_ros/lib/robotics_mapping_ros/mapping_node
+mapping_node_executable_sha256: b6a2d52afea4f02650a7ac0a3b95ad3cffaba54cb332e88e73544dd49f9a870f
+verdict_script_sha256: 08d51e8e6982c19b2bf41158b8daf5c6663ef05cbf484be5510639fcbff489a1
+source_git_commit: 4900f73dcd0d4e885053b631c5da7423d3625f09
+source_git_dirty: true

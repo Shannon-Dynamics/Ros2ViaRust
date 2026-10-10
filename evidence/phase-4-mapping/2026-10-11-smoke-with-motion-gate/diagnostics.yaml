@@ -1,0 +1,32 @@
+header:
+  stamp:
+    sec: 1791654406
+    nanosec: 222614687
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '1873'
+  - key: published
+    value: '1847'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
