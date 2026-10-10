@@ -1,0 +1,19 @@
+role: development
+mapper_occupied_threshold: 2.944439
+mapper_free_threshold: -0.61903924
+mapper_l_occ: 0.84729785
+mapper_l_free: -0.4054651
+mapper_l_min: -1.9924302
+mapper_l_max: 3.4760988
+evaluator_occupied_threshold: 2.944439
+grid_resolution_m: 0.05
+owner_of_map_odom: ground_truth_tf_adapter
+mapping_node_subscribes_ground_truth: false
+route_driver_exit_code: 0
+replay_scans: 1312
+launch_arguments: owner=ground_truth no_return=clear_to_max_range tracer=supercover clear_margin=0.10 scan_time_offset=-0.06 tau_cells=1.0 route=route_long.yaml laps=1
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+route_sha256: 25343233801bff225ac65898dfdaac2dd24ccace818b9bfa7288f4455a4d6a9b
+mapping_node_executable_sha256: be4a581c188392607f605722c788cad3ca18c6fbfb2983ddd25c1d94ace205dd
+source_git_commit: 11451a924210e873f7914500d8e121932f118011
+source_git_dirty: true

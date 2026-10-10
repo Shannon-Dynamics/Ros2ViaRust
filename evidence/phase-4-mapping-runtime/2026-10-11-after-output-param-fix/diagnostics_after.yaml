@@ -1,0 +1,1177 @@
+header:
+  stamp:
+    sec: 1791657961
+    nanosec: 930829836
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3605'
+  - key: published
+    value: '3558'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657961
+    nanosec: 945798129
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '337'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '270'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 73
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.56 [4.93 - 772.51] us, StdDev: 22.73'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.45 [10.37 - 552.15] us, StdDev: 16.83'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657962
+    nanosec: 930834403
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3654'
+  - key: published
+    value: '3607'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657962
+    nanosec: 945983104
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '341'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '274'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 74
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.57 [4.93 - 772.51] us, StdDev: 22.62'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.44 [10.37 - 552.15] us, StdDev: 16.73'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657963
+    nanosec: 930816538
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3703'
+  - key: published
+    value: '3656'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657963
+    nanosec: 945861004
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '346'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '279'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 75
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.56 [4.93 - 772.51] us, StdDev: 22.49'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.43 [10.37 - 552.15] us, StdDev: 16.62'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657964
+    nanosec: 930833632
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3752'
+  - key: published
+    value: '3705'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657964
+    nanosec: 945892538
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '350'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '283'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 76
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.56 [4.93 - 772.51] us, StdDev: 22.36'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.43 [10.37 - 552.15] us, StdDev: 16.52'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657965
+    nanosec: 930867694
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3801'
+  - key: published
+    value: '3754'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657965
+    nanosec: 945685690
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '355'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '288'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 77
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.58 [4.93 - 772.51] us, StdDev: 22.23'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.45 [10.37 - 552.15] us, StdDev: 16.43'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657966
+    nanosec: 930821504
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3850'
+  - key: published
+    value: '3803'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657966
+    nanosec: 945985798
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '359'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '292'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 1791657967
+    nanosec: 930928112
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3899'
+  - key: published
+    value: '3852'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 78
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.62 [4.93 - 772.51] us, StdDev: 22.12'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.48 [10.37 - 552.15] us, StdDev: 16.34'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657967
+    nanosec: 945838721
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '364'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '297'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 1791657968
+    nanosec: 930789337
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3949'
+  - key: published
+    value: '3902'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657968
+    nanosec: 945994744
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '369'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '302'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 79
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.62 [4.93 - 772.51] us, StdDev: 22.01'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.47 [10.37 - 552.15] us, StdDev: 16.24'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657970
+    nanosec: 902358573
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '3998'
+  - key: published
+    value: '3951'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657970
+    nanosec: 918670795
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '373'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '306'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+header:
+  stamp:
+    sec: 80
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.65 [4.93 - 772.51] us, StdDev: 21.89'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 28.48 [10.37 - 552.15] us, StdDev: 16.16'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657971
+    nanosec: 902355658
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '4047'
+  - key: published
+    value: '4000'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '46'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 920000000 }: lookup of odom -> base_link at Timestamp { nanos: 920000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657971
+    nanosec: 917489247
+  frame_id: ''
+status:
+- level: "\0"
+  name: mapping_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '378'
+  - key: scans_integrated
+    value: '37'
+  - key: skipped_no_transform
+    value: '4'
+  - key: skipped_motion
+    value: '26'
+  - key: skipped_stationary
+    value: '311'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_sensor_outside_grid
+    value: '0'
+  - key: pending
+    value: '0'
+  - key: hits
+    value: '9374'
+  - key: no_return_cleared
+    value: '3946'
+  - key: invalid_beams
+    value: '0'
+  - key: free_cells
+    value: '12900'
+  - key: occupied_cells
+    value: '456'
+  - key: unknown_cells
+    value: '6244'
+  - key: entropy_bits
+    value: '13148.7'
+  - key: pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: update_latency_us_p50
+    value: '1365'
+  - key: update_latency_us_p95
+    value: '1697'
+  - key: update_latency_us_p99
+    value: '1801'
+---
+!rclpy.ok()

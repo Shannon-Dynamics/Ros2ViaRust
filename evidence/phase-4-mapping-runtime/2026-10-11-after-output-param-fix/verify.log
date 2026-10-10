@@ -1,0 +1,80 @@
+=== 2026-10-11T01:44:38+07:00  ROS_DISTRO=jazzy  RMW=rmw_cyclonedds_cpp ===
+repository: /home/genta/ros2-rust-robotics
+output:     /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping-runtime/2026-10-11-after-output-param-fix
+
+===== A: the pieces exist and are installed =====
+PASS  A1  the colcon install space exists
+PASS  A   ground_truth_tf_adapter is installed and executable
+PASS  A   mapping_node is installed and executable
+PASS  A   mapping_evaluator is installed and executable
+PASS  A5  the bringup launch is installed
+PASS  A6  the world launch exists
+PASS  A7  the landmark map is readable
+PASS  A8  the smoke route is readable
+PASS  A9  the verdict script runs and prints its tolerance
+
+===== B: the verdict script refuses and grades correctly (hand-made fixtures) =====
+PASS  B1  a valid, accurate run with the adapter as owner passes M1
+PASS  B2  a run whose map -> odom owner is an estimator is refused, not graded
+PASS  B3  a mapper that read ground truth makes the run invalid
+PASS  B4  an M1 verdict is withheld from an invalid run
+PASS  B5  metrics taken at another tolerance make the run invalid
+PASS  B6  an inaccurate map fails M1
+PASS  B7  a run that skipped most scans for motion is invalid
+PASS  B9  a mapper and an evaluator that disagree about the thresholds make the run invalid
+PASS  B8  the verdict records the hash of the script that wrote it
+
+===== C: the stack comes up through the bringup launch =====
+PASS  C0  no webots-bin was running before the test
+--- ros2 launch robotics_bringup phase4_mapping.launch.py (own process group) ---
+PASS  C1  /scan appears within 180 s
+PASS  C2  /ground_truth/pose appears within 60 s
+PASS  C3  both controllers become active within 90 s
+PASS  C4  the ground_truth_tf_adapter node is up
+PASS  C5  the mapping_node node is up
+PASS  C6  the evaluator is not part of this launch
+
+===== D: every expected topic exists with the right type =====
+PASS  D1  /map is a nav_msgs/msg/OccupancyGrid
+PASS  D2  /esdf is a sensor_msgs/msg/Image
+PASS  D3  /map_entropy is a std_msgs/msg/Float64
+PASS  D4  /ground_truth/pose is a geometry_msgs/msg/PoseStamped
+PASS  D5  /map is published with transient-local durability, so a late subscriber gets it
+
+===== E: the TF chain is complete and map -> odom has one owner =====
+PASS  E1  map -> LDS-01 resolves through the whole chain
+PASS  E2  map -> base_link resolves
+PASS  E3  the ground_truth_tf_adapter publishes /tf
+PASS  E4  mapping_node publishes no /tf
+PASS  E5  localization_node is not running, so the edge has one owner
+
+===== F: provenance, who reads ground truth =====
+PASS  F1  mapping_node does not subscribe to /ground_truth/pose
+PASS  F2  mapping_node subscribes to the scan
+PASS  F3  the adapter subscribes to /ground_truth/pose
+PASS  F4  the adapter's diagnostics name it as a ground-truth source
+PASS  F5  the mapper's diagnostics say the pose source is TF
+
+===== G: the mapper maps =====
+--- driving the smoke route so the map grows ---
+PASS  G1  route_driver finished the route
+PASS  G2  the mapper reports RUNNING
+PASS  G3  at least 20 scans were integrated (37)
+PASS  G4  the map holds occupied cells (456)
+PASS  G5  the mapper reports its pose source as tf
+PASS  G6  the ESDF is 32FC1
+PASS  G7  the ESDF row step is four bytes per cell
+PASS  G8  the entropy topic publishes a number
+
+===== H: the stack shuts down and leaves nothing behind =====
+PASS  H1  the launch exits within 60 s of SIGINT
+PASS  H2  no ground_truth_tf_adapter process is left
+PASS  H3  no mapping_node process is left
+PASS  H4  no webots-bin process is left
+PASS  H5  mapping_node logged an orderly shutdown
+
+===== summary =====
+checks: 53
+passed: 53
+failed: 0
+verdict: PASS

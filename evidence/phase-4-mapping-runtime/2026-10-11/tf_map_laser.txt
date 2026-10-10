@@ -1,0 +1,112 @@
+[INFO] [1791657235.452791257] [tf2_echo]: Waiting for transform map ->  LDS-01: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+At time 58.540000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 59.520000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 60.500000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 61.500000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 62.480000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 63.460000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 64.440000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 65.420000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 66.420000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 67.400000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+At time 68.360000000
+- Translation: [-0.030, -0.000, 0.173]
+- Rotation: in Quaternion (xyzw) [0.000, 0.000, 0.000, 1.000]
+- Rotation: in RPY (radian) [0.000, -0.000, 0.000]
+- Rotation: in RPY (degree) [0.000, -0.000, 0.000]
+- Matrix:
+  1.000 -0.000  0.000 -0.030
+  0.000  1.000  0.000 -0.000
+  0.000  0.000  1.000  0.173
+  0.000  0.000  0.000  1.000
+[INFO] [1791657247.196778462] [rclcpp]: signal_handler(signum=15)

@@ -1,0 +1,253 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-01-32-47-004585-LAPTOP-HJL1R3P6-91185
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 4 bringup: repo /home/genta/ros2-rust-robotics, map -> odom owner: ground_truth
+[INFO] [launch.user]: world /home/genta/ros2-rust-robotics/sim/webots/worlds/turtlebot3_localization_room.wbt
+[INFO] [webots-1]: process started with pid [91208]
+[INFO] [ros2_supervisor.py-2]: process started with pid [91209]
+[INFO] [driver_turtlebot3-3]: process started with pid [91210]
+[INFO] [robot_state_publisher-4]: process started with pid [91211]
+[INFO] [static_transform_publisher-5]: process started with pid [91212]
+[INFO] [spawner-6]: process started with pid [91214]
+[INFO] [spawner-7]: process started with pid [91216]
+[INFO] [evaluation_supervisor-8]: process started with pid [91217]
+[INFO] [ground_truth_tf_adapter-9]: process started with pid [91218]
+[INFO] [mapping_node-10]: process started with pid [91219]
+[ground_truth_tf_adapter-9] [WARN] [1791657167.150495268] [ground_truth_tf_adapter]: ground_truth_tf_adapter up: SIMULATION ONLY. ground_truth/pose + odom -> base_link => map -> odom from ground truth; do not run it with an estimator that owns that edge
+[static_transform_publisher-5] [INFO] [1791657167.152307142] [static_transform_publisher_0rrazOEENDvkJrrt]: Spinning until stopped - publishing transform
+[static_transform_publisher-5] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-5] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-5] from 'base_link' to 'base_footprint'
+[mapping_node-10] [ERROR] [1791657167.154070043] [mapping_node]: parameter output.latency_csv must not be empty
+[robot_state_publisher-4] [INFO] [1791657167.158052536] [robot_state_publisher]: Robot initialized
+[mapping_node-10] Error: RclError { code: InvalidArgument, msg: None }
+[ERROR] [mapping_node-10]: process has died [pid 91219, exit code 1, cmd '/home/genta/ros2-rust-robotics/ros2_ws/install/robotics_mapping_ros/lib/robotics_mapping_ros/mapping_node --ros-args -r __node:=mapping_node --params-file /tmp/launch_params_orvvgwxk'].
+[evaluation_supervisor-8] The specified robot (at /tmp/webots/genta/1234/ipc/evaluation_supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[spawner-6] [INFO] [1791657167.624888087] [spawner_diffdrive_controller]: waiting for service /controller_manager/list_controllers to become available...
+[ros2_supervisor.py-2] The specified robot (at /tmp/webots/genta/1234/ipc/Ros2Supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'TurtleBot3Burger'.
+[webots-1] INFO: 'Ros2Supervisor' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'Ros2Supervisor'.
+[webots-1] INFO: 'movie_recorder' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'movie_recorder'.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'evaluation_supervisor'.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: connected.
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: connected.
+[webots-1] WARNING: DEF TURTLEBOT3 TurtleBot3Burger > DEF CASTER_JOINT BallJoint: Exporting 'BallJoint' nodes to URDF is currently not supported
+[robot_state_publisher-4] [INFO] [1791657174.523984586] [robot_state_publisher]: Robot initialized
+[evaluation_supervisor-8] [INFO] [1791657174.537819167] [evaluation_supervisor]: evaluation_supervisor: TURTLEBOT3, ground truth every 1 step(s) of 20 ms, frame map
+[driver_turtlebot3-3] [INFO] [1791657174.553422128] [controller_manager]: Using ROS clock for triggering controller manager cycles.
+[driver_turtlebot3-3] [WARN] [1791657174.553554844] [controller_manager]: The resource manager is not yet initialized, will wait for the robot description to initialize it..
+[driver_turtlebot3-3] [INFO] [1791657174.557757866] [controller_manager]: Subscribing to '/robot_description' topic for robot description.
+[driver_turtlebot3-3] [INFO] [1791657174.559326129] [controller_manager]: Received robot description from topic.
+[driver_turtlebot3-3] [INFO] [1791657174.559391856] [controller_manager]: Enforcing command limits is disabled. Command limits from URDF will be ignored.
+[driver_turtlebot3-3] [INFO] [1791657174.563675590] [controller_manager]: Initialize hardware 'WebotsControl' 
+[driver_turtlebot3-3] [WARN] [1791657174.563738590] [controller_manager.hardware_component.system.WebotsControl]: Executor is not available during hardware component initialization for 'WebotsControl'. Skipping node creation!
+[driver_turtlebot3-3] [INFO] [1791657174.563781955] [controller_manager]: Successful initialization of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791657174.563870714] [controller_manager]: Activating component 'WebotsControl'.
+[driver_turtlebot3-3] [INFO] [1791657174.563881109] [resource_manager]: 'configure' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791657174.563885681] [resource_manager]: Successful 'configure' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791657174.563890640] [resource_manager]: 'activate' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791657174.563897949] [resource_manager]: Successful 'activate' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [WARN] [1791657174.563921485] [controller_manager]: Component 'WebotsControl' does not have read or write statistics initialized, skipping registration.
+[driver_turtlebot3-3] [INFO] [1791657174.563928395] [controller_manager]: Resource Manager has been successfully initialized. Starting Controller Manager services...
+[driver_turtlebot3-3] [INFO] [1791657174.645412299] [controller_manager]: Loading controller : 'diffdrive_controller' of type 'diff_drive_controller/DiffDriveController'
+[driver_turtlebot3-3] [INFO] [1791657174.645461925] [controller_manager]: Loading controller 'diffdrive_controller'
+[driver_turtlebot3-3] [WARN] [1791657174.649227159] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791657174.649270194] [controller_manager]: Controller 'diffdrive_controller' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[webots-1] INFO: 'Ros2Supervisor' extern controller: connected.
+[spawner-6] [INFO] [1791657174.686205109] [spawner_diffdrive_controller]: Loaded diffdrive_controller
+[driver_turtlebot3-3] [INFO] [1791657174.700375943] [controller_manager]: Configuring controller: 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791657174.721828614] [controller_manager]: Activating controllers: [ diffdrive_controller ]
+[driver_turtlebot3-3] [INFO] [1791657175.026351503] [plugin_node_example]:   - properties: {'parameterExample': 'someValue'}
+[driver_turtlebot3-3] [INFO] [1791657175.026961999] [plugin_node_example]:   - robot name: TurtleBot3Burger
+[driver_turtlebot3-3] [INFO] [1791657175.027497271] [plugin_node_example]:   - basic timestep: 20
+[driver_turtlebot3-3] [INFO] [1791657175.027956459] [plugin_node_example]:   - is supervisor? False
+[driver_turtlebot3-3] [INFO] [1791657175.030378872] [TurtleBot3Burger]: Controller successfully connected to robot in Webots simulation.
+[driver_turtlebot3-3] [INFO] [1791657175.057795414] [controller_manager]: Successfully switched controllers!
+[spawner-6] [INFO] [1791657175.077965349] [spawner_diffdrive_controller]: Configured and activated diffdrive_controller
+[driver_turtlebot3-3] [INFO] [1791657175.363326436] [controller_manager]: Loading controller : 'joint_state_broadcaster' of type 'joint_state_broadcaster/JointStateBroadcaster'
+[driver_turtlebot3-3] [INFO] [1791657175.363391959] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[INFO] [spawner-6]: process has finished cleanly [pid 91214]
+[driver_turtlebot3-3] [WARN] [1791657175.368006724] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791657175.368061328] [controller_manager]: Controller 'joint_state_broadcaster' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[spawner-7] [INFO] [1791657175.398825301] [spawner_joint_state_broadcaster]: Loaded joint_state_broadcaster
+[driver_turtlebot3-3] [INFO] [1791657175.400046607] [controller_manager]: Configuring controller: 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791657175.400138229] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[driver_turtlebot3-3] [INFO] [1791657175.425069217] [controller_manager]: Activating controllers: [ joint_state_broadcaster ]
+[driver_turtlebot3-3] [INFO] [1791657175.442912731] [controller_manager]: Successfully switched controllers!
+[spawner-7] [INFO] [1791657175.463123801] [spawner_joint_state_broadcaster]: Configured and activated joint_state_broadcaster
+[INFO] [spawner-7]: process has finished cleanly [pid 91216]
+[driver_turtlebot3-3] [WARN] [1791657176.030384851] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657177.049734762] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657178.069464707] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657179.090369424] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657180.110340815] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657181.126650011] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657182.145890528] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657183.163987719] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657184.186276918] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657185.202541313] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657186.223408723] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657187.245403469] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657188.242501108] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657189.278309800] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657190.295135000] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657191.322739351] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657192.335419960] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657193.358118113] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657194.374669469] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657195.399414478] [diffdrive_controller]: Velocity command timed out. Braking.
+[ground_truth_tf_adapter-9] [WARN] [1791657196.576654524] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[driver_turtlebot3-3] [WARN] [1791657197.050224677] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657198.066063923] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657199.080906424] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657200.098517883] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657201.117991082] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657202.137830677] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657203.151985874] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657204.169603492] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657205.192463446] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657206.210869820] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657207.228012924] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657208.245982580] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657209.262043368] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657210.276422972] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657211.288172554] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657212.304415688] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657213.318078424] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657214.335327386] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657215.348755304] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657216.359652528] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657217.383255905] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657218.407182614] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657219.430416335] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657220.448443985] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657221.465847490] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657222.485984894] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657223.504376585] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657224.526285403] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657225.546388243] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657226.564876149] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657227.582230461] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657228.604132103] [diffdrive_controller]: Velocity command timed out. Braking.
+[ground_truth_tf_adapter-9] [WARN] [1791657230.345320503] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[driver_turtlebot3-3] [WARN] [1791657230.793647009] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657231.813155614] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657232.828393708] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657233.842125688] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657234.859868975] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657235.878405982] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657236.894469053] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657237.908393070] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657238.925693691] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657239.941762894] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657240.955594690] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657241.993703683] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657243.009909056] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657244.028319409] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657245.046160759] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657246.062394667] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657247.073885036] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657248.090480676] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657249.106724073] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657250.122088314] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657251.135292463] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657252.154325551] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657253.167922435] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657254.185705667] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657255.201847063] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657256.217545896] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657257.235387378] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657258.248229836] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657259.268762711] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657260.295361500] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657261.310408889] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657262.330606683] [diffdrive_controller]: Velocity command timed out. Braking.
+[ground_truth_tf_adapter-9] [WARN] [1791657263.838366656] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[driver_turtlebot3-3] [WARN] [1791657264.412236189] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657265.427946808] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657266.445381841] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657267.466124111] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657268.481309973] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657269.502924639] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657270.519480443] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657271.535725044] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657272.555713485] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657272.940241658] [diffdrive_controller]: Received TwistStamped with zero timestamp, setting it to current time, this message will only be shown once
+[driver_turtlebot3-3] [WARN] [1791657290.127538315] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657291.143877038] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657292.164500323] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657293.177870647] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657294.197755218] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657295.222084095] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657296.237486671] [diffdrive_controller]: Velocity command timed out. Braking.
+[ground_truth_tf_adapter-9] [WARN] [1791657297.430614732] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[driver_turtlebot3-3] [WARN] [1791657298.298498382] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657299.316792871] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657300.338282767] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657301.354806148] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657302.370752593] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657303.386191718] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657304.402411214] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657305.424728280] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791657306.443050821] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [INFO] [1791657307.284744420] [rclcpp]: signal_handler(signum=2)
+[robot_state_publisher-4] [INFO] [1791657307.284807219] [rclcpp]: signal_handler(signum=2)
+[static_transform_publisher-5] [INFO] [1791657307.284845502] [rclcpp]: signal_handler(signum=2)
+[webots-1] INFO: <extern>: Terminating.
+[ground_truth_tf_adapter-9] [INFO] [1791657307.285287133] [ground_truth_tf_adapter]: ground_truth_tf_adapter shutting down
+[webots-1] INFO: <extern>: Terminating.
+[webots-1] INFO: <extern>: Terminating.
+[ERROR] [ros2_supervisor.py-2]: process has died [pid 91209, exit code -2, cmd '/opt/ros/jazzy/lib/webots_ros2_driver/ros2_supervisor.py --ros-args -r __ns:=/Ros2Supervisor -r /Ros2Supervisor/clock:=/clock'].
+[ERROR] [evaluation_supervisor-8]: process has died [pid 91217, exit code -2, cmd '/usr/local/webots/webots-controller --robot-name=evaluation_supervisor --protocol=ipc --port=1234 /home/genta/ros2-rust-robotics/sim/webots/launch/../scripts/evaluation_supervisor.py'].
+[INFO] [ros2_supervisor.py-2]: process started with pid [93399]
+[INFO] [evaluation_supervisor-8]: process started with pid [93401]
+[webots-1] INFO: 'evaluation_supervisor' extern controller: disconnected.
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: disconnected.
+[webots-1] INFO: 'Ros2Supervisor' extern controller: disconnected.
+[webots-1] INFO: 'movie_recorder' extern controller: disconnected.
+[driver_turtlebot3-3] [INFO] [1791657307.361739693] [TurtleBot3Burger]: Controller successfully disconnected from robot in Webots simulation.
+[driver_turtlebot3-3] [INFO] [1791657307.361827759] [controller_manager]: Shutdown request received....
+[driver_turtlebot3-3] [INFO] [1791657307.361895364] [controller_manager]: Shutting down all controllers in the controller manager.
+[driver_turtlebot3-3] [INFO] [1791657307.361913554] [controller_manager]: Deactivating controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791657307.361974296] [controller_manager]: Shutting down controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791657307.362050530] [controller_manager]: Deactivating controller 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791657307.362085823] [controller_manager]: Shutting down controller 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791657307.362349419] [resource_manager]: 'deactivate' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791657307.362364337] [resource_manager]: Successful 'deactivate' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791657307.362368104] [resource_manager]: 'shutdown' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791657307.362371608] [resource_manager]: Successful 'shutdown' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791657307.362450084] [controller_manager]: Shutting down the controller manager.
+[driver_turtlebot3-3] [ERROR] [1791657307.362783777] [controller_manager.pal_statistics]: Exception in publisher thread: context cannot be slept with because it's invalid!. Aborting!
+[driver_turtlebot3-3] [ERROR] [1791657307.362804660] [controller_manager.pal_statistics]: Exception in publisher thread: context cannot be slept with because it's invalid!. Aborting!
+[driver_turtlebot3-3] [INFO] [1791657307.391030538] [controller_manager.pal_statistics]: Async messages lost 0
+[driver_turtlebot3-3] [INFO] [1791657307.391063006] [controller_manager.pal_statistics]: publish_async_failures_ 0
+[driver_turtlebot3-3] [INFO] [1791657307.394064779] [controller_manager.pal_statistics]: Async messages lost 0
+[driver_turtlebot3-3] [INFO] [1791657307.394091006] [controller_manager.pal_statistics]: publish_async_failures_ 0
+[driver_turtlebot3-3] Warning: class_loader.ClassLoader: SEVERE WARNING!!! Attempting to unload library while objects created by this loader exist in the heap! You should delete your objects before attempting to unload the library or destroying the ClassLoader. The library will NOT be unloaded.
+[driver_turtlebot3-3]          at line 127 in ./src/class_loader.cpp
+[driver_turtlebot3-3] Warning: class_loader.ClassLoader: SEVERE WARNING!!! Attempting to unload library while objects created by this loader exist in the heap! You should delete your objects before attempting to unload the library or destroying the ClassLoader. The library will NOT be unloaded.
+[driver_turtlebot3-3]          at line 127 in ./src/class_loader.cpp
+[INFO] [webots-1]: process has finished cleanly [pid 91208]
+[launch] shutdown: stopping webots-bin .*--port=1234
+[launch] shutdown: webots exited on SIGTERM
+[INFO] [ground_truth_tf_adapter-9]: sending signal 'SIGINT' to process[ground_truth_tf_adapter-9]
+[INFO] [driver_turtlebot3-3]: process has finished cleanly [pid 91210]
+[INFO] [evaluation_supervisor-8]: sending signal 'SIGINT' to process[evaluation_supervisor-8]
+[INFO] [static_transform_publisher-5]: sending signal 'SIGINT' to process[static_transform_publisher-5]
+[INFO] [robot_state_publisher-4]: sending signal 'SIGINT' to process[robot_state_publisher-4]
+[INFO] [ros2_supervisor.py-2]: sending signal 'SIGINT' to process[ros2_supervisor.py-2]
+[robot_state_publisher-4] [INFO] [1791657307.464991448] [rclcpp]: signal_handler(signum=2)
+[evaluation_supervisor-8] Cannot connect to Webots instance, retrying for another 50 seconds...
+[ros2_supervisor.py-2] Cannot connect to Webots instance, retrying for another 50 seconds...
+[INFO] [ground_truth_tf_adapter-9]: process has finished cleanly [pid 91218]
+[INFO] [static_transform_publisher-5]: process has finished cleanly [pid 91212]
+[INFO] [robot_state_publisher-4]: process has finished cleanly [pid 91211]
+[ERROR] [evaluation_supervisor-8]: process[evaluation_supervisor-8] failed to terminate '5' seconds after receiving 'SIGINT', escalating to 'SIGTERM'
+[ERROR] [ros2_supervisor.py-2]: process[ros2_supervisor.py-2] failed to terminate '5' seconds after receiving 'SIGINT', escalating to 'SIGTERM'
+[INFO] [evaluation_supervisor-8]: sending signal 'SIGTERM' to process[evaluation_supervisor-8]
+[INFO] [ros2_supervisor.py-2]: sending signal 'SIGTERM' to process[ros2_supervisor.py-2]
+[ERROR] [evaluation_supervisor-8]: process has died [pid 93401, exit code -15, cmd '/usr/local/webots/webots-controller --robot-name=evaluation_supervisor --protocol=ipc --port=1234 /home/genta/ros2-rust-robotics/sim/webots/launch/../scripts/evaluation_supervisor.py'].
+[ERROR] [ros2_supervisor.py-2]: process has died [pid 93399, exit code -15, cmd '/opt/ros/jazzy/lib/webots_ros2_driver/ros2_supervisor.py --ros-args -r __ns:=/Ros2Supervisor -r /Ros2Supervisor/clock:=/clock'].

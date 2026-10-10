@@ -1,0 +1,640 @@
+header:
+  stamp:
+    sec: 1791657295
+    nanosec: 11959805
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '5753'
+  - key: published
+    value: '5727'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 116
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.64 [13.28 - 5265.56] us, StdDev: 87.55'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.74 [6.14 - 7575.05] us, StdDev: 107.51'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657296
+    nanosec: 11993367
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '5802'
+  - key: published
+    value: '5776'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 117
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.60 [13.28 - 5265.56] us, StdDev: 87.18'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.72 [6.14 - 7575.05] us, StdDev: 107.05'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657298
+    nanosec: 55126801
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '5852'
+  - key: published
+    value: '5826'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 118
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.57 [13.28 - 5265.56] us, StdDev: 86.81'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.69 [6.14 - 7575.05] us, StdDev: 106.60'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657299
+    nanosec: 55130630
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '5901'
+  - key: published
+    value: '5875'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 119
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.54 [13.28 - 5265.56] us, StdDev: 86.44'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.67 [6.14 - 7575.05] us, StdDev: 106.15'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657300
+    nanosec: 55117538
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '5950'
+  - key: published
+    value: '5924'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 1791657301
+    nanosec: 55168956
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '5999'
+  - key: published
+    value: '5973'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 120
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.49 [13.28 - 5265.56] us, StdDev: 86.08'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.64 [6.14 - 7575.05] us, StdDev: 105.71'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657302
+    nanosec: 55132270
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '6048'
+  - key: published
+    value: '6022'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 121
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.44 [13.28 - 5265.56] us, StdDev: 85.72'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.61 [6.14 - 7575.05] us, StdDev: 105.28'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657303
+    nanosec: 55179523
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '6097'
+  - key: published
+    value: '6071'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 122
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.41 [13.28 - 5265.56] us, StdDev: 85.37'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.59 [6.14 - 7575.05] us, StdDev: 104.85'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791657304
+    nanosec: 55247091
+  frame_id: ''
+status:
+- level: "\0"
+  name: ground_truth_tf_adapter
+  message: RUNNING
+  hardware_id: simulation
+  values:
+  - key: provenance
+    value: ground_truth
+  - key: owns_edge
+    value: map -> odom
+  - key: received
+    value: '6146'
+  - key: published
+    value: '6120'
+  - key: pending
+    value: '1'
+  - key: dropped_no_odom_tf
+    value: '25'
+  - key: rejected_frame
+    value: '0'
+  - key: rejected_pose
+    value: '0'
+  - key: authority_conflicts
+    value: '0'
+  - key: last_error
+    value: 'odom -> base_link at Timestamp { nanos: 500000000 }: lookup of odom -> base_link at Timestamp { nanos: 500000000 } outside its h...'
+---
+header:
+  stamp:
+    sec: 123
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'controller_manager: Controllers Activity'
+  message: '
+
+    High execution jitter or mean error : [ diffdrive_controller ]'
+  hardware_id: ros2_control
+  values:
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 42.37 [13.28 - 5265.56] us, StdDev: 85.02'
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 40.54 [6.14 - 7575.05] us, StdDev: 104.42'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---

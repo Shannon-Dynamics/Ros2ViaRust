@@ -1,0 +1,6 @@
+scans_integrated: 37
+occupied_cells: 456
+free_cells: 12900
+skipped_no_transform: 4
+skipped_motion: 26
+pose_source: tf

@@ -1,0 +1,66 @@
+Type: tf2_msgs/msg/TFMessage
+
+Publisher count: 3
+
+Node name: ground_truth_tf_adapter
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: PUBLISHER
+GID: 01.10.1d.5f.bd.f9.a4.eb.46.55.c3.ae.00.00.16.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: robot_state_publisher
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: PUBLISHER
+GID: 01.10.49.2c.9c.83.6c.7a.9d.ad.ae.b8.00.00.18.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: diffdrive_controller
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: PUBLISHER
+GID: 01.10.6e.8f.26.90.67.0d.e0.fe.e5.57.00.00.6e.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (1)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 1
+
+Node name: ground_truth_tf_adapter
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: SUBSCRIPTION
+GID: 01.10.1d.5f.bd.f9.a4.eb.46.55.c3.ae.00.00.14.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+

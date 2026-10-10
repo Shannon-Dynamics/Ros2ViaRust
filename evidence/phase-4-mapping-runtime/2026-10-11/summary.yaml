@@ -1,0 +1,20 @@
+checks: 53
+passed: 38
+failed: 15
+failed_checks:
+  - C5  the mapping_node node is up
+  - D1  /map is a nav_msgs/msg/OccupancyGrid
+  - D2  /esdf is a sensor_msgs/msg/Image
+  - D3  /map_entropy is a std_msgs/msg/Float64
+  - D5  /map is published with transient-local durability, so a late subscriber gets it
+  - F2  mapping_node subscribes to the scan
+  - F5  the mapper's diagnostics say the pose source is TF
+  - G2  the mapper reports RUNNING
+  - G3  at least 20 scans were integrated (0)
+  - G4  the map holds occupied cells (0)
+  - G5  the mapper reports its pose source as tf
+  - G6  the ESDF is 32FC1
+  - G7  the ESDF row step is four bytes per cell
+  - G8  the entropy topic publishes a number
+  - H5  mapping_node logged an orderly shutdown
+verdict: FAIL

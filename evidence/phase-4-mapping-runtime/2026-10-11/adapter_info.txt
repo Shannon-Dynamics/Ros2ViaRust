@@ -1,0 +1,22 @@
+/ground_truth_tf_adapter
+  Subscribers:
+    /ground_truth/pose: geometry_msgs/msg/PoseStamped
+    /tf: tf2_msgs/msg/TFMessage
+    /tf_static: tf2_msgs/msg/TFMessage
+  Publishers:
+    /diagnostics: diagnostic_msgs/msg/DiagnosticArray
+    /rosout: rcl_interfaces/msg/Log
+    /tf: tf2_msgs/msg/TFMessage
+  Service Servers:
+    /ground_truth_tf_adapter/describe_parameters: rcl_interfaces/srv/DescribeParameters
+    /ground_truth_tf_adapter/get_parameter_types: rcl_interfaces/srv/GetParameterTypes
+    /ground_truth_tf_adapter/get_parameters: rcl_interfaces/srv/GetParameters
+    /ground_truth_tf_adapter/list_parameters: rcl_interfaces/srv/ListParameters
+    /ground_truth_tf_adapter/set_parameters: rcl_interfaces/srv/SetParameters
+    /ground_truth_tf_adapter/set_parameters_atomically: rcl_interfaces/srv/SetParametersAtomically
+  Service Clients:
+
+  Action Servers:
+
+  Action Clients:
+

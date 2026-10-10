@@ -1,0 +1,6 @@
+scans_integrated: missing
+occupied_cells: missing
+free_cells: missing
+skipped_no_transform: missing
+skipped_motion: missing
+pose_source: missing

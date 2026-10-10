@@ -1,0 +1,96 @@
+Type: tf2_msgs/msg/TFMessage
+
+Publisher count: 3
+
+Node name: ground_truth_tf_adapter
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: PUBLISHER
+GID: 01.10.68.d5.28.80.89.3c.20.7b.5d.52.00.00.16.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: diffdrive_controller
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: PUBLISHER
+GID: 01.10.d5.fb.43.d2.cc.bb.e7.01.c5.a9.00.00.87.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (1)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: robot_state_publisher
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: PUBLISHER
+GID: 01.10.fc.30.94.74.2f.44.c4.25.2d.ae.00.00.18.03
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Subscription count: 3
+
+Node name: mapping_node
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: SUBSCRIPTION
+GID: 01.10.5e.34.28.03.29.61.02.d3.6c.e4.00.00.13.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: mapping_evaluator
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: SUBSCRIPTION
+GID: 01.10.5f.c1.e5.c1.1e.3b.f3.3a.79.5f.00.00.13.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+
+Node name: ground_truth_tf_adapter
+Node namespace: /
+Topic type: tf2_msgs/msg/TFMessage
+Topic type hash: RIHS01_e369d0f05a23ae52508854b66f6aa0437f3449d652e8cbf22d5abe85d020f087
+Endpoint type: SUBSCRIPTION
+GID: 01.10.68.d5.28.80.89.3c.20.7b.5d.52.00.00.14.04
+QoS profile:
+  Reliability: RELIABLE
+  History (Depth): KEEP_LAST (100)
+  Durability: VOLATILE
+  Lifespan: Infinite
+  Deadline: Infinite
+  Liveliness: AUTOMATIC
+  Liveliness lease duration: Infinite
+

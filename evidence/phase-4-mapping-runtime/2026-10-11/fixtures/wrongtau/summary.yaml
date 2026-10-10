@@ -1,0 +1,10 @@
+role: evaluation
+owner_of_map_odom: ground_truth_tf_adapter
+mapping_node_subscribes_ground_truth: false
+route_driver_exit_code: 0
+replay_scans: 100
+launch_arguments: fixture
+source_git_commit: fixture
+mapping_node_executable_sha256: fixture
+mapper_occupied_threshold: 2.9444
+evaluator_occupied_threshold: 2.9444

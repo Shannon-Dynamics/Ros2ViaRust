@@ -1,0 +1,24 @@
+/mapping_node
+  Subscribers:
+    /scan: sensor_msgs/msg/LaserScan
+    /tf: tf2_msgs/msg/TFMessage
+    /tf_static: tf2_msgs/msg/TFMessage
+  Publishers:
+    /diagnostics: diagnostic_msgs/msg/DiagnosticArray
+    /esdf: sensor_msgs/msg/Image
+    /map: nav_msgs/msg/OccupancyGrid
+    /map_entropy: std_msgs/msg/Float64
+    /rosout: rcl_interfaces/msg/Log
+  Service Servers:
+    /mapping_node/describe_parameters: rcl_interfaces/srv/DescribeParameters
+    /mapping_node/get_parameter_types: rcl_interfaces/srv/GetParameterTypes
+    /mapping_node/get_parameters: rcl_interfaces/srv/GetParameters
+    /mapping_node/list_parameters: rcl_interfaces/srv/ListParameters
+    /mapping_node/set_parameters: rcl_interfaces/srv/SetParameters
+    /mapping_node/set_parameters_atomically: rcl_interfaces/srv/SetParametersAtomically
+  Service Clients:
+
+  Action Servers:
+
+  Action Clients:
+
