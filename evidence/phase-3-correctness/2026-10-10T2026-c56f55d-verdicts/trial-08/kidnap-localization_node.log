@@ -1,0 +1,69 @@
+[INFO] [1791642287.117584875] [localization_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791642287.125298166] [localization_node]: localization_node up: scan + /odom + imu -> localization/pose (frame map), map -> odom published, 38 parameters
+[INFO] [1791642287.566558650] [localization_node]: localizer started at (0.000, 0.000, 0.000) with 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, gate chi2(2) = 9.21
+[WARN] [1791642310.378404081] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[WARN] [1791642344.177756918] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[WARN] [1791642377.882935643] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[WARN] [1791642411.694621575] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[WARN] [1791642417.096399288] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642422.196689542] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642427.343590416] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642432.470935584] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642437.631721987] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642442.758521274] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642445.364195594] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (5 time(s) so far)
+[WARN] [1791642449.170265538] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642454.284868397] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642459.436700466] [localization_node]: 7 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642464.586655738] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642469.736545083] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642474.897053133] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642479.139830225] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (6 time(s) so far)
+[WARN] [1791642481.301698550] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642486.438764424] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642491.555565961] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642496.700501163] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642501.823126357] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642506.960891591] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642512.891537999] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (7 time(s) so far)
+[WARN] [1791642513.378007383] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642518.533708838] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642523.689577593] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642528.839824965] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642534.005741676] [localization_node]: 2 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642539.170387833] [localization_node]: 2 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642544.333992019] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642546.659190400] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (8 time(s) so far)
+[WARN] [1791642550.753227650] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642555.874968938] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642561.012911820] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642566.135061885] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642571.270276226] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642576.411313822] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642580.475101074] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (9 time(s) so far)
+[WARN] [1791642582.887316781] [localization_node]: 2 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642588.031799885] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642593.147117616] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642598.290883272] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642603.416040346] [localization_node]: 7 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642608.569115731] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642614.254419394] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (10 time(s) so far)
+[WARN] [1791642615.003840811] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642620.150806239] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642625.288848808] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642630.425468584] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642635.585426647] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642640.735500335] [localization_node]: 6 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642645.924943785] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642648.008685365] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (11 time(s) so far)
+[WARN] [1791642652.322385949] [localization_node]: 3 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642657.461767988] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642662.594722760] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642667.728586681] [localization_node]: 5 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642672.875739327] [localization_node]: 7 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642678.041762440] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642681.750078718] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (12 time(s) so far)
+[WARN] [1791642684.463592209] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642689.594097545] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[WARN] [1791642694.744288602] [localization_node]: 4 observation(s) and none inside the gate: the belief does not explain what the laser sees
+[INFO] [1791642698.995834787] [localization_node]: localization_node shutting down

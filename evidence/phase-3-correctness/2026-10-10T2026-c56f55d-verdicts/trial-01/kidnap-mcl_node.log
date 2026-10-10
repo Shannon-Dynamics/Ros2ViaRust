@@ -1,0 +1,20 @@
+[INFO] [1791639217.989851256] [mcl_node]: map /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml: 4 landmarks, pillar radius 0.150 m
+[INFO] [1791639217.994202028] [mcl_node]: mcl_node up: scan + /odom -> mcl/pose (frame map), 43 parameters
+[INFO] [1791639218.245667300] [mcl_node]: MCL started at (0.000, 0.000, 0.000) with 6000 particles, 4 landmarks, laser at (-0.030, 0.000, 0.000) from tf, fit threshold -0.45 nats/obs
+[WARN] [1791639251.497844598] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[WARN] [1791639285.307053025] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[WARN] [1791639319.002589877] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[WARN] [1791639352.755964247] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[WARN] [1791639363.420083283] [mcl_node]: KIDNAP_INJECTION stamp_s=141.560: 20 consecutive scan(s) had a best-particle median fit of -21.37 nats/obs, below the -0.45 threshold with 5 observations: injecting random particles
+[WARN] [1791639386.727746027] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (5 time(s) so far)
+[WARN] [1791639397.681402402] [mcl_node]: KIDNAP_INJECTION stamp_s=173.940: 20 consecutive scan(s) had a best-particle median fit of -48.59 nats/obs, below the -0.45 threshold with 3 observations: injecting random particles
+[WARN] [1791639406.434568328] [mcl_node]: KIDNAP_INJECTION stamp_s=182.480: 20 consecutive scan(s) had a best-particle median fit of -85.96 nats/obs, below the -0.45 threshold with 5 observations: injecting random particles
+[WARN] [1791639420.186805560] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (6 time(s) so far)
+[WARN] [1791639453.956262473] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (7 time(s) so far)
+[WARN] [1791639487.687913215] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (8 time(s) so far)
+[WARN] [1791639494.571451494] [mcl_node]: KIDNAP_INJECTION stamp_s=265.140: 20 consecutive scan(s) had a best-particle median fit of -2.92 nats/obs, below the -0.45 threshold with 3 observations: injecting random particles
+[WARN] [1791639521.551034453] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (9 time(s) so far)
+[WARN] [1791639555.433734551] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (10 time(s) so far)
+[WARN] [1791639589.280921860] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (11 time(s) so far)
+[WARN] [1791639623.274908462] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (12 time(s) so far)
+[INFO] [1791639630.727544463] [mcl_node]: mcl_node shutting down

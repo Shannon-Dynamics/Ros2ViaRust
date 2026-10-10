@@ -1,0 +1,59 @@
+diff --git a/docs/README.md b/docs/README.md
+index c0c2d7e..4630a1f 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -57,4 +57,5 @@ are documented as engineering references rather than as problem-based parts:
+ | [ARCHITECTURE.md](ARCHITECTURE.md) | layers, crates, packages, TF ownership |
+ | [ROS2_INTERFACES.md](ROS2_INTERFACES.md) | topics, services, parameters, QoS |
+ | [BUILD.md](BUILD.md) | environment, underlay, build, troubleshooting |
++| [../web/README.md](../web/README.md) | the interactive webbook of the closed phases: widgets run these crates compiled to WebAssembly |
+ | [SOURCE_MAPPING.md](SOURCE_MAPPING.md) | chapter to crate and node mapping |
+diff --git a/docs/ROADMAP.md b/docs/ROADMAP.md
+index f6a8084..3bff549 100644
+--- a/docs/ROADMAP.md
++++ b/docs/ROADMAP.md
+@@ -150,6 +150,44 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
+   Bresenham/supercover integration, entropy (Ch. 13); exact EDT/ESDF and 2-D TSDF (Ch. 19).
+ * `mapping_node`: `/scan` + `map → base_link` → `/map` (latched), `/map_entropy`.
+ 
++**Status: planned, nothing built (plan written 2026-10-10, while Phase 3 is still open).**
++The two bullets above are the original scope and are unchanged. The planning is in
++`docs/phase-4-mapping/`: [problem](phase-4-mapping/problem.md),
++[implementation](phase-4-mapping/implementation.md),
++[benchmark](phase-4-mapping/benchmark.md). In outline:
++
++* **What kind of claim.** Phase 4 is mapping with known poses, and its claims are *not*
++  rates. "The map is accurate against the analytic ground truth of the world" is judged on a
++  few representative runs, each reported on its own with its spread, and carries no success
++  rate, no Wilson interval and no trial set. The other claims are deterministic (replay gives
++  a bit-identical grid; unit and property tests of the grid) or are a latency distribution
++  over the scans of a run. Reasons, and what is explicitly not claimed, are in
++  `problem.md` section 4. **This split is a proposal awaiting confirmation.**
++* **Pose source, stated rather than hidden.** Until Phase 3 closes, `mapping_node` runs with
++  `pose_source:=ground_truth` (the simulator's `/ground_truth/pose`), a mode that has to be
++  named in the node's diagnostics and in the run's `summary.yaml`. `pose_source:=tf`
++  (`map → base_link` from the real estimator) is the Phase 3 integration and is not built
++  or claimed until Phase 3 is closed. No Phase 4 result may be described as using an
++  estimated pose before then.
++* **Staging.** (1) pure crate: grid, inverse model, ray integration, entropy, accuracy
++  metrics; (2) ESDF on top of the existing exact EDT; (3) node, harness and verdict script
++  on ground-truth pose; (4) reference implementations for cost and agreement; (5) the
++  estimated-pose integration, after Phase 3. TSDF and quadtree (Ch. 19) are last and their
++  place in Phase 4 is an open question, since nothing before Phase 5 consumes them.
++* **Evaluation.** Internal, against the world file's geometry, not against another stack:
++  surface error, completeness, false-occupied and false-free cells, coverage, entropy as a
++  progress trace (never alone), and per-scan update latency as median/95th/99th percentile.
++  Nav2 has no known-pose mapper to compare against (`slam_toolbox` estimates its own pose,
++  `nav2_costmap_2d` is a costmap with different semantics); what is compared, and why, is in
++  `benchmark.md` section 3.
++* **Naming.** Following Phase 3 (`robotics_localization` crate,
++  `robotics_localization_bridge` package), the library is `crates/robotics_mapping` and the
++  nodes will live in `ros2_ws/src/robotics_mapping_bridge`. `ARCHITECTURE.md` still lists
++  the node package as `robotics_mapping`; it is not edited here.
++
++Phase 3 is not closed by this plan: the Nav2/rclpy benchmark and the remaining Phase 3
++items above are untouched and still open.
++
+ ## Phase 5 — SLAM
+ 
+ * `robotics_slam`: point-to-point / point-to-plane ICP with voxel-hash correspondence and

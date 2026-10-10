@@ -1,0 +1,31 @@
+scenario: kidnap
+date_utc: 2026-10-10T15:29:40Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.40.1-microsoft-standard-WSL2
+os: Ubuntu 24.04.2 LTS
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+ros_distro: jazzy
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+map_file: /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml
+map_sha256: 66def75a759ce50ebf603be2b79b536f6d0f98f3b5a4db922ee64e3774a10b87
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_long.yaml
+route_sha256: 25343233801bff225ac65898dfdaac2dd24ccace818b9bfa7288f4455a4d6a9b
+route_waypoints: 21
+laps: 1
+odometry_topic_under_test: /odom
+odometry_noise: off
+estimators: ekf mcl
+mcl_seed: 1017
+mcl_particles: 6000
+mcl_recovery_sustained_updates: 20
+mcl_recovery_injection_fraction: 1.0
+mcl_executable: /home/genta/ros2-rust-robotics/ros2_ws/install/robotics_localization_bridge/lib/robotics_localization_bridge/mcl_node
+mcl_executable_sha256: 62156f34207bee07a98a72fd915fdb64e49719a44a43c98961bd7422f3393d40
+source_git_commit: 5076a313409ac78777710e44beafd0d2d79925e1
+source_git_dirty: true
+source_patch: kidnap-source.patch
+kidnap_target: x=-1.5 y=-1.5 yaw=2.0
+kidnap_after_s: 120

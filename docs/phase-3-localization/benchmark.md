@@ -167,8 +167,10 @@ error in the last quarter of the run divided by the mean in the first quarter.
 | MCL | 0.013649 | 0.021430 | 0.121113 | 1.185 | PASS |
 
 The kidnap verdict requires position error below 0.15 m and absolute yaw error below 0.15
-rad for 10 consecutive estimator samples. The MCL recovery window begins 6.920 s after the
-teleport and its final position error is 0.004491 m. EKF never meets that window and ends at
+rad for 10 consecutive estimator samples. In that single older run the MCL recovery window
+begins 6.920 s after the teleport and its final position error is 0.004491 m; that is one run
+and an outlier against the twenty Webots trials of section 7.5, whose fastest recovery is
+15.480 s. EKF never meets that window and ends at
 2.874910 m. These values are generated from the retained CSV files by
 `scripts/phase3_kidnap_verdict.py`.
 
@@ -201,6 +203,66 @@ finding, and there is one, in 7.4.
 ### 7.2 Results
 
 <!-- global-localization-tables:begin -->
+
+**Model-level, 40 development start poses (starts seed 1000).** The real `McLocalizer`, a simulated robot and simulated detections (`crates/robotics_localization/examples/global_trials.rs`). These are the poses the explained-fraction criterion was chosen on, so they are optimistic for it.
+
+| global particles | explained fraction | trials | success | wrong | lost | no claim | success rate | Wilson 95% | median time (s) | median distance (m) | median RMSE after (m) | correct at end of route |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6,000 | 0.5 | 40 | 12 | 24 | 0 | 4 | 30% | 18 to 45% | 7.4 | 1.14 | 0.0247 | 12 |
+| 12,000 | 0.5 | 40 | 18 | 22 | 0 | 0 | 45% | 31 to 60% | 3.4 | 0.43 | 0.0246 | 18 |
+| 24,000 | 0.5 | 40 | 27 | 13 | 0 | 0 | 68% | 52 to 80% | 3.6 | 0.54 | 0.0226 | 28 |
+| 48,000 | 0.5 | 40 | 32 | 8 | 0 | 0 | 80% | 65 to 90% | 3.4 | 0.54 | 0.0212 | 32 |
+| 96,000 | 0.5 | 40 | 36 | 4 | 0 | 0 | 90% | 77 to 96% | 3.0 | 0.47 | 0.0186 | 36 |
+| 192,000 | 0.5 | 40 | 39 | 1 | 0 | 0 | 98% | 87 to 100% | 2.8 | 0.47 | 0.0118 | 39 |
+| 384,000 | 0.5 | 40 | 39 | 1 | 0 | 0 | 98% | 87 to 100% | 2.8 | 0.47 | 0.0110 | 40 |
+| 6,000 | 0.51 | 40 | 12 | 18 | 0 | 10 | 30% | 18 to 45% | 8.0 | 1.14 | 0.0233 | 12 |
+| 12,000 | 0.51 | 40 | 18 | 17 | 0 | 5 | 45% | 31 to 60% | 4.2 | 0.44 | 0.0228 | 18 |
+| 24,000 | 0.51 | 40 | 27 | 11 | 0 | 2 | 68% | 52 to 80% | 3.8 | 0.54 | 0.0213 | 27 |
+| 48,000 | 0.51 | 40 | 32 | 8 | 0 | 0 | 80% | 65 to 90% | 3.6 | 0.54 | 0.0189 | 32 |
+| 96,000 | 0.51 | 40 | 36 | 4 | 0 | 0 | 90% | 77 to 96% | 3.2 | 0.50 | 0.0181 | 36 |
+| 6,000 | 1.0 | 40 | 12 | 6 | 0 | 22 | 30% | 18 to 45% | 9.2 | 1.32 | 0.0146 | 12 |
+| 12,000 | 1.0 | 40 | 17 | 8 | 0 | 15 | 42% | 29 to 58% | 7.8 | 1.08 | 0.0151 | 18 |
+| 24,000 | 1.0 | 40 | 27 | 6 | 0 | 7 | 68% | 52 to 80% | 7.4 | 1.14 | 0.0140 | 27 |
+| 48,000 | 1.0 | 40 | 33 | 5 | 0 | 2 | 82% | 68 to 91% | 6.0 | 0.76 | 0.0168 | 33 |
+| 96,000 | 1.0 | 40 | 36 | 4 | 0 | 0 | 90% | 77 to 96% | 4.4 | 0.79 | 0.0133 | 36 |
+| 192,000 | 1.0 | 40 | 39 | 1 | 0 | 0 | 98% | 87 to 100% | 3.8 | 0.59 | 0.0117 | 39 |
+| 384,000 | 1.0 | 40 | 40 | 0 | 0 | 0 | 100% | 91 to 100% | 3.6 | 0.50 | 0.0103 | 40 |
+
+**Model-level, 100 fresh start poses (starts seed 2000).** The same experiment on poses that played no part in any choice.
+
+| global particles | explained fraction | trials | success | wrong | lost | no claim | success rate | Wilson 95% | median time (s) | median distance (m) | median RMSE after (m) | correct at end of route |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6,000 | 0.5 | 100 | 29 | 60 | 0 | 11 | 29% | 21 to 39% | 4.2 | 0.72 | 0.0309 | 30 |
+| 48,000 | 0.5 | 100 | 66 | 34 | 0 | 0 | 66% | 56 to 75% | 3.2 | 0.50 | 0.0167 | 67 |
+| 96,000 | 0.5 | 100 | 81 | 17 | 0 | 2 | 81% | 72 to 87% | 3.4 | 0.54 | 0.0139 | 83 |
+| 6,000 | 1.0 | 100 | 29 | 25 | 0 | 46 | 29% | 21 to 39% | 9.0 | 1.28 | 0.0156 | 29 |
+| 48,000 | 1.0 | 100 | 66 | 26 | 0 | 8 | 66% | 56 to 75% | 6.0 | 0.97 | 0.0125 | 67 |
+| 96,000 | 1.0 | 100 | 82 | 15 | 0 | 3 | 82% | 73 to 88% | 5.6 | 0.97 | 0.0120 | 84 |
+
+**Cost of one scan, single process, nothing else running.**
+
+_Not measured yet._
+
+**End to end in Webots, final: each configuration over three filter seeds, pooled** (real detector, real laser, real odometry, ground truth from the supervisor; the same 20 start poses for every seed). The claim-based column is what the filter said and was right about (`SUCCESS`); the ground-truth column is where the estimate actually was at the end of the route, whatever was claimed. Each total is followed by the range over the seeds.
+
+_Not run yet._
+
+**The final Webots runs, one row per run.**
+
+_Not run yet._
+
+**The final Webots runs, one row per start pose**, counted over the three seeds of each configuration (`ok` claimed and right, `WRONG` a wrong claim, `LOST` a right claim lost again, `none` no claim; `end` is how many of the seeds ended inside both tolerances, by ground truth).
+
+_Not run yet._
+
+**The first Webots batch, seed 1, before the harness fixes**, kept for comparison: its diagnostics columns cover only the trials whose one `/diagnostics` message happened to be mcl_node's, and its injections cannot be graded because the log line had no stamp. Claims, errors and the ground-truth column do not depend on either.
+
+| global particles | build | seed | explained fraction | trials | success | wrong | lost | no claim | invalid | success rate | Wilson 95% | median time (s) | median distance (m) | median RMSE after (m) | median of per-trial max ms/scan | trials with > 4 detections per scan, of those with a reading | trials where the kidnap trigger fired | injections: total (false, estimate already right) | correct at end of route (ground truth) | success, 10 random starts | success, 10 ambiguity-targeted starts | wrong claims, random / targeted | no claim, random / targeted |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 6,000 | debug | 1 | 0.5 | 20 | 6 | 13 | 1 | 0 | 0 | 30% | 15 to 52% | 8.3 | 0.99 | 0.0296 | 208 | 11 of 11 | 8 | 13 (ungraded: log has no stamp) | 11 | 5 of 10 | 1 of 10 | 4 / 9 | 0 / 0 |
+| 48,000 | release | 1 | 1.0 | 20 | 9 | 0 | 1 | 10 | 0 | 45% | 26 to 66% | 9.4 | 1.08 | 0.0175 | 99 | 8 of 8 | 1 | 2 (ungraded: log has no stamp) | 10 | 6 of 10 | 3 of 10 | 0 / 0 | 3 / 7 |
+| 96,000 | release | 1 | 1.0 | 20 | 11 | 0 | 1 | 8 | 0 | 55% | 34 to 74% | 8.1 | 0.64 | 0.0178 | 238 | 5 of 6 | 2 | 4 (ungraded: log has no stamp) | 12 | 8 of 10 | 3 of 10 | 0 / 0 | 1 / 7 |
+
 <!-- global-localization-tables:end -->
 
 Reading the tables:
@@ -256,7 +318,39 @@ section 6.4). Its recovery rate over many kidnaps is in the file below, with the
 larger count next to it.
 
 <!-- kidnap-model-tables:begin -->
+
+| configuration | steady-state particles | persistence (scans) | reset fraction | kidnaps | recovered | recovery rate | Wilson 95% | median recovery time (s) |
+|---|---|---|---|---|---|---|---|---|
+| as shipped | 6,000 | 20 | 1 | 102 | 40 | 39% | 30 to 49% | 5.2 |
+| what-if: particle count only | 48,000 | 20 | 1 | 36 | 29 | 81% | 65 to 90% | 5.2 |
+
 <!-- kidnap-model-tables:end -->
+
+**Webots kidnap trials, a separate result that is not part of the generated table above.**
+Pada satu geometri kidnap tetap (seed 1001–1020), MCL recovered 20/20. Pada sampel model yang memvariasikan geometri kidnap (n=102), recovery rate ≈39%/81% (tergantung kondisi). Kedua hasil mengukur kode mcl.rs yang sama tapi tidak bisa dibandingkan langsung karena cakupan kidnap yang diuji berbeda.
+
+The conditions behind the two model figures, so that the sentence above is not read as one sample:
+39% is the as-shipped configuration (6000 particles, n=102); 81% is the labelled what-if at 48000
+particles (n=36), both from the table above.
+
+The 20 Webots trials are
+[`2026-10-10T2026-c56f55d-verdicts`](../../evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts),
+twenty complete `run_phase3_correctness.sh kidnap` sessions, each with one teleport at the same
+target and the same time (120 s) and a different `MCL_SEED`. The figures below are copied from
+that directory's `kidnap-trials-summary.yaml`, which
+[`../../scripts/phase3_kidnap_trials_summary.py`](../../scripts/phase3_kidnap_trials_summary.py)
+wrote from each trial's own verdict files:
+
+| Estimator | Recovered | Rate | Wilson 95% | Recovery time min / median / max (s) |
+|---|---:|---:|---|---|
+| MCL | 20 of 20 | 1.0000 | 0.8389 to 1.0000 | 15.480 / 47.070 / 206.580 |
+| EKF | 0 of 20 | 0.0000 | 0.0000 to 0.1611 | not applicable |
+
+The interval describes the particle filter's randomness for this one kidnap, not the variety
+of possible kidnaps (the trials are independent only in seed and simulator timing). The
+earlier single recovery time of 6.92 s is not representative: no trial of the twenty recovered
+in under 15.480 s, and the slowest took 206.580 s (see the time-bound limitation in
+[ROADMAP.md](../ROADMAP.md)).
 
 ### 7.6 The runs
 
@@ -273,4 +367,5 @@ larger count next to it.
 | `2026-10-10-webots-*` | end to end in Webots, three configurations, the same 20 poses |
 | `2026-10-10-webots-smoke-1-trial` | the one-trial smoke test of the Webots runner, kept |
 | `2026-10-10-kidnap-model-*` | the existing kidnap recovery as a model-level measurement |
+| `phase-3-correctness/2026-10-10T2026-c56f55d-verdicts` | twenty real Webots kidnap sessions, one fixed teleport, seeds 1001 to 1020; numbers in section 7.5 |
 | `phase-3-localization-runtime/*global-localization*` | the integration test, including one run that hung and was invalid, with its note |

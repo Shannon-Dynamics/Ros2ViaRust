@@ -42,7 +42,7 @@ underlay, `colcon build`, runtime CLI checks, integration test), results in `REA
 § Evidence and `docs/STATE_ESTIMATION.md` § 4. Nothing from the Phase 2 contract was
 deferred.
 
-## Phase 3 — Localization (in progress)
+## Phase 3 — Localization ✅ (closed 2026-10-10, with carried-over items)
 
 Built and running: the EKF half, and the infrastructure around it.
 
@@ -98,11 +98,19 @@ in `evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`:
   (`kidnap-verdict-mcl.yaml` against `kidnap-verdict-ekf.yaml`, both from one teleport at
   one simulated instant). The trigger uses the best upper median of raw per-observation
   likelihoods for 20 scans, then performs one full global reset of the particle cloud. MCL
-  meets the position and yaw recovery window 6.920 s after the teleport. That is one
-  teleport. Measured over many kidnaps as a model
-  (`evidence/phase-3-global-localization/2026-10-10-kidnap-model-existing-tuning/`), the
-  tuning as it ships recovers a minority of them, so read that recovery time as one draw and
-  not as a rate; `benchmark.md` section 7.5 has the table.
+  meets the position and yaw recovery window; the earlier single run did so 6.920 s after the
+  teleport, which is not representative. Over twenty real Webots trials of one fixed
+  teleport (seeds 1001 to 1020,
+  `evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts/kidnap-trials-summary.yaml`)
+  MCL recovered 20 of 20, Wilson 95% interval 0.8389 to 1.0000, with a minimum recovery time
+  of 15.480 s, a median of 47.070 s and a maximum of 206.580 s; the EKF recovered 0 of 20
+  (0.0000 to 0.1611). Those figures come from
+  `scripts/phase3_kidnap_trials_summary.py`. That is one kidnap geometry. On the model sample
+  that varies the geometry
+  (`evidence/phase-3-global-localization/2026-10-10-kidnap-model-existing-tuning/`, n=102)
+  the same `mcl.rs` recovers about 39% as shipped, and 81% in the 48000-particle what-if
+  (n=36). The two results cannot be compared directly, because the kidnaps they cover
+  differ; `benchmark.md` section 7.5 has both.
 * **P2a, global localization from a uniform prior.** Built and measured, and the honest status
   is "works, with a cost, and is not reliable at the shipped particle count". The robot is
   told nothing; `mcl_node -p initial_pose.mode:=uniform_prior` draws the particles over the
@@ -117,6 +125,20 @@ in `evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset/`:
 
 The NEES part of the P1 row is not evaluated for either filter, because it needs the full
 covariance of each estimate and the evaluator CSV carries only `sigma_xy`.
+
+Known limitations carried out of Phase 3 (the phase is closed on its correctness evidence;
+none of the items below is claimed done):
+
+* **Known limitation: the kidnap "recovered" criterion has no time bound.**
+  `scripts/phase3_kidnap_verdict.py` counts a trial as recovered whenever the position and yaw
+  windows are eventually met and held, however late. A trial that took 206.580 s (trial-14 of
+  the Webots group) is counted as recovered exactly like one that took 15.480 s, so the
+  20 of 20 above says that MCL eventually recovers, not that it recovers in a time a robot
+  could use. A deadline for the criterion is not implemented.
+* **Known limitation: 20/20 recovery hanya diverifikasi untuk satu geometri kidnap
+  (seed-only variation, seed 1001–1020).** Generalisasi ke kidnap acak diukur di model pada
+  ~39–81% dan belum divalidasi di Webots. Variasi geometri (butuh ubah
+  `run_phase3_correctness.sh`, ~20 sesi, ~2,5 jam) ditunda ke backlog, bukan dibatalkan.
 
 Still open in Phase 3, in the order they bear on the results above:
 

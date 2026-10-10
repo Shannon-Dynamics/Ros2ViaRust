@@ -1,0 +1,23 @@
+# Kidnap recovery over repeated real Webots teleports, derived from kidnap-trials.csv
+# by scripts/phase3_kidnap_trials_summary.py. Recovery is the verdict of
+# scripts/phase3_kidnap_verdict.py (< 0.15 m and < 0.15 rad, held 10 samples).
+# One fixed teleport per session; trials differ only in the MCL seed.
+group: 2026-10-10T2026-c56f55d-verdicts
+sessions_found: 20
+ekf:
+  trials_with_verdict: 20
+  no_verdict_sessions: 0
+  recovered: 0
+  recovery_rate: 0.0000
+  wilson95_low: 0.0000
+  wilson95_high: 0.1611
+mcl:
+  trials_with_verdict: 20
+  no_verdict_sessions: 0
+  recovered: 20
+  recovery_rate: 1.0000
+  wilson95_low: 0.8389
+  wilson95_high: 1.0000
+  recovery_time_min_s: 15.480
+  recovery_time_median_s: 47.070
+  recovery_time_max_s: 206.580

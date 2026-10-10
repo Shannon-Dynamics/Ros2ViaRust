@@ -1,0 +1,10 @@
+ M docs/ARCHITECTURE.md
+ M docs/README.md
+ M docs/ROADMAP.md
+ M docs/SOURCE_MAPPING.md
+?? .github/
+?? crates/robotics_wasm/
+?? docs/phase-4-mapping/
+?? evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts/
+?? scripts/phase3_kidnap_trials_summary.py
+?? web/

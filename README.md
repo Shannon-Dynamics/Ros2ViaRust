@@ -34,7 +34,7 @@ against the Python and C++ stacks doing the same job. Start at
 | [docs/BUILD.md](docs/BUILD.md) | environment, underlay, build, test scripts, troubleshooting |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | phased plan |
 
-## What is in Phase 3 (in progress)
+## What is in Phase 3 (closed 2026-10-10, with carried-over items)
 
 Localization against the Webots TurtleBot3 instead of the Rusty simulator, both filters
 this phase set out to compare:
@@ -97,8 +97,12 @@ whose tables are generated from `evidence/phase-3-global-localization/` and chec
 by the `docs` gate, and
 [implementation.md](docs/phase-3-localization/implementation.md) section 6, which lists every
 configuration tried, including the ones that failed, and what is still open. One result
-there bears on earlier work: measured as a model, the kidnap recovery as it ships recovers a
-minority of kidnaps, so the single recovery time recorded earlier is one draw and not a rate.
+there bears on earlier work: the kidnap recovery has two measurements that cover different
+kidnaps. At one fixed kidnap geometry (seeds 1001 to 1020) MCL recovered 20 of 20 in Webots,
+and on the model sample that varies the kidnap geometry (n=102) the rate is about 39% as
+shipped (81% in the 48000-particle what-if, n=36). Both measure the same `mcl.rs` and they
+cannot be compared directly. The single recovery time recorded earlier is not representative;
+see [benchmark.md](docs/phase-3-localization/benchmark.md) section 7.5.
 
 ## What is in Phase 2
 

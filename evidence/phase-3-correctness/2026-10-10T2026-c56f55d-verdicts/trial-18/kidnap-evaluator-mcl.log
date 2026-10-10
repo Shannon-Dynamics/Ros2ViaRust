@@ -1,0 +1,4 @@
+[INFO] [1791646630.378594362] [localization_evaluator_mcl]: localization_evaluator up: mcl/pose vs ground_truth/pose (baseline /odom), rows -> /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts/trial-18/kidnap-run-mcl.csv, summary -> /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts/trial-18/kidnap-run-mcl.json
+[INFO] [1791646759.382362766] [localization_evaluator_mcl]: kidnap event at t=125.600: robot moved to (-1.500, -1.500, 2.000)
+[INFO] [1791647039.035028894] [localization_evaluator_mcl]: summary written to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts/trial-18/kidnap-run-mcl.json
+[INFO] [1791647039.036096740] [localization_evaluator_mcl]: localization_evaluator shutting down

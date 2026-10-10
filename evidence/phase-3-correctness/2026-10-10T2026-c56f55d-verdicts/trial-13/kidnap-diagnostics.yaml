@@ -1,0 +1,58 @@
+header:
+  stamp:
+    sec: 1791644877
+    nanosec: 292434797
+  frame_id: ''
+status:
+- level: "\x01"
+  name: 'mcl_node: particle filter'
+  message: 'RECOVERING: at least one kidnap-style injection has fired'
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1775'
+  - key: detections
+    value: '7759'
+  - key: published
+    value: '6414'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: last_error
+    value: ''
+  - key: particles
+    value: '6000'
+  - key: x
+    value: '0.005'
+  - key: y
+    value: '0.055'
+  - key: theta
+    value: '-1.5807'
+  - key: sigma_xy
+    value: '0.0042'
+  - key: sigma_theta
+    value: '0.0030'
+  - key: ess
+    value: '5994.7'
+  - key: predictions
+    value: '17813'
+  - key: scored_updates
+    value: '1775'
+  - key: resamples
+    value: '430'
+  - key: injections
+    value: '4'
+  - key: fit_log_threshold
+    value: '-0.452'
+  - key: initial_pose_mode
+    value: known
+  - key: phase
+    value: tracking
+  - key: observe_ms_last
+    value: '94.16'
+  - key: observe_ms_max
+    value: '226.56'
+  - key: last_injected_at_s
+    value: '172.180'
+---

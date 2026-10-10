@@ -1,0 +1,46 @@
+header:
+  stamp:
+    sec: 1791640505
+    nanosec: 65424283
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1778'
+  - key: detections
+    value: '7761'
+  - key: published
+    value: '6233'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '6233'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '1.042'
+  - key: y
+    value: '3.428'
+  - key: theta
+    value: '-1.6496'
+  - key: sigma_xy
+    value: '0.1289'
+  - key: sigma_theta
+    value: '0.0596'
+  - key: predictions
+    value: '17192'
+  - key: observations_accepted
+    value: '2356'
+  - key: observations_rejected
+    value: '5405'
+  - key: mean_nis_2dof
+    value: '0.363'
+---

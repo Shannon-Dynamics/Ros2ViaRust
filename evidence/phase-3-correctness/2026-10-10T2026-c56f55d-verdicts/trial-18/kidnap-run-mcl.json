@@ -1,0 +1,10 @@
+{
+  "csv": "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10T2026-c56f55d-verdicts/trial-18/kidnap-run-mcl.csv",
+  "estimates_received": 6429,
+  "rows": 4005,
+  "unpaired_estimates": 2424,
+  "pair_tolerance_s": 0.05,
+  "kidnap": {"stamp_s": 125.600000, "seconds_into_run": 121.100000, "target": {"x": -1.500000, "y": -1.500000, "theta": 2.000000}},
+  "before_kidnap": {"samples": 1258, "rmse_position_m": 0.012814, "rmse_yaw_rad": 0.027062, "max_position_error_m": 0.027065, "final_position_error_m": 0.006047, "odom_only_rmse_position_m": 0.008892},
+  "after_kidnap": {"samples": 2747, "rmse_position_m": 1.852187, "rmse_yaw_rad": 1.800825, "max_position_error_m": 4.796534, "final_position_error_m": 0.002286, "odom_only_rmse_position_m": 3.128276, "best_position_error_after_kidnap": {"position_error_m": 0.000166, "seconds_into_run": 252.700000}}
+}

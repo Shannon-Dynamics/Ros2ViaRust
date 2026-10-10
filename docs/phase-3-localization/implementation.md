@@ -17,7 +17,7 @@
 >   `normal-verdict.yaml` and `normal-verdict-mcl.yaml` of
 >   [`2026-10-10T144153-final-global-reset`](../../evidence/phase-3-correctness/2026-10-10T144153-final-global-reset) for
 >   both verdicts from one simulation session.
-> * **P2, kidnap recovery: MCL recovers, the EKF does not.** Read
+> * **P2, kidnap recovery: MCL recovers, the EKF does not, at the kidnap geometry tested.** Read
 >   `kidnap-verdict-mcl.yaml` and `kidnap-verdict-ekf.yaml` of
 >   [`2026-10-10T143418-mcl-global-reset`](../../evidence/phase-3-correctness/2026-10-10T143418-mcl-global-reset), which
 >   grade both estimators against one teleport at one simulated instant.
@@ -229,7 +229,9 @@ P1. Shortening the streak to five scans recovered from the kidnap but caused sev
 injections and failed the next normal run. Keeping 20 scans while replacing only 20 per cent
 of the cloud did not recover. The final configuration keeps 6000 particles and 20 scans,
 then performs one full global reset. It caused zero injections in the final normal run and
-recovered in 6.92 s in the final kidnap run. The paired EKF did not recover.
+recovered in the final kidnap run, 6.92 s after the teleport, which is one run and an
+outlier against the twenty Webots trials of section 6.4 and benchmark.md section 7.5 (fastest
+15.480 s). The paired EKF did not recover.
 
 ### 5.3 Evidence kept being destroyed by the build mirror (fixed)
 
@@ -395,7 +397,11 @@ labelled as a what-if: it changes only the particle count, nothing in the shippe
 changed to produce it, and it says how much of the shortfall is the count.
 
 This is flagged here and not acted on, as asked. The measured fact is that the recorded
-"recovers in 6.92 s" does not generalize to a recovery rate, and that whoever changes the
+6.92 s is not representative and does not generalize to a recovery rate. The scope
+is this: at one fixed kidnap geometry (seeds 1001 to 1020) MCL recovered 20 of 20 in Webots
+(fastest 15.480 s), while on the model sample that varies the kidnap geometry (n=102) about 39%
+recover as shipped and 81% in the 48000-particle what-if (n=36). Both measure the same
+`mcl.rs` and cannot be compared directly, because the kidnaps they cover differ. Whoever changes the
 kidnap tuning next has a baseline to beat.
 
 ### 6.5 Open
