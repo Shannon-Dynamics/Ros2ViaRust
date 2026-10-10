@@ -33,7 +33,7 @@ elided) · **P** prose/pseudocode only · **N** none (TypeScript only).
 | 16 | ICP/NDT, voxel map, pose graph, loop closure, RustSLAM-2D | C/F (`Slam2d`, `Submap`, loop detect N) | `slam/icp.ts`, `ndt.ts`, `posegraph.ts`, `slam2d.ts` | `robotics_slam::{icp, ndt, pose_graph, pipeline}` → `scan_matcher_node`, `pose_graph_node` | 5 | planned |
 | 17 | FastSLAM 1.0/2.0, grid RBPF | C (helpers N) | `filters/fastslam.ts`, `rbpf.ts` | `robotics_slam::{fastslam, rbpf}` | 5 | planned |
 | 18 | Pinhole, tiny BA, IMU preintegration, sliding window | C/F | `vision/*.ts` | `robotics_slam::vio` (library only; no camera front end in the book) | later | deferred |
-| 19 | Quadtree, TSDF, ESDF, marching squares | C (quadtree N) | `mapping/tsdf.ts`, `esdf.ts`, `quadtree.ts` | `robotics_mapping::{tsdf, esdf, quadtree}` | 4 | planned |
+| 19 | Quadtree, TSDF, ESDF, marching squares | C (quadtree N) | `mapping/tsdf.ts`, `esdf.ts`, `quadtree.ts` | `robotics_mapping::esdf` (Phase 4); `{tsdf, quadtree}` moved out of Phase 4 by decision, a Phase 5+ concern | 4 (ESDF), 5+ (TSDF, quadtree) | planned |
 | 20 | C-space, A*/Dijkstra, PRM, RRT/RRT*, Dubins, potentials | C (Dubins bodies N, hybrid A* P) | `plan/*.ts` | `robotics_planning::{search, sampling, dubins, cspace}` → `planner_node` | 6 | planned |
 | 21 | MDP value/policy iteration, gridworld | C | `decision/*.ts` | `robotics_planning::decision::mdp` | 6 | planned |
 | 22 | POMDP (α-vectors, PBVI, POMCP), AMDP | C/F (POMCP helpers N) | `pomdp/*.ts` | `robotics_planning::decision::pomdp` | 6 | planned |

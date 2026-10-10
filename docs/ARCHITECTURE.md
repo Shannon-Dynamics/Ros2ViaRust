@@ -33,7 +33,7 @@ everything else: **algorithms never see ROS**.
 | `robotics_models` | differential-drive kinematics + wheel odometry, velocity/odometry motion models (`MotionModel` trait); sensor models: gyro, beam mixture + EM, likelihood field over an exact EDT, range–bearing landmark model, tempering | 4, 9, 10 | 1–2 ✅ |
 | `robotics_filters` | `BayesFilter`, `HistogramFilter1D`, `KalmanFilter`, `InformationFilter`, `RtsSmoother`, NEES/NIS (`consistency`), `Ekf`/`Ukf` over `Manifold`, `EskfSe2`, `OdomImuFusion`, `ParticleSet` (low-variance/multinomial, ESS), KLD sizing (`kld`) | 5–8 | 1–2 ✅ |
 | `robotics_localization` | EKF landmark localization, MCL / Augmented MCL, grid localization | 11, 12 | 3 |
-| `robotics_mapping` | log-odds occupancy grid, EDT/ESDF, TSDF, quadtree | 13, 19 | 4 |
+| `robotics_mapping` | log-odds occupancy grid, inverse sensor model, entropy, map-accuracy evaluation, signed ESDF over the exact EDT. 2-D TSDF and quadtree (Ch. 19) are *not* Phase 4: a Phase 5+ concern | 13, 19 (ESDF) | 4 |
 | `robotics_slam` | ICP/NDT, voxel map, pose graph + factor-graph optimizer (GN/LM, robust kernels), EKF-SLAM, FastSLAM/RBPF, RustSLAM-2D pipeline | 14–17 | 5 |
 | `robotics_planning` | lattice A*/Dijkstra, PRM, RRT/RRT*, Dubins, MDP/POMDP solvers | 20–22 | 6 |
 | `robotics_control` | MPPI, DWA, path tracking | 23 | 7 |
@@ -83,7 +83,7 @@ No algorithmic code lives in a node. Packages are grouped by subsystem, not by a
 | `robotics_integration` | ament_cargo lib + bins | `phase2_stack_test` (Rust `launch_testing` equivalent) ✅ | one test per phase |
 | `robotics_bringup` | ament_cmake | launch XML + YAML params (`pubsub_demo`, `wheel_odometry_demo`, `estimator_sim`) | per-phase launch files |
 | `robotics_localization` | ament_cargo | – | `localization_node` (phase 3) |
-| `robotics_mapping` | ament_cargo | – | `mapping_node` (phase 4) |
+| `robotics_mapping_ros` | ament_cargo | – | `ground_truth_tf_adapter` (phase 4, simulation only), `mapping_node`, `mapping_evaluator` (phase 4). Named `_ros` because a Cargo workspace cannot hold the crate `robotics_mapping` and a package of the same name |
 | `robotics_slam` | ament_cargo | – | `scan_matcher_node`, `pose_graph_node` (phase 5) |
 | `robotics_planning` | ament_cargo | – | `planner_node` (phase 6) |
 | `robotics_control` | ament_cargo | – | `controller_node` (phase 7) |
@@ -113,7 +113,9 @@ with bounded channels (phase 5+).
   `map → odom → base_link → <sensor>`.
 * TF ownership: `odom → base_link` = the state estimator (the wheel odometry node only
   when it runs alone, Phase 1 demo); `map → odom` = localization or SLAM, never both at
-  once (bringup selects one). Sensors → `base_link` are static: in simulation `sim_node`
+  once (bringup selects one). In simulation, Phase 4 adds a third possible owner of
+  `map → odom`, `ground_truth_tf_adapter`, which publishes it from the simulator's ground
+  truth; it is exclusive with `localization_node` under the same rule. Sensors → `base_link` are static: in simulation `sim_node`
   publishes `base_link → {imu_link, laser}` in one `/tf_static` message; on a robot the
   bringup's static publisher / `robot_state_publisher` does. Consumers look transforms up
   through `TfListener` (`docs/TF_BUFFER.md`).

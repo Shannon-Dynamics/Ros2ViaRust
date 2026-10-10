@@ -147,8 +147,52 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
 ## Phase 4 — Mapping
 
 * `robotics_mapping`: log-odds `OccupancyGrid` with hand-crafted inverse model and
-  Bresenham/supercover integration, entropy (Ch. 13); exact EDT/ESDF and 2-D TSDF (Ch. 19).
+  Bresenham/supercover integration, entropy (Ch. 13); exact EDT/ESDF (Ch. 19). *(The 2-D TSDF named here originally is moved
+  out of Phase 4 on 2026-10-10; see Phase 5.)*
 * `mapping_node`: `/scan` + `map → base_link` → `/map` (latched), `/map_entropy`.
+
+**Status: planned and confirmed, nothing built (plan written 2026-10-10 while Phase 3 is
+still open; decisions confirmed the same day).** Design doc:
+[phase-4-mapping.md](phase-4-mapping.md), with the detail in `docs/phase-4-mapping/`:
+[problem](phase-4-mapping/problem.md), [implementation](phase-4-mapping/implementation.md),
+[benchmark](phase-4-mapping/benchmark.md). The two bullets above are the original scope with
+one change: the 2-D TSDF (and the quadtree) of Ch. 19 is **out of Phase 4**, see Phase 5.
+In outline:
+
+* **What kind of claim.** Phase 4 is mapping with known poses and its claims are *not*
+  rates. M1, accuracy against the analytic ground truth of the world, is judged on one
+  development run and three evaluation runs, each reported on its own with the spread; no
+  success rate, no Wilson interval, no trial set. M2 (replay is bit-identical) and M3 (grid
+  rules) are tests; M4 is a latency distribution over the scans of a run; M5 (the map under
+  the real estimator's pose) waits for Phase 3. Reasons and non-claims are in `problem.md`
+  section 4.
+* **Pose, without a flag in the mapper.** `mapping_node` has no pose-source parameter and
+  reads `map → base_link` from TF only. In simulation a separate
+  `ground_truth_tf_adapter` provides that chain by publishing `map → odom` from the
+  simulator's ground truth, exclusive with `localization_node` (one owner of the edge). The
+  adapter, not the mapper, is the extra reader of `/ground_truth/pose`, and a run records
+  which node owned `map → odom`. No Phase 4 result may be called one of the localization
+  stack before Phase 3 closes.
+* **Forward dependency for M5.** `mcl_node` publishes `/mcl/pose` and no TF, so mapping with
+  MCL's pose needs either a TF publisher in `mcl_node` (a Phase 3 change that also changes
+  its check F11) or an adapter like the ground-truth one that turns `/mcl/pose` into
+  `map → odom`. Undecided, and a Phase 3 matter either way.
+* **Staging.** (1) pure crate: grid, inverse model, ray integration, entropy, accuracy
+  metrics; (2) signed ESDF over the existing exact EDT; (3) the adapter, `mapping_node`,
+  harness and verdict script on ground-truth pose; (4) reference implementations, which are
+  informative and do not block; (5) the estimated-pose integration, after Phase 3.
+* **Evaluation.** The analytic geometry of the world is the baseline and the only blocking
+  yardstick: surface error, completeness, false-occupied and false-free cells, coverage,
+  entropy as a progress trace (never alone), per-scan update latency as median/95th/99th
+  percentile. An rclpy port of the same update and `nav2_costmap_2d` are additional
+  information and block nothing; `slam_toolbox` is excluded (it estimates its own pose).
+* **Naming.** Crate `crates/robotics_mapping`; the ROS package, holding
+  `ground_truth_tf_adapter`, `mapping_node` and `mapping_evaluator`, is
+  `ros2_ws/src/robotics_mapping_ros` (a workspace cannot hold two packages called
+  `robotics_mapping`). `ARCHITECTURE.md` and `SOURCE_MAPPING.md` are updated to match.
+
+Phase 3 is not closed by this plan: the Nav2/rclpy benchmark and the remaining Phase 3
+items above are untouched and still open.
 
 ## Phase 5 — SLAM
 
@@ -160,6 +204,10 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
 * `scan_matcher_node` (LiDAR odometry) and `pose_graph_node` (keyframes, loop closure,
   optimization, submap-rendered `/map`, `map → odom`). No faked loop closure: until the
   detector and verifier are implemented, the node reports `loop_closure: unsupported`.
+
+* **Inherited from Phase 4, not yet scheduled:** the 2-D TSDF and quadtree (Ch. 19). Nothing
+  before the SLAM submap work consumes them; whether submap rendering needs a TSDF is decided
+  here, not in Phase 4.
 
 ## Phase 6 — Planning
 
@@ -190,6 +238,14 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
 
 ## Cross-cutting backlog
 
+* **M1-extended (Phase 4):** a second, more complex Webots world (interior wall or
+  furniture) so the map-accuracy claim means more than it does in the empty room. Deferred
+  until the Phase 3 trials are finished, since it changes simulation assets they run on.
+* **Known doc-drift, Phase 3 (not fixed):** the package table of `ARCHITECTURE.md` section
+  1.3 still lists the Phase 3 node package as `robotics_localization` with
+  `localization_node` "planned"; the package that was built is `robotics_localization_bridge`
+  (`localization_node`, `mcl_node`, `route_driver`, `localization_evaluator`). To be corrected
+  when Phase 3 closes.
 * Lifecycle nodes: rclrs 0.8 has no lifecycle support; nodes expose `~/reset` services
   and rely on launch-level supervision until upstream adds it.
 * Composition: rclrs has no component container; one process per node for now.
