@@ -1,0 +1,61 @@
+# The Phase 3 evaluation route, driven by `route_driver` (closed loop on ground truth).
+#
+# Why this shape rather than the 0.9 m square of 2026-10-06: that square was 4 m of path
+# over 40 s, and over 4 m wheel odometry in this simulator accumulates about 2 mm of error.
+# A baseline that good is not a baseline, it is a floor, and comparing the filter against it
+# measures nothing about either. The criterion P1 of ../../../docs/phase-3-localization/problem.md
+# needs a route long enough that dead reckoning has actually had a chance to go wrong.
+#
+# What the route is:
+#
+#   1. a pentagram with its five vertices on a circle of radius 1.8 m (waypoints 1-6),
+#   2. a sawtooth across the middle of the room, 8 teeth 0.4 m apart (waypoints 7-14),
+#   3. the pentagram again (waypoints 15-20),
+#   4. back to the spawn pose (waypoint 21).
+#
+# That is 53.4 m of path and 21 turns in place, and every turn is a sharp one: the
+# pentagram corners are about 144 degrees and the sawtooth corners about 150. The shape is
+# chosen for those corners. A corner is where wheel odometry earns its error, because it is
+# where the two wheels disagree most and where the difference between the wheel separation
+# the controller assumes and the one the physics engine delivers shows up as heading error.
+# A long straight line, by contrast, costs dead reckoning almost nothing.
+#
+# Clearance: every landmark sits at least 1.8 m from the origin and the whole route stays
+# inside a circle of radius 1.8 m, so the route needs no obstacle avoidance at all. The
+# tightest point is waypoint 13 at (1.0, 0.75), which is 0.92 m from landmark_a; the
+# pillars are 0.15 m in radius and the Burger footprint is about 0.11 m, so the smallest
+# clearance anywhere on the route is over 0.6 m. Walls are at +/- 3.0 m and the route never
+# leaves +/- 1.8 m.
+#
+# Coordinates are the map frame of ./landmarks.yaml, metres.
+
+route:
+  name: star-sawtooth-star
+
+waypoints:
+  # Pentagram, first lap. Vertices at radius 1.8 m, visited in star order so that each leg
+  # crosses the figure instead of walking its outline.
+  - {x: 0.000, y: 1.800}
+  - {x: -1.058, y: -1.456}
+  - {x: 1.712, y: 0.556}
+  - {x: -1.712, y: 0.556}
+  - {x: 1.058, y: -1.456}
+  - {x: 0.000, y: 1.800}
+  # Sawtooth across the middle: eight teeth, 0.4 m apart, 1.5 m peak to peak.
+  - {x: -1.400, y: 0.750}
+  - {x: -1.000, y: -0.750}
+  - {x: -0.600, y: 0.750}
+  - {x: -0.200, y: -0.750}
+  - {x: 0.200, y: 0.750}
+  - {x: 0.600, y: -0.750}
+  - {x: 1.000, y: 0.750}
+  - {x: 1.400, y: -0.750}
+  # Pentagram, second lap.
+  - {x: 0.000, y: 1.800}
+  - {x: -1.058, y: -1.456}
+  - {x: 1.712, y: 0.556}
+  - {x: -1.712, y: 0.556}
+  - {x: 1.058, y: -1.456}
+  - {x: 0.000, y: 1.800}
+  # Home, so that the final position error is comparable with the spawn pose.
+  - {x: 0.000, y: 0.000}

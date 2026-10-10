@@ -120,7 +120,85 @@ makes, and reading `odom -> base_link` gives the smooth one. Exactly one node ow
 edge; the TF buffer in [`core::tf`](../../crates/robotics_core/src/tf.rs) detects it when
 two nodes claim the same one.
 
-## 6. What this leaves to the implementation
+## 6. What the simulator's odometry actually does
+
+Everything above assumes the robot has an odometry error worth correcting. In this
+simulator that assumption needs checking rather than believing, and checking it changed how
+the Phase 3 runs are driven. This section records what is in the chain, measured, because a
+reader who skips it will mistake a property of the reference configuration for a property
+of dead reckoning.
+
+**Where the noise is, and where it is not.** Reading the official stack from the device up:
+
+| Element | Source | Noise or slip model |
+|---|---|---|
+| wheel encoders | `PositionSensor` in `TurtleBot3Burger.proto` | none; `resolution 0.00628` rad is quantization, which is deterministic |
+| gyro, accelerometer, compass, inertial unit | the same proto | none; no `lookupTable` and no noise field, so Webots returns the exact value |
+| lidar | `noise 0.0043` in `RobotisLds01.proto`, applied as a fraction of `maxRange 3.5` | Gaussian, about 15 mm of standard deviation. This is the only stochastic sensor on the robot |
+| wheel odometry | `diff_drive_controller/DiffDriveController` | none. Its parameter list has no noise and no slip entry at all; it is a deterministic kinematic integrator |
+| hardware interface | `webots_ros2_control::Ros2ControlSystem` | none; it forwards velocity commands to the motors and reads encoder positions back |
+| the floor | the physics engine | **yes**, and it is the only place slip comes from |
+
+**The slip is real, and the reference configuration cancels it.** The physics engine does
+make the wheels slip, and the effect is large: the 2026-10-06 route commanded `angular.z`
+of 0.4 rad/s for 4 s at each corner, 1.6 rad, and ground truth turned about 1.38 rad, so
+the robot rotates at roughly 86 per cent of the commanded rate
+([evidence/phase-3-correctness/2026-10-06-after-fix](../../evidence/phase-3-correctness/2026-10-06-after-fix)).
+The official `ros2control.yml` answers that with one constant:
+
+```yaml
+wheel_separation: 0.16
+# The real separation between wheels is not resulting in a perfect odometry
+wheel_separation_multiplier: 1.112
+```
+
+`diff_drive_controller` integrates with `wheel_separation * wheel_separation_multiplier`,
+so it assumes 0.17792 m where the proto puts the wheel anchors 0.16 m apart, and reports
+`0.16 / 0.17792 = 0.899` of the rotation ideal kinematics would predict. That is the slip,
+to within the precision of this measurement, divided back out. The published `/odom` is
+therefore not accurate because dead reckoning is accurate here; it is accurate because
+upstream calibrated the integrator against the slip of this specific world, which is what
+the comment in their file says.
+
+**Why this changed the route rather than the robot.** A calibration is one constant and the
+slip it corrects is not constant, so odometry still drifts; the question is only how far the
+robot has to drive before the drift is large enough to compare anything against. Over the
+0.9 m square of 2026-10-06, 3.1 m of path in 40 s, it drifts about two millimetres. That is
+a floor, not a baseline: the filter was five times worse than it and the comparison said
+nothing about either, because what it measured was the lidar noise of the filter against
+the arithmetic of an integrator that had barely been asked to integrate. The route was
+therefore replaced with
+[`route_long.yaml`](../../sim/webots/config/route_long.yaml), 51 m of path and 21 sharp
+corners, for the reason stated at the top of that file: a corner is where the two wheels
+disagree most and where odometry earns its error, and a straight line costs it almost
+nothing.
+
+**No number in Phase 3 comes from injected noise.** The run of
+[2026-10-10](../../evidence/phase-3-correctness/2026-10-10-long-route) is driven on the
+odometry the simulator publishes, unmodified, and its verdict file says so in its
+`odometry_noise: off` line. Lengthening the route was enough on its own, so nothing was
+injected and the question of what sigma would have been defensible never had to be
+answered.
+
+An injector was written first, before the long route was tried, because the honest reading
+of the table above is that this robot's dead reckoning is better than any real one's. It
+resampled each odometry step through the motion model of section 2 with explicit
+`alpha1..alpha4`. It is not in the repository, for two reasons in that order. It was not
+needed, which is the result above. It was also wrong: decomposing a 50 Hz odometry step into
+rotate-translate-rotate makes `rot1` the direction of a motion of a few micrometres, which
+is numerically arbitrary, so the injected rotation noise scaled with an angle that was
+effectively random at every step and compounded. Driving a 1.4 m test route through it
+produced 3.25 m of injected drift. Keeping a default-off instrument with that defect in it
+would be keeping a way to generate numbers that look like measurements, so it was deleted
+rather than repaired.
+
+If a later phase needs a realistic dead reckoning baseline, the thing to get right is the
+one this got wrong: decompose the motion over a distance that makes `rot1` meaningful, not
+over whatever arrived in the last 20 ms, and state the sigma and the seed in the run's own
+environment file so that no number produced under injection can be mistaken for one the
+simulator produced.
+
+## 7. What this leaves to the implementation
 
 | Decision | Options | Where it is settled |
 |---|---|---|

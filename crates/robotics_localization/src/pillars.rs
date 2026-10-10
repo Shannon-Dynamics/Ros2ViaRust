@@ -112,8 +112,7 @@ pub fn detect(scan: &LaserScan, cfg: &PillarDetector) -> Vec<Detection> {
             .last()
             .map(|r| *r.last().unwrap() == n - 1)
             .unwrap_or(false);
-        let spans_full_circle = (scan.angle_increment.abs() * n as f64
-            - std::f64::consts::TAU)
+        let spans_full_circle = (scan.angle_increment.abs() * n as f64 - std::f64::consts::TAU)
             .abs()
             < scan.angle_increment.abs();
         if first_is_start && last_is_end && spans_full_circle {

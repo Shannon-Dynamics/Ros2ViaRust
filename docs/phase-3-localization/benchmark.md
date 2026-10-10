@@ -83,4 +83,45 @@ what keeps the kidnap experiment honest; only `localization_evaluator` does.
 One row per entry per seed in
 [`../../benchmarks/phase-3-localization.csv`](../../benchmarks/phase-3-localization.csv),
 written by the benchmark script, never by hand. This file then says what the numbers mean
-and what surprised us.
+and what surprised us. That file is still only a header: no benchmark row exists yet, so
+there is nothing here to interpret.
+
+## 6. Correctness runs, which are not benchmarks
+
+The comparison above has not started. What does exist is the correctness side of the same
+apparatus: runs of the Rust entry alone against simulator ground truth, which answer
+whether the filter works before anything asks how fast it is. They use the same world, the
+same ground truth source and the same route, so a benchmark row later can be read next to
+them.
+
+One run is one directory under
+[`../../evidence/phase-3-correctness/`](../../evidence/phase-3-correctness/), produced by
+[`../../scripts/run_phase3_correctness.sh`](../../scripts/run_phase3_correctness.sh). Each
+holds the environment it ran in and the SHA-256 of the world, the map and the route; the
+per-sample rows as `<scenario>-run.csv`; the summary the evaluator wrote at shutdown as
+`<scenario>-run.json`; the log of every process; and the verdict on criterion P1 as
+`<scenario>-verdict.yaml`, computed from the first two by
+[`../../scripts/phase3_verdict.py`](../../scripts/phase3_verdict.py).
+
+Read the verdict file for the numbers. They are deliberately not repeated here: a figure
+copied into prose is a figure that stops matching the run it came from, and this phase
+already has one example of documentation that outlived its measurement. The runs so far,
+newest first:
+
+| Run | Route | What it is for |
+|---|---|---|
+| [`2026-10-10-long-route`](../../evidence/phase-3-correctness/2026-10-10-long-route) | `route_long.yaml`, 51 m, 21 sharp corners | the current answer on P1, position tracking, no kidnap |
+| [`2026-10-06-after-fix`](../../evidence/phase-3-correctness/2026-10-06-after-fix) | a 0.9 m square, 3.1 m of path | the run that showed the route, not the filter, was the problem; why is in [theory.md](theory.md) section 6 |
+| [`2026-10-06-nodes-killed`](../../evidence/phase-3-correctness/2026-10-06-nodes-killed) | the same square | a run whose nodes were killed before the evaluator could write its summary: a CSV with no JSON |
+| [`2026-10-06`](../../evidence/phase-3-correctness/2026-10-06) | the same square | 588 rows grading the filter against a robot that never moved; kept as the reason the guards in [`../../scripts/phase3_guards.sh`](../../scripts/phase3_guards.sh) exist. See its `INVALID.md` |
+
+Two parts of the P1 row of [problem.md](problem.md) are decided by these runs and one is
+not. `strictly_better_than_odometry` and `bounded_over_distance` are in every verdict file.
+The NEES part is not: it needs the full 3 by 3 covariance of each estimate and the CSV
+carries only `sigma_xy`, so the verdict file reports `nees_in_95_band: not_evaluated`
+rather than guessing. Closing that is a change to
+[`localization_evaluator`](../../ros2_ws/src/robotics_localization_bridge/src/localization_evaluator.rs),
+not to the filter.
+
+The kidnap scenario has a harness and has never been run. There is no evidence directory
+for it, which is the only reason this file does not discuss P2.

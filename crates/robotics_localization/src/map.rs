@@ -125,7 +125,9 @@ impl MapFile {
                     .and_then(|s| s.strip_suffix('}'))
                     .ok_or_else(|| MapError::Parse {
                         line,
-                        what: format!("expected `- {{id: ..., x: ..., y: ...}}`, found {trimmed:?}"),
+                        what: format!(
+                            "expected `- {{id: ..., x: ..., y: ...}}`, found {trimmed:?}"
+                        ),
                     })?;
                 let f = flow_fields(line, body)?;
                 let name = f.get("id").ok_or_else(|| MapError::Parse {
@@ -153,7 +155,9 @@ impl MapFile {
                     .and_then(|(_, rest)| rest.strip_suffix('}'))
                     .ok_or_else(|| MapError::Parse {
                         line,
-                        what: format!("expected `spawn_pose: {{x: .., y: .., theta: ..}}`, found {trimmed:?}"),
+                        what: format!(
+                            "expected `spawn_pose: {{x: .., y: .., theta: ..}}`, found {trimmed:?}"
+                        ),
                     })?;
                 let f = flow_fields(line, body)?;
                 let get = |key: &str| -> Result<f64, MapError> {

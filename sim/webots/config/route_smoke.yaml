@@ -1,0 +1,18 @@
+# A route short enough to be part of a test rather than a measurement: a small triangle
+# near the spawn pose, about 1.6 m of path and three turns, which takes roughly twenty
+# seconds. scripts/verify_phase3_localization.sh drives it to check that route_driver
+# steers, that the base accepts the commands, and that the ground-truth-movement guard
+# sees real motion. It is not a route any accuracy number should come from; that is
+# ./route_long.yaml.
+#
+# The farthest waypoint is 0.5 m from the spawn pose, which is comfortably above the 0.2 m
+# PHASE3_MIN_DISPLACEMENT_M of scripts/phase3_guards.sh, so a healthy run passes the guard
+# and a run where the controllers never activated still fails it.
+
+route:
+  name: smoke-triangle
+
+waypoints:
+  - {x: 0.500, y: 0.000}
+  - {x: 0.200, y: 0.500}
+  - {x: 0.000, y: 0.000}

@@ -18,10 +18,17 @@
 //! the laser against the map; `/ground_truth/pose` exists for the evaluator and for nobody
 //! else, which is what makes the kidnapped robot experiment meaningful.
 //!
-//! It does not publish TF. `odom -> base_link` belongs to the simulated base and
-//! `map -> odom` is the correction a localization node normally owns; publishing it is left
-//! for the stack that needs it, because nothing in Phase 3 consumes it yet and an
-//! unverified TF edge is worse than no TF edge.
+//! TF: it publishes `map -> odom` and nothing else. That edge is the correction a
+//! localization node owns by ROS 2 convention (REP 105): the simulated base owns
+//! `odom -> base_link` and keeps it continuous, and the localizer expresses the whole
+//! accumulated odometry error in the one jump above it, so that `map -> base_link`
+//! resolves to this node's estimate while `odom -> base_link` stays smooth. There is
+//! therefore no TF authority conflict with the driver, and `scripts/verify_phase3_localization.sh`
+//! checks the complete chain `map -> odom -> base_link -> {LDS-01, imu_link}`.
+//!
+//! The edge is computed from the estimate and the odometry pose that produced it,
+//! `map -> odom  =  (map -> base_link) * (odom -> base_link)^-1`, and is published with
+//! the stamp of the estimate. It can be switched off with `publish_tf:=false`.
 
 use rclrs::*;
 use robotics_core::tf::{LookupTime, TransformBuffer, TransformBufferConfig};
@@ -34,7 +41,7 @@ use robotics_ros_bridge::convert::{
 };
 use robotics_ros_bridge::diagnostics::{DiagnosticLevel, DiagnosticsPublisher, StatusBuilder};
 use robotics_ros_bridge::shared::Shared;
-use robotics_ros_bridge::tf::TfListener;
+use robotics_ros_bridge::tf::{TfBroadcaster, TfListener};
 use robotics_ros_bridge::{qos, ParamStore};
 use ros_env::{geometry_msgs, nav_msgs, sensor_msgs};
 use std::sync::Arc;
@@ -61,8 +68,12 @@ struct State {
     imu_timeout: f64,
     use_gyro_heading: bool,
     map_frame: FrameId,
+    odom_frame: FrameId,
     base_frame: FrameId,
     publisher: Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>,
+    /// `map -> odom` broadcaster, absent when `publish_tf` is false.
+    tf: Option<TfBroadcaster>,
+    tf_sent: u64,
     min_publish_interval: f64,
     last_publish: Option<Timestamp>,
     published: u64,
@@ -132,6 +143,20 @@ impl State {
         }
         self.published += 1;
         self.last_publish = Some(stamp);
+
+        // map -> odom: the correction between where the base thinks it is and where the
+        // filter says it is. Without an odometry pose there is nothing to correct yet, and
+        // publishing identity would claim the two frames coincide.
+        if let (Some(tf), Some(odom)) = (&self.tf, self.last_odom) {
+            let correction = pose.compose(&odom.inverse());
+            match tf.send(stamp, &self.map_frame, &self.odom_frame, &correction) {
+                Ok(()) => self.tf_sent += 1,
+                Err(e) => log_error!(
+                    node.logger().throttle(Duration::from_secs(5)),
+                    "map -> odom broadcast failed: {e}"
+                ),
+            }
+        }
     }
 }
 
@@ -151,7 +176,19 @@ fn main() -> Result<(), RclrsError> {
         "Estimated pose output (geometry_msgs/PoseWithCovarianceStamped)",
     )?;
     let map_frame = p.string(&node, "frames.map", "map", "Frame the estimate is in")?;
+    let odom_frame = p.string(
+        &node,
+        "frames.odom",
+        "odom",
+        "Odometry frame; the child of the `map -> odom` correction this node publishes",
+    )?;
     let base_frame = p.string(&node, "frames.base_link", "base_link", "Body frame")?;
+    let publish_tf = p.bool(
+        &node,
+        "publish_tf",
+        true,
+        "Broadcast `map -> odom`. This node is the sole owner of that edge;          `odom -> base_link` belongs to the base and is never published here",
+    )?;
     let map_file = p.string(
         &node,
         "map_file",
@@ -182,8 +219,22 @@ fn main() -> Result<(), RclrsError> {
         true,
         "Look the laser mount up in TF (base_link -> scan frame) instead of the parameters",
     )?;
-    let sensor_x = p.f64(&node, "sensor.x", 0.0, -5.0, 5.0, "Laser x in the body frame (m)")?;
-    let sensor_y = p.f64(&node, "sensor.y", 0.0, -5.0, 5.0, "Laser y in the body frame (m)")?;
+    let sensor_x = p.f64(
+        &node,
+        "sensor.x",
+        0.0,
+        -5.0,
+        5.0,
+        "Laser x in the body frame (m)",
+    )?;
+    let sensor_y = p.f64(
+        &node,
+        "sensor.y",
+        0.0,
+        -5.0,
+        5.0,
+        "Laser y in the body frame (m)",
+    )?;
     let sensor_theta = p.f64(
         &node,
         "sensor.theta",
@@ -241,10 +292,38 @@ fn main() -> Result<(), RclrsError> {
     let m = OdometryMotion::default();
     let motion = OdometryMotion {
         alphas: [
-            p.f64(&node, "motion.alpha1", m.alphas[0], 0.0, 10.0, "Rotation noise from rotation")?,
-            p.f64(&node, "motion.alpha2", m.alphas[1], 0.0, 10.0, "Rotation noise from translation")?,
-            p.f64(&node, "motion.alpha3", m.alphas[2], 0.0, 10.0, "Translation noise from translation")?,
-            p.f64(&node, "motion.alpha4", m.alphas[3], 0.0, 10.0, "Translation noise from rotation")?,
+            p.f64(
+                &node,
+                "motion.alpha1",
+                m.alphas[0],
+                0.0,
+                10.0,
+                "Rotation noise from rotation",
+            )?,
+            p.f64(
+                &node,
+                "motion.alpha2",
+                m.alphas[1],
+                0.0,
+                10.0,
+                "Rotation noise from translation",
+            )?,
+            p.f64(
+                &node,
+                "motion.alpha3",
+                m.alphas[2],
+                0.0,
+                10.0,
+                "Translation noise from translation",
+            )?,
+            p.f64(
+                &node,
+                "motion.alpha4",
+                m.alphas[3],
+                0.0,
+                10.0,
+                "Translation noise from rotation",
+            )?,
         ],
         lateral_fraction: p.f64(
             &node,
@@ -339,7 +418,14 @@ fn main() -> Result<(), RclrsError> {
         1000.0,
         "Upper bound on the output rate (Hz)",
     )?;
-    let diag_period = p.i64(&node, "diagnostics_period_s", 1, 1, 60, "Diagnostics period (s)")?;
+    let diag_period = p.i64(
+        &node,
+        "diagnostics_period_s",
+        1,
+        1,
+        60,
+        "Diagnostics period (s)",
+    )?;
 
     if map_file.is_empty() {
         log_error!(node.logger(), "map_file is required");
@@ -396,8 +482,15 @@ fn main() -> Result<(), RclrsError> {
         imu_timeout,
         use_gyro_heading,
         map_frame: FrameId::new(&map_frame),
+        odom_frame: FrameId::new(&odom_frame),
         base_frame: FrameId::new(&base_frame),
         publisher,
+        tf: if publish_tf {
+            Some(TfBroadcaster::new(&node)?)
+        } else {
+            None
+        },
+        tf_sent: 0,
         min_publish_interval: 1.0 / max_rate,
         last_publish: None,
         published: 0,
@@ -417,7 +510,8 @@ fn main() -> Result<(), RclrsError> {
             move |msg: sensor_msgs::msg::Imu| {
                 let mut guard = shared.lock();
                 let st: &mut State = &mut guard;
-                let stamp = Timestamp::from_sec_nanosec(msg.header.stamp.sec, msg.header.stamp.nanosec);
+                let stamp =
+                    Timestamp::from_sec_nanosec(msg.header.stamp.sec, msg.header.stamp.nanosec);
                 let rate = msg.angular_velocity.z;
                 if !rate.is_finite() {
                     st.rejects += 1;
@@ -595,6 +689,11 @@ fn main() -> Result<(), RclrsError> {
                 .value("published", st.published)
                 .value("rejects", st.rejects)
                 .value("sensor_pose_source", st.sensor_pose_source)
+                .value(
+                    "tf_map_to_odom",
+                    if st.tf.is_some() { "published" } else { "off" },
+                )
+                .value("tf_sent", st.tf_sent)
                 .value("last_error", &st.last_error);
             if let Some(f) = &st.filter {
                 let s = f.stats();
@@ -603,7 +702,10 @@ fn main() -> Result<(), RclrsError> {
                     .value("x", format!("{:.3}", f.pose().x()))
                     .value("y", format!("{:.3}", f.pose().y()))
                     .value("theta", format!("{:.4}", f.pose().theta()))
-                    .value("sigma_xy", format!("{:.4}", p[(0, 0)].max(p[(1, 1)]).sqrt()))
+                    .value(
+                        "sigma_xy",
+                        format!("{:.4}", p[(0, 0)].max(p[(1, 1)]).sqrt()),
+                    )
                     .value("sigma_theta", format!("{:.4}", p[(2, 2)].sqrt()))
                     .value("predictions", s.predictions)
                     .value("observations_accepted", s.accepted)
@@ -620,12 +722,13 @@ fn main() -> Result<(), RclrsError> {
 
     log_info!(
         node.logger(),
-        "localization_node up: {} + {} + {} -> {} (frame {}), {} parameters",
+        "localization_node up: {} + {} + {} -> {} (frame {}), map -> odom {}, {} parameters",
         scan_topic,
         odom_topic,
         imu_topic,
         pose_topic,
         map_frame,
+        if publish_tf { "published" } else { "off" },
         p.len()
     );
     let result = robotics_ros_bridge::shutdown::spin(&mut executor, &shutdown);

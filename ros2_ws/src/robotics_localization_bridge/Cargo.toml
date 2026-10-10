@@ -15,6 +15,10 @@ path = "src/localization_node.rs"
 name = "localization_evaluator"
 path = "src/localization_evaluator.rs"
 
+[[bin]]
+name = "route_driver"
+path = "src/route_driver.rs"
+
 [dependencies]
 robotics_core = { workspace = true }
 robotics_models = { workspace = true }

@@ -1,0 +1,8 @@
+--- tf2_echo map odom ---
+Terminated
+--- tf2_echo map base_link ---
+Terminated
+--- tf2_echo odom base_link ---
+Terminated
+--- tf2_echo base_link LDS-01 ---
+Terminated

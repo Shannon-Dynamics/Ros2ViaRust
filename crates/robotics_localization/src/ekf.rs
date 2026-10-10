@@ -89,8 +89,7 @@ impl ProcessModel<Se2, Se2, 3> for OdometryMotion {
         let trans = u.translation().norm();
         let rot = u.theta().abs();
         let [a1, a2, a3, a4] = self.alphas;
-        let var_along =
-            a3 * trans * trans + a4 * rot * rot + self.min_translation_sigma.powi(2);
+        let var_along = a3 * trans * trans + a4 * rot * rot + self.min_translation_sigma.powi(2);
         let var_lateral = self.lateral_fraction * var_along + self.min_translation_sigma.powi(2);
         let var_rot = a1 * rot * rot + a2 * trans * trans + self.min_rotation_sigma.powi(2);
         Matrix3::from_diagonal(&nalgebra::Vector3::new(var_along, var_lateral, var_rot))
@@ -286,11 +285,7 @@ impl EkfLocalizer {
     }
 
     /// Prediction step with the relative motion `u` of the base.
-    pub fn predict(
-        &mut self,
-        motion: &OdometryMotion,
-        u: &Se2,
-    ) -> Result<(), LocalizationError> {
+    pub fn predict(&mut self, motion: &OdometryMotion, u: &Se2) -> Result<(), LocalizationError> {
         self.ekf.predict(motion, u)?;
         self.stats.predictions += 1;
         Ok(())
@@ -396,7 +391,11 @@ mod tests {
     }
 
     /// Observations a perfect sensor would produce at `pose`.
-    fn perfect_observations(cfg: &LocalizerConfig, map: &LandmarkMap, pose: &Se2) -> Vec<RangeBearing> {
+    fn perfect_observations(
+        cfg: &LocalizerConfig,
+        map: &LandmarkMap,
+        pose: &Se2,
+    ) -> Vec<RangeBearing> {
         let model = LandmarkModel::new(cfg.sigma_range, cfg.sigma_bearing)
             .unwrap()
             .with_sensor_pose(cfg.sensor_pose)
@@ -455,7 +454,10 @@ mod tests {
         let r = f.observe(&z);
         let ids: Vec<u32> = r.associations.iter().map(|(id, _)| *id).collect();
         assert_eq!(ids, vec![0, 1, 2]);
-        assert!(r.mean_nis.unwrap() < 1e-6, "a perfect measurement has no innovation");
+        assert!(
+            r.mean_nis.unwrap() < 1e-6,
+            "a perfect measurement has no innovation"
+        );
     }
 
     #[test]

@@ -1,0 +1,1672 @@
+header:
+  stamp:
+    sec: 217
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.67 [6.56 - 3776.53] us, StdDev: 61.50'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.26 [10.67 - 2451.95] us, StdDev: 53.19'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603684
+    nanosec: 606631493
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1004'
+  - key: detections
+    value: '4016'
+  - key: published
+    value: '1004'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1001'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4016'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 218
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.65 [6.56 - 3776.53] us, StdDev: 61.36'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.25 [10.67 - 2451.95] us, StdDev: 53.07'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603685
+    nanosec: 606735200
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1009'
+  - key: detections
+    value: '4036'
+  - key: published
+    value: '1009'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1006'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4036'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 1791603686
+    nanosec: 606933025
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1013'
+  - key: detections
+    value: '4052'
+  - key: published
+    value: '1013'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1010'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4052'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 219
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.65 [6.56 - 3776.53] us, StdDev: 61.23'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.24 [10.67 - 2451.95] us, StdDev: 52.95'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603687
+    nanosec: 606704414
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1018'
+  - key: detections
+    value: '4072'
+  - key: published
+    value: '1018'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1015'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4072'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 220
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.66 [6.56 - 3776.53] us, StdDev: 61.10'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.24 [10.67 - 2451.95] us, StdDev: 52.83'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603688
+    nanosec: 606636156
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1022'
+  - key: detections
+    value: '4088'
+  - key: published
+    value: '1022'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1019'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4088'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 221
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.64 [6.56 - 3776.53] us, StdDev: 60.97'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.22 [10.67 - 2451.95] us, StdDev: 52.72'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603689
+    nanosec: 606657414
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1027'
+  - key: detections
+    value: '4108'
+  - key: published
+    value: '1027'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1024'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4108'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 222
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.63 [6.56 - 3776.53] us, StdDev: 60.83'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.19 [10.67 - 2451.95] us, StdDev: 52.60'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603690
+    nanosec: 606687517
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1031'
+  - key: detections
+    value: '4124'
+  - key: published
+    value: '1031'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1028'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4124'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 223
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.61 [6.56 - 3776.53] us, StdDev: 60.70'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.18 [10.67 - 2451.95] us, StdDev: 52.48'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603691
+    nanosec: 606624191
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1036'
+  - key: detections
+    value: '4144'
+  - key: published
+    value: '1036'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1033'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4144'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 224
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.60 [6.56 - 3776.53] us, StdDev: 60.57'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.16 [10.67 - 2451.95] us, StdDev: 52.37'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603692
+    nanosec: 606648853
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1040'
+  - key: detections
+    value: '4160'
+  - key: published
+    value: '1040'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1037'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4160'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 225
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.59 [6.56 - 3776.53] us, StdDev: 60.45'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.15 [10.67 - 2451.95] us, StdDev: 52.25'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603693
+    nanosec: 606865651
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1045'
+  - key: detections
+    value: '4180'
+  - key: published
+    value: '1045'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1042'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4180'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 226
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.58 [6.56 - 3776.53] us, StdDev: 60.32'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.14 [10.67 - 2451.95] us, StdDev: 52.14'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603694
+    nanosec: 606629736
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1049'
+  - key: detections
+    value: '4196'
+  - key: published
+    value: '1049'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1046'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4196'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 227
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.57 [6.56 - 3776.53] us, StdDev: 60.19'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.13 [10.67 - 2451.95] us, StdDev: 52.03'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603695
+    nanosec: 606923156
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1054'
+  - key: detections
+    value: '4216'
+  - key: published
+    value: '1054'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1051'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4216'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 228
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.56 [6.56 - 3776.53] us, StdDev: 60.06'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.12 [10.67 - 2451.95] us, StdDev: 51.92'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603696
+    nanosec: 606995555
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1058'
+  - key: detections
+    value: '4232'
+  - key: published
+    value: '1058'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1055'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4232'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 229
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.55 [6.56 - 3776.53] us, StdDev: 59.94'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.10 [10.67 - 2451.95] us, StdDev: 51.80'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603697
+    nanosec: 606633120
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1063'
+  - key: detections
+    value: '4252'
+  - key: published
+    value: '1063'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1060'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4252'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 230
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.53 [6.56 - 3776.53] us, StdDev: 59.81'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.08 [10.67 - 2451.95] us, StdDev: 51.69'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603698
+    nanosec: 606643425
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1067'
+  - key: detections
+    value: '4268'
+  - key: published
+    value: '1067'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1064'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4268'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 231
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.52 [6.56 - 3776.53] us, StdDev: 59.69'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.07 [10.67 - 2451.95] us, StdDev: 51.58'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603699
+    nanosec: 606670755
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1071'
+  - key: detections
+    value: '4284'
+  - key: published
+    value: '1071'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1068'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4284'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 232
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.50 [6.56 - 3776.53] us, StdDev: 59.56'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.06 [10.67 - 2451.95] us, StdDev: 51.48'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603700
+    nanosec: 606643270
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1076'
+  - key: detections
+    value: '4304'
+  - key: published
+    value: '1076'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1073'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4304'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 233
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.49 [6.56 - 3776.53] us, StdDev: 59.44'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.05 [10.67 - 2451.95] us, StdDev: 51.37'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603701
+    nanosec: 606846062
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1080'
+  - key: detections
+    value: '4320'
+  - key: published
+    value: '1080'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1077'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4320'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 234
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.47 [6.56 - 3776.53] us, StdDev: 59.32'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.04 [10.67 - 2451.95] us, StdDev: 51.26'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---
+header:
+  stamp:
+    sec: 1791603702
+    nanosec: 606686932
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'localization_node: ekf'
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans
+    value: '1085'
+  - key: detections
+    value: '4340'
+  - key: published
+    value: '1085'
+  - key: rejects
+    value: '0'
+  - key: sensor_pose_source
+    value: tf
+  - key: tf_map_to_odom
+    value: published
+  - key: tf_sent
+    value: '1082'
+  - key: last_error
+    value: ''
+  - key: x
+    value: '0.007'
+  - key: y
+    value: '0.002'
+  - key: theta
+    value: '-0.0017'
+  - key: sigma_xy
+    value: '0.0010'
+  - key: sigma_theta
+    value: '0.0008'
+  - key: predictions
+    value: '0'
+  - key: observations_accepted
+    value: '4340'
+  - key: observations_rejected
+    value: '0'
+  - key: mean_nis_2dof
+    value: '0.293'
+---
+header:
+  stamp:
+    sec: 235
+    nanosec: 0
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'controller_manager: Controllers Activity'
+  message: All controllers are active
+  hardware_id: ros2_control
+  values:
+  - key: diffdrive_controller.state
+    value: active
+  - key: diffdrive_controller.execution_time
+    value: 'Avg: 50.47 [6.56 - 3776.53] us, StdDev: 59.20'
+  - key: joint_state_broadcaster.state
+    value: active
+  - key: joint_state_broadcaster.execution_time
+    value: 'Avg: 37.04 [10.67 - 2451.95] us, StdDev: 51.16'
+- level: "\0"
+  name: 'controller_manager: Hardware Components Activity'
+  message: All hardware components are active
+  hardware_id: ros2_control
+  values:
+  - key: WebotsControl.state
+    value: active
+- level: "\0"
+  name: 'controller_manager: Controller Manager Activity'
+  message: Controller Manager is running
+  hardware_id: ros2_control
+  values:
+  - key: update_rate
+    value: '50'
+  - key: periodicity.average
+    value: '50.000000'
+  - key: periodicity.standard_deviation
+    value: '0.000000'
+  - key: periodicity.min
+    value: '50.000000'
+  - key: periodicity.max
+    value: '50.000000'
+---

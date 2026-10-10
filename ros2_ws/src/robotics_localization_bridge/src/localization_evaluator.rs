@@ -108,8 +108,7 @@ impl State {
         let pos_err = ((est.x() - gt.x()).powi(2) + (est.y() - gt.y()).powi(2)).sqrt();
         let yaw_err = angle_error(est.theta(), gt.theta());
         let odom = self.odom.map(|(_, o)| o);
-        let odom_err =
-            odom.map(|o| ((o.x() - gt.x()).powi(2) + (o.y() - gt.y()).powi(2)).sqrt());
+        let odom_err = odom.map(|o| ((o.x() - gt.x()).powi(2) + (o.y() - gt.y()).powi(2)).sqrt());
         let kidnapped = self.kidnap.map(|(k, _)| stamp >= k).unwrap_or(false);
 
         if self.first_stamp.is_none() {
@@ -174,9 +173,9 @@ impl State {
             None => "null".to_string(),
         };
         let best_after = match self.best_after {
-            Some((e, t)) => format!(
-                "{{\"position_error_m\": {e:.6}, \"seconds_into_run\": {t:.6}}}"
-            ),
+            Some((e, t)) => {
+                format!("{{\"position_error_m\": {e:.6}, \"seconds_into_run\": {t:.6}}}")
+            }
             None => "null".to_string(),
         };
         let json = format!(
@@ -241,7 +240,12 @@ fn main() -> Result<(), RclrsError> {
         "kidnap/events",
         "Teleport events (geometry_msgs/PoseStamped), used only to split the run",
     )?;
-    let csv_path = p.string(&node, "output_csv", "", "Where to write the per sample rows")?;
+    let csv_path = p.string(
+        &node,
+        "output_csv",
+        "",
+        "Where to write the per sample rows",
+    )?;
     let json_path = p.string(&node, "output_json", "", "Where to write the summary")?;
     let tolerance = p.f64(
         &node,

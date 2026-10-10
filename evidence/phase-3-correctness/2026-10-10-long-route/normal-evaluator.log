@@ -1,0 +1,3 @@
+[INFO] [1791602981.453574544] [localization_evaluator]: localization_evaluator up: localization/pose vs ground_truth/pose (baseline /odom), rows -> /home/genta/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-long-route/normal-run.csv, summary -> /home/genta/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-long-route/normal-run.json
+[INFO] [1791603434.740048140] [localization_evaluator]: summary written to /home/genta/ros2-rust-robotics/evidence/phase-3-correctness/2026-10-10-long-route/normal-run.json
+[INFO] [1791603434.740094762] [localization_evaluator]: localization_evaluator shutting down

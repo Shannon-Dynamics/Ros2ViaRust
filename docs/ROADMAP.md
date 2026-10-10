@@ -44,17 +44,43 @@ deferred.
 
 ## Phase 3 — Localization (in progress)
 
-Built and running: the EKF half. `crates/robotics_localization` (`map`, `pillars`, `ekf`),
-`localization_node` and `localization_evaluator` in
-`ros2_ws/src/robotics_localization_bridge`, the Webots world with its pillars, and the
-ground truth and teleport supervisor the evaluation needs. Runs are kept as raw output
-under `evidence/phase-3-correctness/`.
+Built and running: the EKF half, and the infrastructure around it.
+
+* `crates/robotics_localization` (`map`, `pillars`, `ekf`): EKF localization on SE(2) with
+  maximum likelihood association and a chi-square gate.
+* `localization_node` and `localization_evaluator` in
+  `ros2_ws/src/robotics_localization_bridge`; the node publishes `/localization/pose` and,
+  since 2026-10-10, owns the `map → odom` correction (REP 105), so the TF chain
+  `map → odom → base_link → {LDS-01, imu_link}` is complete.
+* One bringup for the whole phase,
+  `ros2_ws/src/robotics_bringup/launch/phase3_localization.launch.py`, which includes the
+  Webots world launch and starts the localizer, the evaluator, the route driver and the
+  odometry noise injector behind one set of arguments.
+* The integration test, `scripts/verify_phase3_localization.sh`: 71 checks over the
+  installed binaries, the run guards, bringup, topics and types, publication, the whole TF
+  tree, the node's own diagnostics and parameters, the route driver and a clean shutdown.
+  All 71 pass; the run is `evidence/phase-3-localization-runtime/2026-10-10/`.
+* The measurement harness: the Webots world with its pillars, the ground truth and teleport
+  supervisor, and `route_driver`, which drives a waypoint route closed loop on ground truth
+  so that the geometry of a long route is a property of the route file rather than of how
+  much the wheels slipped. Runs are kept as raw output under
+  `evidence/phase-3-correctness/` and judged by `scripts/phase3_verdict.py`, never by a
+  number typed into prose.
 
 Not built yet: MCL and Augmented MCL, and with them global localization and kidnap
-recovery; grid localization as a debug mode; `/particle_cloud`, `/amcl_pose`,
-`/initialpose` and the `map → odom` edge; the `robotics_bringup` launch and parameter
-files; the integration test; and every benchmark row in
-`benchmarks/phase-3-localization.csv`. Details and the open decisions are in
+recovery; grid localization as a debug mode; `/particle_cloud`, `/amcl_pose` and
+`/initialpose`; the kidnap scenario has a harness but has never been run; and every
+benchmark row in `benchmarks/phase-3-localization.csv` is still empty, so no Rust against
+rclpy against Nav2 comparison exists yet.
+
+Criterion P1 of `docs/phase-3-localization/problem.md` is met on the two parts a run can
+decide, on the odometry the simulator publishes with nothing injected: the filter's position
+RMSE is below the dead reckoning it was given, and its error is flat over distance while dead
+reckoning's grows. The NEES part of the same row is not evaluated, because it needs the full
+covariance of each estimate and the evaluator CSV carries only `sigma_xy`. Read the verdict
+file of the run rather than this paragraph; `docs/phase-3-localization/benchmark.md` section 6
+lists the runs, and `theory.md` section 6 explains why the route had to be lengthened to 51 m
+before the comparison meant anything. Details and the open decisions are in
 `docs/phase-3-localization/implementation.md`.
 
 Inputs already available from Phase 2: `/scan` with a static `base_link → laser`, `/odom`
