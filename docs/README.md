@@ -57,4 +57,5 @@ are documented as engineering references rather than as problem-based parts:
 | [ARCHITECTURE.md](ARCHITECTURE.md) | layers, crates, packages, TF ownership |
 | [ROS2_INTERFACES.md](ROS2_INTERFACES.md) | topics, services, parameters, QoS |
 | [BUILD.md](BUILD.md) | environment, underlay, build, troubleshooting |
+| [../web/README.md](../web/README.md) | the interactive webbook of the closed phases: widgets run these crates compiled to WebAssembly |
 | [SOURCE_MAPPING.md](SOURCE_MAPPING.md) | chapter to crate and node mapping |

@@ -228,7 +228,35 @@ In outline:
 Phase 3 is not closed by this plan: the Nav2/rclpy benchmark and the remaining Phase 3
 items above are untouched and still open.
 
-## Phase 5 — SLAM
+## Phase 5 — SLAM (in progress: the pure core is built, the nodes are deferred)
+
+**Status (2026-10-11): design written; the pure crate `robotics_slam` built (76 unit and 39
+integration tests, fmt and clippy clean) with the verdict script and a synthetic harness; no evidence
+run made; `scan_matcher_node` and `pose_graph_node` are deferred pending Phase 4's M1 and are not
+started, not even as stubs.** Original status line: *scope bullets only, nothing built*. Phase 5 was
+started while Phase 4 is open, as Phase 4 was started while Phase 3 was open, and only for the part that
+does not consume the occupancy grid: the ICP, NDT and optimizer core reads scans and relative poses, and the
+one place a grid appears (the RBPF's own) is private to it, so `cargo tree -p robotics_slam` has no
+`robotics_mapping`. Design doc: [phase-5-slam.md](phase-5-slam.md), with the detail in
+`docs/phase-5-slam/`: [problem](phase-5-slam/problem.md), [implementation](phase-5-slam/implementation.md),
+[benchmark](phase-5-slam/benchmark.md). In outline:
+
+* **Claims S1 to S8** (not M-numbers: Phase 4 owns M1 to M5). Scan-matching accuracy is a distribution
+  over registrations on representative runs; ICP's basin is a seeded trial set, model level only;
+  the information matrix is reported, never pass or fail; trajectory accuracy is one development run and
+  three evaluation runs against ground truth (never against Webots' calibrated odometry); loop closure is
+  counts with **zero accepted wrong constraints pre-registered**; determinism and cost. **"SLAM produces a
+  usable map" (S8) is not claimable** until Phase 4's M1, a measured S5 and the rendering node all exist.
+* **Loop closure is verified, never faked.** The library has a detector and a verifier (fit, not
+  degenerate, consistent under a χ² gate on the exact marginal covariance, unambiguous under restarts
+  including quarter turns) with candidates designed to be rejected in its tests, **and they are
+  unevaluated**: S5 has no run. A node reports `loop_closure: unsupported` until it has.
+* **TSDF and quadtree: decided, no.** Matching is against points, the room is 14 400 cells, the ESDF
+  exists, and any fused map is rebuilt by replay after a loop closure (DS13, with the triggers to
+  revisit).
+* **Deferred, pending Phase 4's M1:** the two ROS nodes, submap-rendered `/map` and `map -> odom`.
+
+Scope as originally written:
 
 * `robotics_slam`: point-to-point / point-to-plane ICP with voxel-hash correspondence and
   KISS-style adaptive threshold, NDT, ICP information matrix (Ch. 16); factor-graph
@@ -239,9 +267,9 @@ items above are untouched and still open.
   optimization, submap-rendered `/map`, `map → odom`). No faked loop closure: until the
   detector and verifier are implemented, the node reports `loop_closure: unsupported`.
 
-* **Inherited from Phase 4, not yet scheduled:** the 2-D TSDF and quadtree (Ch. 19). Nothing
-  before the SLAM submap work consumes them; whether submap rendering needs a TSDF is decided
-  here, not in Phase 4.
+* **Inherited from Phase 4:** the 2-D TSDF and quadtree (Ch. 19). Whether submap rendering needs a
+  TSDF was to be decided here, not in Phase 4. **Decided 2026-10-11: it does not** (implementation.md
+  DS13); a revisit needs one of the triggers listed there.
 
 ## Phase 6 — Planning
 

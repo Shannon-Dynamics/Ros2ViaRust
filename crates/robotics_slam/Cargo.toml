@@ -1,0 +1,22 @@
+[package]
+name = "robotics_slam"
+description = "Simultaneous localization and mapping: ICP and NDT scan matching with an adaptive threshold, a factor-graph optimizer (GN/LM, robust kernels, sparse Cholesky via faer), a pose graph with verified loop closures, and EKF-SLAM and grid RBPF as alternative back ends. No ROS dependency."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_models = { workspace = true }
+robotics_filters = { workspace = true }
+nalgebra = { workspace = true }
+faer = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+approx = { workspace = true }
+proptest = { workspace = true }
+robotics_sim = { workspace = true }

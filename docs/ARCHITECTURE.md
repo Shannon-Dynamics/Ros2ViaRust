@@ -34,7 +34,7 @@ everything else: **algorithms never see ROS**.
 | `robotics_filters` | `BayesFilter`, `HistogramFilter1D`, `KalmanFilter`, `InformationFilter`, `RtsSmoother`, NEES/NIS (`consistency`), `Ekf`/`Ukf` over `Manifold`, `EskfSe2`, `OdomImuFusion`, `ParticleSet` (low-variance/multinomial, ESS), KLD sizing (`kld`) | 5–8 | 1–2 ✅ |
 | `robotics_localization` | EKF landmark localization, MCL / Augmented MCL, grid localization | 11, 12 | 3 |
 | `robotics_mapping` | log-odds occupancy grid, inverse sensor model, entropy, map-accuracy evaluation, signed ESDF over the exact EDT. 2-D TSDF and quadtree (Ch. 19) are *not* Phase 4: a Phase 5+ concern | 13, 19 (ESDF) | 4 |
-| `robotics_slam` | ICP/NDT, voxel map, pose graph + factor-graph optimizer (GN/LM, robust kernels), EKF-SLAM, FastSLAM/RBPF, RustSLAM-2D pipeline | 14–17 | 5 |
+| `robotics_slam` | ICP/NDT, voxel map, pose graph + factor-graph optimizer (GN/LM, robust kernels), EKF-SLAM, grid RBPF. Built 2026-10-11 as a pure crate with no `robotics_mapping` dependency; landmark FastSLAM and the RustSLAM-2D pipeline wrapper are not built | 14–17 | 5 |
 | `robotics_planning` | lattice A*/Dijkstra, PRM, RRT/RRT*, Dubins, MDP/POMDP solvers | 20–22 | 6 |
 | `robotics_control` | MPPI, DWA, path tracking | 23 | 7 |
 | `robotics_navigation` | frontier detection, information gain, utility, stop rules, supervisor state machine, safety margin | 24, 26 | 8–9 |
@@ -84,7 +84,7 @@ No algorithmic code lives in a node. Packages are grouped by subsystem, not by a
 | `robotics_bringup` | ament_cmake | launch XML + YAML params (`pubsub_demo`, `wheel_odometry_demo`, `estimator_sim`) and the per-phase Python launch files (`phase3_localization`, `phase4_mapping`) | per-phase launch files |
 | `robotics_localization` | ament_cargo | – | `localization_node` (phase 3) |
 | `robotics_mapping_ros` | ament_cargo | – | `ground_truth_tf_adapter` (phase 4, simulation only), `mapping_node`, `mapping_evaluator` (phase 4). Named `_ros` because a Cargo workspace cannot hold the crate `robotics_mapping` and a package of the same name |
-| `robotics_slam` | ament_cargo | – | `scan_matcher_node`, `pose_graph_node` (phase 5) |
+| `robotics_slam` | ament_cargo | – | `scan_matcher_node`, `pose_graph_node` (phase 5; **not created**, deferred pending Phase 4's M1) |
 | `robotics_planning` | ament_cargo | – | `planner_node` (phase 6) |
 | `robotics_control` | ament_cargo | – | `controller_node` (phase 7) |
 | `robotics_navigation` | ament_cargo | – | `explorer_node`, `supervisor_node` (phase 8–9) |

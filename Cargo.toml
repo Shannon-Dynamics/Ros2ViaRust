@@ -16,6 +16,7 @@ members = [
     "crates/robotics_sim",
     "crates/robotics_localization",
     "crates/robotics_mapping",
+    "crates/robotics_slam",
     "ros2_ws/src/robotics_ros_bridge",
     "ros2_ws/src/robotics_examples",
     "ros2_ws/src/robotics_estimation",
@@ -31,6 +32,7 @@ default-members = [
     "crates/robotics_sim",
     "crates/robotics_localization",
     "crates/robotics_mapping",
+    "crates/robotics_slam",
 ]
 
 [workspace.package]
@@ -46,6 +48,7 @@ nalgebra = { version = "0.35", default-features = true }   # fixed-size SMatrix/
 rand = "0.10"                                               # seeded SmallRng: the determinism discipline from the book
 rand_distr = "0.6"                                          # Normal / StandardNormal sampling (pairs with rand 0.10)
 thiserror = "2"                                             # typed error enums instead of panics
+faer = { version = "0.24", default-features = false, features = ["std", "sparse-linalg"] }  # sparse Cholesky for the factor-graph normal equations; no rayon and no rand, so it stays deterministic
 # --- ROS 2 (only ros2_ws packages) ---
 rclrs = "0.8"                                               # ROS 2 client library (links against sourced rcl/rmw)
 ros-env = "0.3"                                             # re-exports Rust message crates found in AMENT_PREFIX_PATH
@@ -59,7 +62,14 @@ robotics_filters = { path = "crates/robotics_filters" }
 robotics_sim = { path = "crates/robotics_sim" }
 robotics_localization = { path = "crates/robotics_localization" }
 robotics_mapping = { path = "crates/robotics_mapping" }
+robotics_slam = { path = "crates/robotics_slam" }
 robotics_ros_bridge = { path = "ros2_ws/src/robotics_ros_bridge" }
+
+# Scan matching is hot, and a debug build of it is about fifty times slower than an optimized
+# one: the integration tests of robotics_slam would take minutes. Only that package is
+# optimized in the dev profile; its dependencies and every other crate are unchanged.
+[profile.dev.package.robotics_slam]
+opt-level = 2
 
 [profile.release]
 debug = 1          # keep line tables for profiling on the robot
