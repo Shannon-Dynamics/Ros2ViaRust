@@ -174,19 +174,20 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
   out of Phase 4 on 2026-10-10; see Phase 5.)*
 * `mapping_node`: `/scan` + `map → base_link` → `/map` (latched), `/map_entropy`.
 
-**Status (2026-10-11): T1 to T8 built; three development runs and three M1 evaluation runs made;
-M1 is not met on any of the three evaluation runs; M5 waits for decision D3.** The plan below was
-written on 2026-10-10 while Phase 3 was still open and decisions confirmed the same day; what is
-built, what the runs found and what is not built are in `docs/phase-4-mapping/implementation.md`
-section 8. With ground-truth pose the mapper is deterministic (M2) and cheap (M4) on all six runs.
-The three evaluation runs, on routes that played no part in choosing the parameters, each miss
-different pre-registered M1 checks: route 1 (cross) misses completeness (0.926 against 0.95); route 2
-(wall lobes) misses completeness (0.907) and false free (6.2 per cent against 5); route 3 (diamond,
-slow turns) misses surface error p95 (1.5 cells against 1), false occupied (7.9 per cent against 2)
-and completeness (0.886). Each is a row of its own in
-`evidence/phase-4-mapping/2026-10-11-evaluation-*`, with the cross-run note in
-`2026-10-11-evaluation-group/`; no pass rate is claimed. Parameters stay frozen; the causes are open
-findings (implementation.md 5.3). Original status line: *planned and confirmed, nothing built*. Design doc:
+**Status (2026-10-11): T1 to T8 built; M1 met on each of three fresh evaluation routes, M2 and M4 pass on every
+run; M5 waits for decision D3.** Round one (three routes) missed different M1 checks on each and was burned by the analysis
+that followed (`evidence/phase-4-mapping/2026-10-11-evaluation-group/`). It found, and the work since fixed, a mismatch between
+the lidar bearings the Webots driver publishes and what Webots measures (a mapper option, `scan_beam_layout`, default
+`published`), the erosion of pillar cells by grazing views against a narrow occupied-to-clamp margin (Bresenham traversal and a higher
+upper clamp), and two properties of the evaluator (observability ignoring incidence, now limited to 60 degrees; an asymmetric wall
+lookup, now symmetric). Frozen together before development run 4: `pixel_centres`, Bresenham, `l_max` 5.0, the evaluator's two rules.
+Development run 4 and round two, on three new routes (oblique wall approaches, arcs round the pillars, the perimeter with detours),
+each pass all seven pre-registered M1 checks, one binary and no tuning on them, spread of the mean surface error 0.001 cells; each is a row
+of its own in `evidence/phase-4-mapping/2026-10-11-evaluation-4..6-*`, with `2026-10-11-evaluation-group-2/NOTE-round-two.md`. Not
+claimed: an estimated pose (M5), a more complex world (M1-extended), real hardware; the parameters were chosen on the burned runs,
+and the evaluator's rules changed between the rounds, so round two is graded against the metric of 2026-10-11 and not the one round one
+failed (the note gives the number). Open: a residual beam-angle error at the ends of the scan, the clamp's cost in a changing world, and
+`benchmarks/phase-4-mapping.csv` (implementation.md 5.3). Original status line: *planned and confirmed, nothing built*. Design doc:
 [phase-4-mapping.md](phase-4-mapping.md), with the detail in `docs/phase-4-mapping/`:
 [problem](phase-4-mapping/problem.md), [implementation](phase-4-mapping/implementation.md),
 [benchmark](phase-4-mapping/benchmark.md). The two bullets above are the original scope with

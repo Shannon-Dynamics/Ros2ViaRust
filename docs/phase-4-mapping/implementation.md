@@ -358,16 +358,118 @@ not repeated here.
   `robotics_mapping::occupancy::OccupancyParams`, each with its reason in that item's
   documentation. Chosen by reasoning before any run, except the occupied threshold, which the
   development runs changed (item 10). They are frozen at the third development run's values.
-* The beam-index dependence of the hits that land outside the walls (8.4), not explained. The
-  evaluation runs show it is route-dependent (0 of about 3500 behind-hits on two routes, 25.5 per
-  cent on the diamond route), so it is not a fixed property of those beams. The read-only analysis in
-  `evidence/phase-4-mapping/2026-10-11-evaluation-group/NOTE-root-cause-analysis.md` finds it is an angular error
-  of the beams near the two ends of the index range (about -14 to -23 mrad for beams 0 to 9, about +17 mrad for
-  350 to 359) that shows only where a route meets the walls obliquely; a table fitted without a run predicts that
-  run's rate. Where the error comes from (driver angle grid, sensor, TF) is not determined.
-* Completeness below 0.95 on all three evaluation routes (0.926, 0.907, 0.886), not broken down.
-* The verdict script's `same_launch_args` group check compares strings containing the route, so it
-  is false for any three different routes; not edited, since the script is committed.
+* **The beam bearings of the Webots lidar: explained and corrected, with a residual that is not.** The published
+  bearings differ from the ones Webots measures along (5.4 item 1), which is what made the hits of the beams near the two ends of
+  the index range land outside the walls on routes that met a wall obliquely (round one: 2.2 per cent of beams 0 to 14 on
+  `route_long`, 25.5 per cent on the diamond route, 0 on two routes). The correction accounts for about half of the fitted error at the
+  two ends; about -9 mrad at beams 0 to 9 and +10 mrad at 350 to 359 remain, with no explanation (the camera side of Webots was not read).
+  In no run does the residual produce a false-occupied cell (`evaluation-group/root-cause/output/25-stageB_residual.txt`), but a route that
+  looked at a long, oblique wall with those beams might.
+* **Pillar cells: explained, fixed by a parameter trade.** A well-viewed pillar cell is built by near-normal views and eroded late in
+  the run by grazing ones that mark it free at about the weight of a hit, and the occupied state sits 1.3 free updates below the clamp
+  (`evaluation-group/NOTE-pillar-evidence-diagnosis.md`). Frozen: Bresenham traversal and an upper clamp of 5.0 (5.4 item 4). The cost
+  of a higher clamp, slower forgetting, cannot be priced in this static room, and completeness rose with the clamp over the whole range
+  tried, so the value is a decision and not a measurement.
+* **The evaluator's rules changed between round one and round two** (5.4 items 2 and 3): round two is graded against the metric of
+  2026-10-11. Under the old metric the frozen parameters would still have missed completeness on round one's cross stream (0.9456,
+  `evaluation-group/root-cause/output/29-pillar_clamp_sweep.txt`); `evaluation-group-2/NOTE-round-two.md` states the consequence.
+* The verdict script's `same_launch_args` group check compares strings containing the route, so it is false for any three
+  different routes (it was again in round two); not edited, since the script is committed and its guards were extended only for
+  the two evaluator rules.
+* The maximum surface error sits exactly on its limit (1.5 cells) in development runs 3 and 4 and in the oblique evaluation run; it passes,
+  and it has no margin.
+* `benchmarks/phase-4-mapping.csv` is not written; M5 and T10 (D3), T9, and M1-extended are not started; the 2-D TSDF belongs to Phase 5.
+
+### 5.4 Decisions after the evaluation runs (2026-10-11)
+
+The three M1 evaluation runs failed M1 on different checks and the root-cause analysis
+(`evidence/phase-4-mapping/2026-10-11-evaluation-group/NOTE-root-cause-analysis.md`) found separate
+causes. The decisions below are the project owner's, taken at the gates of that work; the evidence is
+in the files named.
+
+1. **Beam layout, `scan_beam_layout` of `mapping_node`, default `published`.** The published bearings
+   of the Webots LDS-01 are `fov/2 - j fov/(N-1)`; Webots places output column `j` at
+   `fov/2 - (j + 0.5) fov/N` (`merge_spherical.frag` line 158, `Ros2Lidar.cpp` lines 36 to 41, hashes in
+   `root-cause/stageA-sources/README.md`). `pixel_centres` applies the second to each scan just before
+   integration (`robotics_mapping::BeamLayout`, 6 unit tests and a property test); the recording
+   keeps the published bearings and `replay_scans` takes the layout as its seventh argument. The
+   Webots driver is not modified. Verified by replaying the four recorded streams
+   (`root-cause/output/26-stageB_replay_rust.txt`): with `published` the replay equals each saved
+   `final-grid.txt` byte for byte; with `pixel_centres`, false-occupied cells go 18 to 4
+   (`route_long`) and 57 to 0 (route 3), surface error p95 1.5 to 0.5 cells on route 3, and route 3's
+   displaced outer wall cells disappear. It is **not the whole beam error**: about -9 and +10 mrad
+   remain at beams 0 to 9 and 350 to 359, cause unknown, and no remaining false-occupied cell comes from
+   them (`25-stageB_residual.txt`). Completeness and false-free move both ways by the size of a
+   centimetre-scale shift of marginal cells (`NOTE-stage-B-gate.md`).
+2. **Observability incidence limit: 60 degrees.** For the completeness metric a surface sample is
+   observable only if some ground-truth position within the sensor range, with a line of sight to it,
+   sees it within 60 degrees of its normal. The number is a judgment call and not a measured
+   constant: the pillar found fraction against the best viewing angle has no bend, a plateau near 0.4
+   from 15 to 59 degrees on the evaluation routes, then steps at 60 and 75 degrees
+   (0.41 at 45 to 59 degrees, 0.26 at 60 to 74, 0.09 at 75 to 89), and the earlier ">37" was the edge of
+   `route_long` alone (1.00 below 15 degrees, 0.90 at 15 to 24, 0.20 at 35 to 44, 0.11 at 45 to 59, 0.00 above 60). 75 degrees was rejected:
+   dropping the limit altogether leaves the same routes as far from 0.95 (0.910 and 0.893 after the
+   beam correction), so a looser limit only admits samples with lower found rates. The table:
+
+   | best angle | four runs pooled | three evaluation routes | `route_long` |
+   |---|---|---|---|
+   | 0-4 | 0.81 | 0.76 | 1.00 |
+   | 5-14 | 0.66 | 0.56 | 1.00 |
+   | 15-24 | 0.56 | 0.43 | 0.90 |
+   | 25-34 | 0.43 | 0.38 | 0.61 |
+   | 35-44 | 0.37 | 0.43 | 0.20 |
+   | 45-59 | 0.34 | 0.41 | 0.11 |
+   | 60-74 | 0.19 | 0.26 | 0.00 |
+   | 75-89 | 0.06 | 0.09 | 0.00 |
+
+   (`evidence/phase-4-mapping/2026-10-11-evaluation-group/NOTE-stage-B-gate.md` section 4, from
+   `root-cause/output/23-stageB_curve.txt`.) **Implemented in `eval.rs`** (`EvalParams::max_incidence`,
+   `DEFAULT_MAX_INCIDENCE_DEG = 60`, parameter `max_incidence_deg` of `mapping_evaluator`, written to
+   `map-metrics.yaml` as `max_incidence_deg`, and refused by `scripts/phase4_verdict.py` if a run says another).
+   It applies to runs made after it; the verdicts already written are not regraded, and the script would now
+   refuse those runs. By itself it does not make completeness pass: with the limit alone, after the beam
+   correction, completeness was 0.982, 0.928, 0.908 and 0.952 on `route_long`, cross, wall-lobes and diamond.
+3. **The evaluator's wall-cell tie-break, decided and implemented.** The completeness lookup judged a sample
+   on the one cell that rounding the tie on a lattice line picked (the outer cell for the east and north walls,
+   the inner for the west and south, `03-tiebreak.txt`), so the same displaced wall counted as found on two
+   walls and missing on the other two. The rule now: **a sample is found if an occupied cell centre lies within
+   `tau` of the centre of any cell whose closed box contains the sample** (one cell normally, two or four on a
+   lattice line): the closed-cell rule the false-free count already used, with no tie to round. It changes the
+   evaluator and not the mapper, and no tolerance. Test `completeness_is_the_same_whichever_wall_is_displaced`: a
+   room whose faces lie on lattice lines, one wall mapped one cell further out, gives completeness 1.0 for each of the
+   four sides (with the old lookup the same fixture gave 1.0, 0.8, 1.0, 0.8). `map-metrics.yaml` carries
+   `completeness_lookup: closed_cells` and the verdict script refuses a run that does not.
+4. **Parameters frozen for development run 4 (Stage D): Bresenham traversal, `model.p_max` 0.99330715 (`l_max` 5.0 exactly),
+   beam layout `pixel_centres`; everything else as development run 3.**
+   **These were chosen on the four runs that exist, the development run and the three evaluation runs, which the analysis
+   has burned, as every frozen parameter of Phase 4 was chosen on the runs that existed when it was frozen. They
+   are not validated by this step: whether they generalize is what the fresh routes of Stage E test.**
+   *Selection rule, written with the number:* **the smallest (tracer, `l_max`) pair that passes all seven
+   pre-registered M1 checks on the four available runs**, searched over the tracers supercover and bresenham and
+   `l_max` 3.476 (the library default, probability 0.97), 4, 5, 6 and 8, **graded by the evaluator that will grade the
+   next runs** (60 degree limit, closed-cell lookup).
+   *History, so that the number has its provenance.* The pair first accepted on 2026-10-11 was Bresenham with `l_max` 6.0,
+   which is the rule's answer under the evaluator as it was then (no incidence limit, one-cell lookup:
+   `root-cause/output/29-pillar_clamp_sweep.txt`; supercover needed 8.0). Before any run, the rule was re-applied under the
+   evaluator of Stage C (`output/30-stageC_clamp_sweep_new_evaluator.txt`): the as-run clamp 3.476 and 4.0 fail only wall-lobes
+   (completeness 0.9396 to 0.9481), and **`l_max` 5.0 is the smallest that passes all seven checks on all four runs, with
+   either tracer**. On the project owner's instruction the smaller value was frozen. *Tie-break between the two tracers at 5.0,
+   mine and stated here:* keep the tracer already accepted (Bresenham), which also has the larger margins at that clamp
+   (minimum completeness 0.9667 against 0.9563 for supercover, maximum false-free 3.56% against 4.37%, limits 0.95 and 5%).
+   Under the Stage C evaluator the frozen pair gives completeness 0.9855, 0.9667, 0.9670 and 0.9885 and false-free 1.80, 2.62, 3.56
+   and 1.26% on `route_long`, cross, wall-lobes and diamond, 7 of 7 checks on each. The earlier shorthand "`p_max` 0.9975 is
+   `l_max` 6.0" was inexact (0.9975 is 5.989); the sweeps set `l_max` directly, and the frozen probability is the exact one for 5.0.
+   A clamp is a trade of slower forgetting for stability that this static room cannot price.
+   *Where frozen:* the defaults of `phase4_mapping.launch.py` and `run_phase4_mapping.sh` (`tracer`, `p_max`,
+   `beam_layout`); the node's and the library's own defaults are unchanged (supercover, 0.97, `published`), and each run
+   records what it used (`launch_arguments`, `mapper_l_max`, `mapper_beam_layout` of `summary.yaml`).
+   *Claim M3, reworded.* `problem.md` said the ray traversal visits exactly the cells a supercover line crosses; the mapper
+   no longer uses the supercover. The claim is now about each traversal doing what it is defined to do (the supercover against an
+   independent oracle, the Bresenham line having `max(|dx|, |dy|) + 1` cells with both ends and unit steps, a property test added
+   with this change), and the tests of the beam layout and of the evaluator's two rules are added to M3's list.
+
+The open item of 5.3 about well-viewed pillar cells is diagnosed in
+`evidence/phase-4-mapping/2026-10-11-evaluation-group/NOTE-pillar-evidence-diagnosis.md`.
 
 ## 6. Evidence, and how this part will be run
 
@@ -400,10 +502,10 @@ and the `mcl_node` TF question of D3 is recorded and not acted on.
 
 | Id | Task | State |
 |---|---|---|
-| T1 | `OccupancyGrid`, log-odds, three-state read-out, text form | built, `robotics_mapping::occupancy`, 65 unit tests across the crate |
-| T2 | inverse sensor model, ray integration, no-return policy | built, `robotics_mapping::{integrate, raycast}`; also `MotionGate` and `MotionFilter` (`gate`), added after the first runs (D13, D17) |
+| T1 | `OccupancyGrid`, log-odds, three-state read-out, text form | built, `robotics_mapping::occupancy`; 76 unit tests across the crate and 5 integration tests |
+| T2 | inverse sensor model, ray integration, no-return policy | built, `robotics_mapping::{integrate, raycast}`; also `MotionGate` and `MotionFilter` (`gate`), added after the first runs (D13, D17), and `BeamLayout` (`layout`, 5.4 item 1), added after the evaluation runs |
 | T3 | entropy | built, `robotics_mapping::entropy` |
-| T4 | map-accuracy evaluator and its example binaries | built, `robotics_mapping::eval`, examples `map_metrics` and `replay_scans` |
+| T4 | map-accuracy evaluator and its example binaries | built, `robotics_mapping::eval` (with the 60 degree incidence limit and the closed-cell completeness lookup of 5.4), examples `map_metrics` and `replay_scans` |
 | T5 | signed ESDF over the existing exact EDT | built, `robotics_mapping::esdf`; published as a `32FC1` image (D12); no consumer yet |
 | T6 | `ground_truth_tf_adapter` | built, `robotics_mapping_ros` |
 | T7 | `mapping_node`, `mapping_evaluator` | built, `robotics_mapping_ros`; the `~/reset` service is **not** built (no `std_srvs` Rust bindings in the interface underlay) |
@@ -441,20 +543,23 @@ and each run has a `NOTE-what-this-run-found.md` where something needs saying.
 | `2026-10-11-development-route-long` | development run 1 | M2, M4 pass; M1 fails on five checks |
 | `2026-10-11-development-2-route-long` | development run 2 (D16 was not in effect, see its note) | M2, M4 pass; M1 fails on three checks |
 | `2026-10-11-development-3-route-long` | development run 3, parameters frozen | M2, M4 pass; M1 fails on one check (false occupied) |
-| `2026-10-11-evaluation-1-cross` | evaluation run 1, `route_eval_cross.yaml` | M2, M4 pass; M1 fails on one check (completeness) |
-| `2026-10-11-evaluation-2-wall-lobes` | evaluation run 2, `route_eval_wall_lobes.yaml` | M2, M4 pass; M1 fails on two checks (completeness, false free) |
-| `2026-10-11-evaluation-3-diamond-slow` | evaluation run 3, `route_eval_diamond.yaml`, 0.3 rad/s turns | M2, M4 pass; M1 fails on three checks (surface error p95, false occupied, completeness) |
-| `2026-10-11-evaluation-group` | the group verdict, the overshoot analysis, and the cross-run note | see its `NOTE-what-the-evaluation-found.md` |
+| `2026-10-11-evaluation-1-cross` | round one, evaluation run 1, `route_eval_cross.yaml` (burned) | M2, M4 pass; M1 fails on one check (completeness) |
+| `2026-10-11-evaluation-2-wall-lobes` | round one, evaluation run 2, `route_eval_wall_lobes.yaml` (burned) | M2, M4 pass; M1 fails on two checks (completeness, false free) |
+| `2026-10-11-evaluation-3-diamond-slow` | round one, evaluation run 3, `route_eval_diamond.yaml`, 0.3 rad/s turns (burned) | M2, M4 pass; M1 fails on three checks (surface error p95, false occupied, completeness) |
+| `2026-10-11-evaluation-group` | round one's group verdict, the root-cause analysis (`root-cause/`), the Stage B gate and the pillar diagnosis | `NOTE-what-the-evaluation-found.md`, `NOTE-root-cause-analysis.md`, `NOTE-stage-B-gate.md`, `NOTE-pillar-evidence-diagnosis.md` |
+| `2026-10-11-development-4-route-long` | development run 4, everything of 5.4 frozen together | M1 passes (7 of 7), M2, M4 pass |
+| `2026-10-11-evaluation-4-oblique` | round two, `route_eval_oblique.yaml` | M1 passes (7 of 7), M2, M4 pass |
+| `2026-10-11-evaluation-5-pillar-arcs` | round two, `route_eval_pillar_arcs.yaml` | M1 passes (7 of 7), M2, M4 pass |
+| `2026-10-11-evaluation-6-perimeter` | round two, `route_eval_perimeter.yaml` | M1 passes (7 of 7), M2, M4 pass |
+| `2026-10-11-evaluation-group-2` | round two's group verdict and its note | one binary; spread of the mean surface error 0.001 cells; `NOTE-round-two.md` |
 | `phase-4-mapping-runtime/*` | the integration test | see 8.4 |
 
-**What the development runs establish and what they do not.** They establish that the mapper is
-deterministic on real simulator data (M2), cheap (M4), and that with ground-truth pose it maps the
-room's walls and pillars to within a cell on average, completely and with almost no free-space
-errors, and that what separates it from the pre-registered tolerance is a small set of cells in the
-row just outside the walls. They do not establish M1: the tolerances are for the evaluation runs, on
-routes that played no part in choosing the parameters. The parameters were chosen over three runs
-on one route, so the development run's own result is optimistic by construction, and the evaluation
-runs (below) bear that out: M1 is met on none of the three, each missing different checks. M5 and the claim that mapping works with an estimator's pose are untouched.
+**What the runs establish and what they do not.** With ground-truth pose the mapper is deterministic on real simulator data (M2),
+cheap (M4), and, with the parameters of 5.4, meets all seven pre-registered M1 checks on the development run and on each of three
+evaluation routes that played no part in choosing them (`evaluation-group-2/NOTE-round-two.md`). It did not before: round one's three
+routes missed different checks, which is what led to 5.4. What this does not establish: the parameters were chosen on the four runs
+that round one burned; the evaluator's two rules changed between the rounds; three routes in one room are rows and not a rate; the
+maximum surface error has no margin; and nothing here concerns an estimated pose (M5), another world (M1-extended) or a real robot.
 
 ### 8.4 Limitations known now
 
@@ -463,10 +568,9 @@ runs (below) bear that out: M1 is met on none of the three, each missing differe
   measurement does not need either; both are parameters.
 * About a fifth of the scans are skipped for motion on this route, essentially all of them in the
   turns in place; the map is built from the straight legs.
-* The row of cells just outside the walls is the remaining false occupied: hits that land more than
-  4.5 cm past a face at a rate that depends on the beam's direction in the sensor frame (3 times in
-  1000 over all beams, 2 in 100 for the beams straight behind the robot). Not explained (see
-  `2026-10-11-development-3-route-long/NOTE-what-this-run-found.md`).
+* The cells just outside the walls that development run 3 had (hits more than 4.5 cm past a face, most from the beams straight behind
+  the robot) are explained by the beam-bearing mismatch (5.3, 5.4 item 1) and are 0 to 2 cells in the runs made with the correction; what
+  remains of the bearing error at the two ends of the scan is not explained.
 * Flying pixels at depth edges (5.3), the mount of the lidar read from TF and not checked against
   the proto, and the ground-truth reader `mapping_evaluator`'s position list being a 2 cm-spaced
   subsample of the route.

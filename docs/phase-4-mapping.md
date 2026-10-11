@@ -4,16 +4,17 @@ The robot knows where it is; now it has to write down what it has seen, turning 
 lidar scans taken from known poses into an occupancy grid and a distance field the rest of
 the stack can plan in.
 
-> **Status (2026-10-11): built and measured on development and evaluation runs; M1 is not
-> met.** The pure crate `robotics_mapping`, the ROS package `robotics_mapping_ros`
+> **Status (2026-10-11): built and measured; M1 met on three fresh evaluation routes.** The pure crate `robotics_mapping`, the ROS package `robotics_mapping_ros`
 > (`ground_truth_tf_adapter`, `mapping_node`, `mapping_evaluator`), the launch file, the run
 > script, the verdict script and the integration test exist; see section 8 of
 > [implementation](phase-4-mapping/implementation.md) for exactly what, and
 > `evidence/phase-4-mapping/` for the runs. With ground-truth pose the mapper is deterministic and
-> cheap. M1 is not met: the three evaluation runs, on routes that played no part in choosing the
-> parameters, each miss different pre-registered accuracy checks (the development run's one miss,
-> false occupied cells, is zero on two of them and 7.9 per cent on the third); the rows are in
-> `evidence/phase-4-mapping/2026-10-11-evaluation-*` and the cross-run note beside them. M5 (the estimator's pose) waits for the
+> cheap. The first three evaluation runs each missed different pre-registered accuracy checks and
+> were burned by the analysis of why; after the fixes it led to (a beam-layout option, a Bresenham traversal with a higher
+> clamp, two rules of the evaluator) development run 4 and three evaluation runs on new routes each pass all seven
+> M1 checks, with the parameters chosen on the burned runs and not tuned on the new ones. The rows are in
+> `evidence/phase-4-mapping/2026-10-11-evaluation-4-*` to `-6-*` and `2026-10-11-evaluation-group-2/NOTE-round-two.md`, which also
+> says what is not claimed. M5 (the estimator's pose) waits for the
 > open decision D3.
 
 ## Where the detail is
