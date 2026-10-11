@@ -167,7 +167,7 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
 * `localization_node`: `/scan` + `/odom` + `/map` (+ `/initialpose`) → `/pose`,
   `/particle_cloud`, `map → odom`. Nav2-compatible outputs (`/amcl_pose`).
 
-## Phase 4 — Mapping (in progress)
+## Phase 4 — Mapping ✅ (closed 2026-10-11, with carried-over items)
 
 * `robotics_mapping`: log-odds `OccupancyGrid` with hand-crafted inverse model and
   Bresenham/supercover integration, entropy (Ch. 13); exact EDT/ESDF (Ch. 19). *(The 2-D TSDF named here originally is moved
