@@ -11,8 +11,19 @@
 //! the sample is on the side of its surface that faces the pose, and no other surface lies on
 //! the segment between them. The fraction set aside is reported ([`MapMetrics::observable_fraction`]),
 //! so that nobody can quietly shrink the denominator. "Observable" means *line of sight within
-//! range from some pose*, not *a beam hit it*: with 360 beams a surface patch can lie between
-//! two beams, and the completeness metric is exactly what shows that.
+//! range from some pose, at an incidence of at most [`EvalParams::max_incidence`]*, not *a beam
+//! hit it*: with 360 beams a surface patch can lie between two beams, and the completeness metric
+//! is exactly what shows that. The incidence limit (60 degrees, [`DEFAULT_MAX_INCIDENCE_DEG`],
+//! decided on 2026-10-11, `docs/phase-4-mapping/implementation.md` section 5.4) is the angle between
+//! the surface normal and the direction to the pose: the limb of a pillar, seen edge-on, is in the
+//! line of sight of the room's poses but is not a surface a mapper can be asked for.
+//!
+//! A surface sample is *found* when an occupied cell centre is within `tau` of the centre of a cell
+//! whose closed box contains the sample: one cell normally, two or four when the sample lies on a
+//! lattice line (a wall on the line between two cells, which is where the Phase 3 room's walls are).
+//! Taking all of them, and not one picked by rounding the tie, is what makes the verdict the same
+//! for the east and north walls as for the west and south ones; the rule is the same closed-cell
+//! rule that the false-free count already used.
 //!
 //! The metrics are those of `docs/phase-4-mapping/benchmark.md` section 2. The evaluator takes
 //! a grid and a list of sensor positions and knows nothing about how the grid was made. The
@@ -22,9 +33,14 @@
 use crate::occupancy::{CellState, OccupancyGrid};
 use crate::MappingError;
 use robotics_core::nalgebra::Vector2;
-use robotics_models::sensor::likelihood_field::{DistanceField, DistanceGrid};
+use robotics_models::sensor::likelihood_field::DistanceGrid;
 
 type V2 = Vector2<f64>;
+
+/// The largest angle between a surface normal and the direction to a pose, in degrees, for which a
+/// sample counts as observable from that pose in the Phase 4 evaluation. A judgment call, not a
+/// measured constant: `docs/phase-4-mapping/implementation.md` section 5.4.
+pub const DEFAULT_MAX_INCIDENCE_DEG: f64 = 60.0;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Wall {
@@ -257,17 +273,21 @@ impl GroundTruth {
     }
 
     /// Whether `sample` is seen from `origin`: within `max_range`, on the lit side of its
-    /// surface, with nothing in between.
+    /// surface, at most `max_incidence` (rad) off its normal (`FRAC_PI_2` is no limit: any lit
+    /// side), with nothing in between.
     pub fn is_visible(
         &self,
         origin: &Vector2<f64>,
         sample: &SurfaceSample,
         max_range: f64,
+        max_incidence: f64,
     ) -> bool {
         let to_origin = origin - sample.p;
         let dist = to_origin.norm();
+        let facing = sample.normal.dot(&to_origin);
         dist <= max_range
-            && sample.normal.dot(&to_origin) > 1e-9
+            && facing > 1e-9
+            && facing >= dist * max_incidence.cos()
             && !self.blocked(origin, &sample.p, Some(sample.owner))
     }
 
@@ -291,6 +311,11 @@ pub struct EvalParams {
     pub sample_spacing: f64,
     /// Sensor range limit (m).
     pub max_range: f64,
+    /// Largest angle (rad) between a sample's normal and the direction to a pose for the sample
+    /// to be observable from it, in `(0, pi/2]`; `FRAC_PI_2` means any line of sight on the lit
+    /// side (the evaluator before 2026-10-11). The Phase 4 value is
+    /// [`DEFAULT_MAX_INCIDENCE_DEG`].
+    pub max_incidence: f64,
     /// Use every `stride`-th sensor position for the coverage test (observability always uses
     /// all of them). Coverage costs cells times positions, and neighbouring positions see
     /// almost the same cells.
@@ -315,6 +340,8 @@ pub struct MapMetrics {
     pub resolution: f64,
     /// The tolerance used (m).
     pub tau: f64,
+    /// The incidence limit used, in degrees (90 means none).
+    pub max_incidence_deg: f64,
     /// Cells called occupied.
     pub occupied_cells: usize,
     /// Cells called free.
@@ -396,6 +423,15 @@ pub fn evaluate(
             return Err(MappingError::InvalidParameter { what, value: v });
         }
     }
+    if !(params.max_incidence.is_finite()
+        && params.max_incidence > 0.0
+        && params.max_incidence <= std::f64::consts::FRAC_PI_2 + 1e-12)
+    {
+        return Err(MappingError::InvalidParameter {
+            what: "max_incidence",
+            value: params.max_incidence,
+        });
+    }
     if params.coverage_stride == 0 {
         return Err(MappingError::InvalidParameter {
             what: "coverage_stride",
@@ -434,7 +470,7 @@ pub fn evaluate(
         .filter(|s| {
             sensor_positions
                 .iter()
-                .any(|o| truth.is_visible(o, s, params.max_range))
+                .any(|o| truth.is_visible(o, s, params.max_range, params.max_incidence))
         })
         .collect();
     let occupied_mask = grid.occupied_mask();
@@ -457,7 +493,14 @@ pub fn evaluate(
         {
             false_free += 1;
         }
-        if occupied > 0 && dist.distance(&s.p) <= params.tau {
+        // Found: an occupied cell centre within tau of the centre of any cell that touches the
+        // sample. For a sample on a lattice line that is both sides, so that the verdict does not
+        // depend on which way a tie would have been rounded.
+        if occupied > 0
+            && cells
+                .iter()
+                .any(|&(i, j)| dist.cell(i, j).is_some_and(|d| d <= params.tau))
+        {
             found += 1;
         }
     }
@@ -487,6 +530,7 @@ pub fn evaluate(
     Ok(MapMetrics {
         resolution: g.resolution,
         tau: params.tau,
+        max_incidence_deg: (params.max_incidence.to_degrees() * 1e9).round() / 1e9,
         occupied_cells: occupied,
         free_cells: free,
         unknown_cells: unknown,
@@ -522,6 +566,8 @@ impl MapMetrics {
         line("resolution_m", self.resolution.to_string());
         line("tau_m", self.tau.to_string());
         line("tau_cells", (self.tau / self.resolution).to_string());
+        line("max_incidence_deg", self.max_incidence_deg.to_string());
+        line("completeness_lookup", "closed_cells".to_string());
         line("occupied_cells", self.occupied_cells.to_string());
         line("free_cells", self.free_cells.to_string());
         line("unknown_cells", self.unknown_cells.to_string());
@@ -599,6 +645,9 @@ mod tests {
         assert!(GroundTruth::room(3.0, 3.0, &[(0.0, 0.0, -1.0)]).is_err());
     }
 
+    /// No incidence limit: any line of sight on the lit side, as before 2026-10-11.
+    const NO_LIMIT: f64 = std::f64::consts::FRAC_PI_2;
+
     /// Visibility by hand. A 6 m room with a pillar of radius 0.2 centred at (1, 0), seen from
     /// the origin: the pillar's near side is seen and its far side is not (it faces away); the
     /// east wall behind the pillar is hidden at y = 0.25 (the ray passes 0.083 m from the
@@ -611,27 +660,27 @@ mod tests {
         let s = t.surface_samples(0.05).unwrap();
         let o = v(0.0, 0.0);
         assert!(
-            t.is_visible(&o, find(&s, v(0.8, 0.0)), 3.5),
+            t.is_visible(&o, find(&s, v(0.8, 0.0)), 3.5, NO_LIMIT),
             "near side of the pillar"
         );
         assert!(
-            !t.is_visible(&o, find(&s, v(1.2, 0.0)), 3.5),
+            !t.is_visible(&o, find(&s, v(1.2, 0.0)), 3.5, NO_LIMIT),
             "far side of the pillar"
         );
         assert!(
-            !t.is_visible(&o, find(&s, v(3.0, 0.25)), 3.5),
+            !t.is_visible(&o, find(&s, v(3.0, 0.25)), 3.5, NO_LIMIT),
             "wall hidden behind the pillar"
         );
         assert!(
-            t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.5),
+            t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.5, NO_LIMIT),
             "wall beside the shadow"
         );
         assert!(
-            !t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.0),
+            !t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.0, NO_LIMIT),
             "3.09 m is beyond a 3 m range"
         );
         assert!(
-            !t.is_visible(&v(5.0, 0.0), find(&s, v(3.0, 0.75)), 9.0),
+            !t.is_visible(&v(5.0, 0.0), find(&s, v(3.0, 0.75)), 9.0, NO_LIMIT),
             "seen from behind"
         );
     }
@@ -643,7 +692,10 @@ mod tests {
         let o = [v(0.0, 0.0)];
         // A range that reaches the corners (4.24 m) so that only occlusion and facing are tested.
         let range = 10.0;
-        let seen = s.iter().filter(|x| t.is_visible(&o[0], x, range)).count();
+        let seen = s
+            .iter()
+            .filter(|x| t.is_visible(&o[0], x, range, NO_LIMIT))
+            .count();
         let frac = seen as f64 / s.len() as f64;
         // Half the pillar's circumference faces away, and some of the east wall is in its
         // shadow, so strictly less than everything and more than most.
@@ -652,7 +704,7 @@ mod tests {
         let o2 = [v(0.0, 0.0), v(2.5, 0.0)];
         let seen2 = s
             .iter()
-            .filter(|x| o2.iter().any(|p| t.is_visible(p, x, range)))
+            .filter(|x| o2.iter().any(|p| t.is_visible(p, x, range, NO_LIMIT)))
             .count();
         assert!(seen2 > seen);
     }
@@ -687,6 +739,7 @@ mod tests {
             tau: 0.05,
             sample_spacing: 0.05,
             max_range: 3.5,
+            max_incidence: NO_LIMIT,
             coverage_stride: 1,
         }
     }
@@ -846,6 +899,7 @@ mod tests {
             tau: 0.05,
             sample_spacing: 0.1,
             max_range: 3.5,
+            max_incidence: NO_LIMIT,
             coverage_stride: 1,
         };
         let origin = [v(0.0, 0.0)];
@@ -897,5 +951,127 @@ mod tests {
         let mut p = params();
         p.sample_spacing = f64::NAN;
         assert!(evaluate(&g, &t, &[v(0.0, 0.0)], &p).is_err());
+        for bad in [0.0, -0.1, f64::NAN, 1.6, 3.0] {
+            let mut p = params();
+            p.max_incidence = bad;
+            assert!(evaluate(&g, &t, &[v(0.0, 0.0)], &p).is_err(), "{bad}");
+        }
+    }
+
+    /// The incidence limit by hand. A pillar of radius 0.2 at (1, 0) seen from the origin. A
+    /// sample 30 degrees round from the pillar's nearest point is 36.9 degrees off its normal
+    /// as seen from the origin, one 60 degrees round is 71.0 degrees off, and the nearest
+    /// point itself is 0. With a 60 degree limit the first is observable and the second is
+    /// not; with no limit both are; the limit does not touch the walls of the room.
+    #[test]
+    fn an_incidence_limit_removes_the_limb_of_a_pillar() {
+        let t = GroundTruth::room(3.0, 3.0, &[(1.0, 0.0, 0.2)]).unwrap();
+        let s = t.surface_samples(0.01).unwrap();
+        let o = v(0.0, 0.0);
+        let limit = DEFAULT_MAX_INCIDENCE_DEG.to_radians();
+        let near = find(&s, v(0.8, 0.0));
+        let at = |a: f64| {
+            let a = a.to_radians();
+            find(&s, v(1.0 - 0.2 * a.cos(), 0.2 * a.sin()))
+        };
+        for (sample, angle, within) in [
+            (near, 0.0, true),
+            (at(30.0), 36.9, true),
+            (at(60.0), 71.0, false),
+        ] {
+            assert!(
+                t.is_visible(&o, sample, 3.5, NO_LIMIT),
+                "{angle}: seen with no limit"
+            );
+            assert_eq!(
+                t.is_visible(&o, sample, 3.5, limit),
+                within,
+                "{angle} degrees off the normal against a 60 degree limit"
+            );
+        }
+        // Wall samples are at most 45 degrees off from the middle of a square room.
+        let walls_seen = |lim: f64| {
+            s.iter()
+                .filter(|x| matches!(x.owner, Owner::Wall(_)) && t.is_visible(&o, x, 10.0, lim))
+                .count()
+        };
+        assert_eq!(walls_seen(limit), walls_seen(NO_LIMIT));
+        // And fewer samples are observable overall.
+        let all = |lim: f64| s.iter().filter(|x| t.is_visible(&o, x, 10.0, lim)).count();
+        assert!(all(limit) < all(NO_LIMIT));
+    }
+
+    /// The verdict does not depend on which wall is displaced. A 1 m room whose faces lie on
+    /// lattice lines (grid from -0.7, 0.1 m cells): the faces x, y = +/- 0.5 are the lines
+    /// between the inner cell columns 2 and 11 and the outer ones 1 and 12. Every wall is
+    /// mapped on its outer cells, except one that is mapped one cell further out (columns 0 and
+    /// 13, a displaced wall of exactly the kind the 2026-10-11 analysis found). Looking the
+    /// wall up on one cell picked by rounding the tie made the east and north walls found and
+    /// the west and south walls missing; the closed-cell rule gives the same completeness for
+    /// all four.
+    #[test]
+    fn completeness_is_the_same_whichever_wall_is_displaced() {
+        let geometry = GridGeometry {
+            width: 14,
+            height: 14,
+            resolution: 0.1,
+            origin: v(-0.7, -0.7),
+        };
+        let t = GroundTruth::room(0.5, 0.5, &[]).unwrap();
+        // side: 0 west, 1 east, 2 south, 3 north
+        let build = |side: usize| {
+            let mut g = OccupancyGrid::new(geometry, OccupancyParams::default()).unwrap();
+            let (lo, lf) = (g.params().l_occ, g.params().l_free);
+            for j in 2..=11 {
+                for i in 2..=11 {
+                    g.add_evidence(i, j, lf);
+                    g.add_evidence(i, j, lf);
+                }
+            }
+            let mut occupy = |i: usize, j: usize| {
+                for _ in 0..4 {
+                    g.add_evidence(i, j, lo);
+                }
+            };
+            for k in 2..=11 {
+                occupy(if side == 0 { 0 } else { 1 }, k);
+                occupy(if side == 1 { 13 } else { 12 }, k);
+                occupy(k, if side == 2 { 0 } else { 1 });
+                occupy(k, if side == 3 { 13 } else { 12 });
+            }
+            g
+        };
+        let mut p = params();
+        p.tau = 0.1;
+        let c: Vec<Option<f64>> = (0..4)
+            .map(|side| {
+                evaluate(&build(side), &t, &[v(0.0, 0.0)], &p)
+                    .unwrap()
+                    .completeness
+            })
+            .collect();
+        assert!(
+            c.iter().all(|x| *x == c[0]),
+            "completeness by displaced side: {c:?}"
+        );
+        assert_eq!(
+            c[0],
+            Some(1.0),
+            "a wall one cell out is within a tolerance of one cell"
+        );
+    }
+
+    #[test]
+    fn the_yaml_names_the_incidence_limit_and_the_lookup_rule() {
+        let (g, t) = ideal();
+        let mut p = params();
+        p.max_incidence = DEFAULT_MAX_INCIDENCE_DEG.to_radians();
+        let y = evaluate(&g, &t, &[v(0.0, 0.0)], &p).unwrap().to_yaml();
+        assert!(y.contains("max_incidence_deg: 60\n"), "{y}");
+        assert!(y.contains("completeness_lookup: closed_cells\n"));
+        let y = evaluate(&g, &t, &[v(0.0, 0.0)], &params())
+            .unwrap()
+            .to_yaml();
+        assert!(y.contains("max_incidence_deg: 90\n"));
     }
 }

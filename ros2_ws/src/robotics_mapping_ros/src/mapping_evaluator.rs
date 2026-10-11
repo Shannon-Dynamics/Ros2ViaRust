@@ -120,6 +120,14 @@ fn main() -> Result<(), RclrsError> {
         100.0,
         "Sensor range limit (m)",
     )?;
+    let max_incidence_deg = p.f64(
+        &node,
+        "max_incidence_deg",
+        robotics_mapping::DEFAULT_MAX_INCIDENCE_DEG,
+        1.0,
+        90.0,
+        "Observability: largest angle (deg) between a surface normal and the direction to a pose; 90 is no limit. Fixed in scripts/phase4_verdict.py, which refuses a different one",
+    )?;
     let stride = p.i64(
         &node,
         "coverage_stride",
@@ -327,6 +335,9 @@ fn main() -> Result<(), RclrsError> {
                     tau: tau_cells * m.geometry.resolution,
                     sample_spacing: spacing,
                     max_range,
+                    max_incidence: max_incidence_deg
+                        .to_radians()
+                        .min(std::f64::consts::FRAC_PI_2),
                     coverage_stride: stride,
                 },
             )

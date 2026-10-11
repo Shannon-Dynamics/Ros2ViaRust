@@ -1,7 +1,7 @@
 //! Grade a saved grid against the analytic geometry of the world.
 //!
 //!     cargo run --release -p robotics_mapping --example map_metrics -- \
-//!         <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml]
+//!         <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml] [max_incidence_deg]
 //!
 //! * `grid.txt`: the text form written by `OccupancyGrid::to_text` (the `mapping_evaluator`
 //!   node writes one at the end of a run).
@@ -9,6 +9,8 @@
 //! * `positions.csv`: the lidar positions of the run, one `x,y` pair per line (a header line
 //!   that does not parse as numbers is skipped).
 //! * `tau_cells`: the tolerance in cells, as fixed in `scripts/phase4_verdict.py`.
+//! * `max_incidence_deg`: the incidence limit of the observability test, default 60 (`DEFAULT_MAX_INCIDENCE_DEG`);
+//!   90 is no limit, the evaluator as it was before 2026-10-11.
 //!
 //! Writes the metrics of `docs/phase-4-mapping/benchmark.md` section 2 as `key: value` lines
 //! to `out.yaml`, or to standard output. Nothing here is a verdict; the verdict is
@@ -20,9 +22,9 @@ use std::process::ExitCode;
 
 fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.len() < 4 || args.len() > 5 {
+    if args.len() < 4 || args.len() > 6 {
         return Err(
-            "usage: map_metrics <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml]"
+            "usage: map_metrics <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml] [max_incidence_deg]"
                 .into(),
         );
     }
@@ -44,10 +46,17 @@ fn run() -> Result<(), String> {
     let tau_cells: f64 = args[3]
         .parse()
         .map_err(|_| format!("tau_cells: {:?}", args[3]))?;
+    let max_incidence_deg: f64 = match args.get(5) {
+        None => robotics_mapping::DEFAULT_MAX_INCIDENCE_DEG,
+        Some(v) => v.parse().map_err(|_| format!("max_incidence_deg: {v:?}"))?,
+    };
     let params = EvalParams {
         tau: tau_cells * grid.resolution(),
         sample_spacing: 0.01,
         max_range: 3.5,
+        max_incidence: max_incidence_deg
+            .to_radians()
+            .min(std::f64::consts::FRAC_PI_2),
         coverage_stride: 10,
     };
     let metrics = evaluate(&grid, &truth, &positions, &params).map_err(|e| e.to_string())?;

@@ -109,6 +109,7 @@ fn eval_params(tau_cells: f64) -> EvalParams {
         tau: tau_cells * 0.05,
         sample_spacing: 0.01,
         max_range: 3.5,
+        max_incidence: robotics_mapping::DEFAULT_MAX_INCIDENCE_DEG.to_radians(),
         coverage_stride: 10,
     }
 }

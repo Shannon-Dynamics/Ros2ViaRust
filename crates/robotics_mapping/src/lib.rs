@@ -39,7 +39,10 @@ pub mod raycast;
 
 pub use entropy::{cell_entropy_bits, grid_entropy, GridEntropy};
 pub use esdf::{signed_esdf, EsdfGrid};
-pub use eval::{evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample};
+pub use eval::{
+    evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample,
+    DEFAULT_MAX_INCIDENCE_DEG,
+};
 pub use gate::{MotionFilter, MotionGate};
 pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport, DEFAULT_CLEAR_MARGIN};
 pub use layout::BeamLayout;

@@ -50,6 +50,19 @@ import sys
 # metrics carry a different one.
 TAU_CELLS = 1.0
 
+# The two rules of the evaluator (robotics_mapping::eval) that decide what the metrics mean, fixed here
+# like tau and refused when a run's map-metrics.yaml says otherwise. ADDED ON 2026-10-11, at Stage C
+# of the work that followed the three evaluation runs (docs/phase-4-mapping/implementation.md section
+# 5.4), before the fourth development run and before any run graded with them; no tolerance below
+# was changed. The runs made before that date were graded without these keys and keep the verdict
+# files they have; this script no longer regrades them (they would be refused).
+#   MAX_INCIDENCE_DEG: a surface sample is observable only if some pose sees it within this angle of
+#     its normal. A judgment call, with the curve it rests on, in section 5.4.
+#   COMPLETENESS_LOOKUP: a sample is found if an occupied cell is within tau of any cell whose closed
+#     box contains it, so that the verdict does not depend on how a tie on a lattice line is rounded.
+MAX_INCIDENCE_DEG = 60.0
+COMPLETENESS_LOOKUP = "closed_cells"
+
 # Surface error of the occupied cells, 95th percentile. A hit lands in the cell that contains
 # the measured endpoint, whose centre is at most half a cell diagonal (0.71 cells) from that
 # endpoint; the range noise of the LDS-01 model is 0.0043 of the range, at most 15 mm or 0.3
@@ -269,6 +282,10 @@ def grade(run):
         reasons.append(f"too many scans were skipped for motion: {skipped_motion} of {seen}")
     if metrics and num(metrics.get("tau_cells")) != TAU_CELLS:
         reasons.append(f"the metrics used tau_cells {metrics.get('tau_cells')}, this script grades {TAU_CELLS}")
+    if metrics and num(metrics.get("max_incidence_deg")) != MAX_INCIDENCE_DEG:
+        reasons.append(f"the metrics used max_incidence_deg {metrics.get('max_incidence_deg')}, this script grades {MAX_INCIDENCE_DEG}")
+    if metrics and metrics.get("completeness_lookup") != COMPLETENESS_LOOKUP:
+        reasons.append(f"the metrics used completeness_lookup {metrics.get('completeness_lookup')}, this script grades {COMPLETENESS_LOOKUP}")
     # The mapper and the evaluator must read the same grid with the same thresholds, or the
     # states the evaluator graded are not the states the mapper held.
     mt, et = summary.get("mapper_occupied_threshold"), summary.get("evaluator_occupied_threshold")
