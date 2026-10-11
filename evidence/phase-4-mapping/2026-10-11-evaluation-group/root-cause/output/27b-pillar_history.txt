@@ -1,0 +1,21 @@
+(a) the same run graded d scans before its end (H1-corrected beams): completeness / false-free %, whole map; and the well-viewed pillar samples (a trajectory position within 15 deg) found
+run                                          d=0                    d=10                   d=20                   d=40                   d=80                   d=160
+development-3-route-long               0.9586/4.63            0.9597/4.59            0.9545/4.59            0.9530/4.85            0.9489/4.55            0.9463/4.33
+  well-viewed pillar found                 129/129                129/129                128/129                107/129                124/129                129/129
+evaluation-1-cross                     0.9098/5.59            0.9171/5.55            0.9350/5.51            0.9383/5.55            0.9332/5.99            0.9354/5.33
+  well-viewed pillar found                 141/187                146/187                151/187                163/187                155/187                166/187
+evaluation-2-wall-lobes                0.8930/6.02            0.8865/6.20            0.9065/6.35            0.9155/6.31            0.8963/7.25            0.8289/7.29
+  well-viewed pillar found                 119/211                126/211                131/211                137/211                144/211                140/211
+evaluation-3-diamond-slow              0.9320/3.59            0.9338/3.96            0.9361/4.15            0.9286/4.26            0.9361/4.26            0.9439/4.60
+  well-viewed pillar found                 120/125                123/125                123/125                117/125                119/125                113/125
+
+(b) state history of the best cell (lookup cell or 4-neighbour with the most occupied marks) of each well-viewed pillar sample; occupied = log-odds >= the occupied threshold
+run                                    n ever occ.  share of updates occupied  state changes  updates since last occupied
+development-3-route-long    found    129      1.00                       0.94             31                            0
+development-3-route-long    missed     0
+evaluation-1-cross          found    141      1.00                       0.90              9                            0
+evaluation-1-cross          missed    46      1.00                       0.84             10                            8
+evaluation-2-wall-lobes     found    119      1.00                       0.70              7                            0
+evaluation-2-wall-lobes     missed    92      1.00                       0.72              4                           31
+evaluation-3-diamond-slow   found    120      1.00                       0.97             11                            0
+evaluation-3-diamond-slow   missed     5      1.00                       0.83             16                            7

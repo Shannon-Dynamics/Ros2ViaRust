@@ -1,0 +1,22 @@
+development-3-route-long: published replay equals the saved final-grid.txt byte for byte
+development-3-route-long: pixel_centres: replayed 1312 scans (beam layout pixel_centres)
+evaluation-1-cross: published replay equals the saved final-grid.txt byte for byte
+evaluation-1-cross: pixel_centres: replayed 451 scans (beam layout pixel_centres)
+evaluation-2-wall-lobes: published replay equals the saved final-grid.txt byte for byte
+evaluation-2-wall-lobes: pixel_centres: replayed 454 scans (beam layout pixel_centres)
+evaluation-3-diamond-slow: published replay equals the saved final-grid.txt byte for byte
+evaluation-3-diamond-slow: pixel_centres: replayed 527 scans (beam layout pixel_centres)
+
+run                         layout        occupied false occ fraction p95 cells max cells complete false free coverage
+development-3-route-long    published          689        18    2.61%      0.50      1.50   0.9537      4.59%   0.9855
+development-3-route-long    pixel_centres      728         4    0.55%      0.50      1.50   0.9586      4.63%   0.9822
+evaluation-1-cross          published          778         0    0.00%      0.50      0.88   0.9259      4.86%   0.9926
+evaluation-1-cross          pixel_centres      698         0    0.00%      0.50      0.88   0.9098      5.59%   0.9839
+evaluation-2-wall-lobes     published          658         0    0.00%      0.50      0.88   0.9072      6.24%   0.9840
+evaluation-2-wall-lobes     pixel_centres      628         0    0.00%      0.50      0.88   0.8930      6.02%   0.9831
+evaluation-3-diamond-slow   published          722        57    7.89%      1.50      1.50   0.8856      4.19%   0.9869
+evaluation-3-diamond-slow   pixel_centres      689         0    0.00%      0.50      0.88   0.9320      3.59%   0.9882
+
+route 3 wall cross-section in the grids written by replay_scans.rs: [inner cell, outer cell, outer+1 cell] counted from the true face, X = occupied; positions along each wall 14..125
+  published     E: .X.:73 XX.:25 .XX:8 ..X:2 XXX:2 | N: .X.:59 XX.:39 ..X:5 .XX:5 ...:4 | W: XX.:60 .X.:29 ..X:14 ...:8 .XX:1 | S: XX.:68 .X.:21 ..X:14 ...:6 .XX:3
+  pixel_centres E: .X.:85 XX.:20 ...:7 | N: .X.:67 XX.:41 ...:4 | W: XX.:64 .X.:38 ...:10 | S: XX.:69 .X.:37 ...:6

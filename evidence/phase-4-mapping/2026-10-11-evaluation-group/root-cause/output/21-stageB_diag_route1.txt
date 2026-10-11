@@ -1,0 +1,32 @@
+evaluation-1-cross: observable 2738; false-free samples before 133 (4.86%), after 153 (5.59%); limit 5% = 136.9 samples, so headroom before: 3.9 samples
+samples that are false-free in both: 124; became false-free: 29; stopped being false-free: 9
+
+by owner (w0 S, w1 E, w2 N, w3 W; p0..p3 pillars A..D):
+  false-free before: {'p0': 37, 'p1': 36, 'p2': 32, 'p3': 28} 
+  false-free after:  {'p0': 47, 'p1': 33, 'p2': 45, 'p3': 28} 
+  became: {'p0': 10, 'p1': 6, 'p2': 13} 
+  stopped: {'p1': 9}
+
+cells touching the samples that BECAME false-free (all their closed cells are Free after the correction):
+  6 cells; marks summed over those cells, before -> after (scans in which the cell was marked):
+    occupied, any beam                            751 ->    756   (+5)
+    occupied, with >=1 END-zone beam                0 ->      4   (+4)
+    occupied, interior beams only                 751 ->    752   (+1)
+    free, any beam                                508 ->    541   (+33)
+    free, with >=1 END-zone beam crossing           0 ->      3   (+3)
+    free, interior beams only                     508 ->    538   (+30)
+  final log-odds of those cells, median before -> after: 0.45 -> -1.89; share occupied-or-unknown before 1.00
+
+where on the surface (position along the wall in m / angle round the pillar in degrees) the new false-free samples are:
+  p0: n=10  range 74 .. 108  sorted sample: [74, 78, 81, 85, 89, 93, 97, 100, 104, 108]
+  p1: n=6  range 21 .. 40  sorted sample: [21, 25, 28, 32, 36, 40]
+  p2: n=13  range 44 .. 89  sorted sample: [44, 47, 51, 55, 59, 63, 66, 70, 74, 78, 81, 85, 89]
+
+whole map, marks summed over every cell, before -> after:
+    occ               97312 ->    97333
+    occ_end            5248 ->     5398
+    occ_int_only      92064 ->    91935
+    free            4624395 ->  4623831
+    free_end         377753 ->   390157
+    free_int_only   4246642 ->  4233674
+occupied cells (state) before -> after: 778 -> 698

@@ -1,0 +1,36 @@
+replayed development-3-route-long
+replayed evaluation-1-cross
+replayed evaluation-2-wall-lobes
+replayed evaluation-3-diamond-slow
+
+C1  EVALUATOR-SIDE COUNTING: pillar samples that a trajectory position sees within 15 degrees of the normal ('well viewed' by the evaluator)
+run                         well viewed (traj)  of those: found  with NO integrated scan within 15 deg  found among those  found among the rest
+development-3-route-long                   129          129/129                                      0                  -               129/129
+evaluation-1-cross                         187          141/187                                      0                  -               141/187
+evaluation-2-wall-lobes                    211          119/211                                      1                0/1               119/210
+evaluation-3-diamond-slow                  125          120/125                                      2                2/2               118/123
+
+C2  SCAN DENSITY AND DISTANCE for the samples that ARE seen by an integrated scan within 15 degrees: found against missed
+run                                     n  scans <=15deg  scans all views  share >60deg   median range <=15deg (m)
+development-3-route-long    found     129            273             1236          0.11                       2.15
+development-3-route-long    missed      0
+evaluation-1-cross          found     141             50              343          0.18                       1.92
+evaluation-1-cross          missed     46             24              313          0.45                       1.31
+evaluation-2-wall-lobes     found     119             44              235          0.28                       2.04
+evaluation-2-wall-lobes     missed     91             45              190          0.25                       1.86
+evaluation-3-diamond-slow   found     118            138              485          0.19                       2.26
+evaluation-3-diamond-slow   missed      5             13              412          0.40                       1.10
+
+C3  PER-SCAN OUTCOME OF THE SAMPLE'S BEST CELL (the lookup cell or 4-neighbour with the most occupied marks), by the angle at which that scan sees the sample
+    share of scans that saw the sample in which the cell was marked OCCUPIED / FREE / left untouched; well-viewed samples (integrated scan within 15 deg), found vs missed
+  development-3-route-long
+    found   n=129  0-15deg: occ 0.91 free 0.03 none 0.06 (n=36910)  15-30deg: occ 0.87 free 0.04 none 0.09 (n=36172)  30-60deg: occ 0.74 free 0.12 none 0.14 (n=58314)  60-90deg: occ 0.48 free 0.32 none 0.21 (n=26448)
+  evaluation-1-cross
+    found   n=141  0-15deg: occ 0.92 free 0.03 none 0.05 (n=9471)  15-30deg: occ 0.89 free 0.04 none 0.07 (n=9005)  30-60deg: occ 0.76 free 0.08 none 0.17 (n=15630)  60-90deg: occ 0.48 free 0.20 none 0.31 (n=11498)
+    missed  n= 46  0-15deg: occ 0.91 free 0.01 none 0.07 (n=1723)  15-30deg: occ 0.87 free 0.01 none 0.12 (n=1912)  30-60deg: occ 0.73 free 0.06 none 0.20 (n=4748)  60-90deg: occ 0.40 free 0.21 none 0.38 (n=5127)
+  evaluation-2-wall-lobes
+    found   n=119  0-15deg: occ 0.91 free 0.04 none 0.05 (n=5095)  15-30deg: occ 0.86 free 0.06 none 0.08 (n=4972)  30-60deg: occ 0.71 free 0.17 none 0.11 (n=9040)  60-90deg: occ 0.38 free 0.46 none 0.15 (n=7479)
+    missed  n= 91  0-15deg: occ 0.87 free 0.02 none 0.11 (n=3919)  15-30deg: occ 0.86 free 0.04 none 0.10 (n=3659)  30-60deg: occ 0.74 free 0.13 none 0.13 (n=6078)  60-90deg: occ 0.44 free 0.35 none 0.22 (n=4630)
+  evaluation-3-diamond-slow
+    found   n=118  0-15deg: occ 0.88 free 0.02 none 0.10 (n=14381)  15-30deg: occ 0.85 free 0.04 none 0.10 (n=12898)  30-60deg: occ 0.76 free 0.09 none 0.14 (n=18168)  60-90deg: occ 0.48 free 0.30 none 0.21 (n=10276)
+    missed  n=  5  0-15deg: occ 1.00 free 0.00 none 0.00 (n=90)  15-30deg: occ 0.96 free 0.02 none 0.03 (n=519)  30-60deg: occ 0.74 free 0.15 none 0.11 (n=612)  60-90deg: occ 0.40 free 0.41 none 0.19 (n=815)

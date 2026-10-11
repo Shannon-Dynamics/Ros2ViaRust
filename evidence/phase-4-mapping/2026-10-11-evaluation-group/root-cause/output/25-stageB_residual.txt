@@ -1,0 +1,8 @@
+development-3-route-long    published false-occupied cells  18; beam hits that ended in them:   163  end (0-14, 345-359): 148 (91%)  interior (15-344): 15 (9%)
+development-3-route-long    H1        false-occupied cells   4; beam hits that ended in them:    19  interior (15-344): 19 (100%)
+evaluation-1-cross          published false-occupied cells   0; beam hits that ended in them:     0
+evaluation-1-cross          H1        false-occupied cells   0; beam hits that ended in them:     0
+evaluation-2-wall-lobes     published false-occupied cells   0; beam hits that ended in them:     0
+evaluation-2-wall-lobes     H1        false-occupied cells   0; beam hits that ended in them:     0
+evaluation-3-diamond-slow   published false-occupied cells  57; beam hits that ended in them:   578  end (0-14, 345-359): 577 (100%)  interior (15-344): 1 (0%)
+evaluation-3-diamond-slow   H1        false-occupied cells   0; beam hits that ended in them:     0

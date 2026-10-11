@@ -1,0 +1,10 @@
+evaluation-1-cross: false-free limit 5%, completeness limit 0.95
+variant                                          false-free  complete false occ
+published angles                               133 ( 4.86%)    0.9259         0
+H1 on all beams                                153 ( 5.59%)    0.9098         0
+H1 on INTERIOR beams only (15-344)             153 ( 5.59%)    0.9098         0
+H1 on END beams only (0-14, 345-359)           133 ( 4.86%)    0.9259         0
+published + uniform -2 mrad                    124 ( 4.53%)    0.9270         0
+published + uniform -1 mrad                    134 ( 4.89%)    0.9251         0
+published + uniform +1 mrad                    135 ( 4.93%)    0.9222         0
+published + uniform +2 mrad                    129 ( 4.71%)    0.9222         1

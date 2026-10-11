@@ -1,0 +1,17 @@
+run                         variant                              occupied false occ  p95  complete false free   M1 checks passed (of 7)
+development-3-route-long    supercover l_max=3.4760988              728         4  0.50   0.9586     4.63%   7
+development-3-route-long    bresenham l_max=3.4760988               854         4  0.50   0.9593     4.25%   7
+development-3-route-long    supercover l_max=5.0                    888         4  0.50   0.9586     4.44%   7
+development-3-route-long    bresenham l_max=5.0                     984         4  0.50   0.9623     3.99%   7
+evaluation-1-cross          supercover l_max=3.4760988              698         0  0.50   0.9098     5.59%   5
+evaluation-1-cross          bresenham l_max=3.4760988               800         0  0.50   0.9142     4.53%   6
+evaluation-1-cross          supercover l_max=5.0                    870         0  0.50   0.9430     4.86%   6
+evaluation-1-cross          bresenham l_max=5.0                     938         0  0.50   0.9456     3.91%   6
+evaluation-2-wall-lobes     supercover l_max=3.4760988              628         0  0.50   0.8930     6.02%   5
+evaluation-2-wall-lobes     bresenham l_max=3.4760988               716         0  0.50   0.8905     5.29%   5
+evaluation-2-wall-lobes     supercover l_max=5.0                    788         0  0.50   0.9402     5.66%   5
+evaluation-2-wall-lobes     bresenham l_max=5.0                     880         0  0.50   0.9565     4.86%   7
+evaluation-3-diamond-slow   supercover l_max=3.4760988              689         0  0.50   0.9320     3.59%   6
+evaluation-3-diamond-slow   bresenham l_max=3.4760988               749         0  0.50   0.9622     2.80%   7
+evaluation-3-diamond-slow   supercover l_max=5.0                    832         0  0.50   0.9705     2.92%   7
+evaluation-3-diamond-slow   bresenham l_max=5.0                     871         0  0.50   0.9716     2.50%   7
