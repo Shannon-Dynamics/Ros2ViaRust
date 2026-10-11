@@ -114,12 +114,11 @@ const files = readdirSync(CH_DIR).filter((f) => f.endsWith('.mdx') && f !== 'ind
 const slugs = new Set(CHAPTERS.map((c) => c.slug));
 for (const f of files) if (!slugs.has(f.replace(/\.mdx$/, ''))) fail(f, 'chapter file is not in book-structure.ts (a planned phase has no chapters, and nothing is pre-built)');
 const meta = JSON.parse(read(join(CH_DIR, 'meta.json')));
-const metaSlugs = meta.pages.filter((p) => !p.startsWith('---') && p !== 'index');
-if (ONLY === null && metaSlugs.join() !== CHAPTERS.map((c) => c.slug).join()) fail('meta.json', `pages [${metaSlugs}] differ from published chapters [${CHAPTERS.map((c) => c.slug)}]`);
-for (const p of meta.pages.filter((x) => x.startsWith('---'))) {
-  const n = Number(p.match(/(?:Part|Phase) (\d+)/)?.[1]);
-  if (!PUBLISHED.some((x) => x.phase === n)) fail('meta.json', `sidebar separator "${p}" names a phase that is not published`);
-}
+const expectedPages = ['index', ...S.PHASES.filter((p) => p.phase <= 4).flatMap((p) => [
+  `---Part ${p.phase} · ${p.title}${p.status === 'planned' ? ' (planned)' : ''}---`,
+  ...p.chapters.map((c) => c.slug),
+])];
+if (ONLY === null && meta.pages.join() !== expectedPages.join()) fail('meta.json', `sidebar pages [${meta.pages}] differ from published chapters [${expectedPages}]`);
 
 const REQUIRED_FM = ['title', 'description', 'chapter', 'phase', 'phaseTitle', 'difficulty', 'readingTime', 'quote', 'quoteAuthor', 'quoteSource'];
 let widgetTotal = 0, referenceTotal = 0, present = 0;

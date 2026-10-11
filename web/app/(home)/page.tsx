@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { PHASES } from '@/lib/book-structure';
+import { CHAPTERS, PHASES } from '@/lib/book-structure';
 
 export default function HomePage() {
-  const published = PHASES.filter((p) => p.status === 'published');
-  const planned = PHASES.filter((p) => p.status === 'planned');
+  const currentParts = PHASES.filter((p) => p.phase <= 4);
+  const laterParts = PHASES.filter((p) => p.phase > 4);
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:py-16">
       <p className="mb-3 text-sm font-medium tracking-wide text-fd-primary uppercase">
@@ -28,36 +28,44 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <h2 className="mt-14 text-2xl font-semibold tracking-tight">Published</h2>
+      <h2 className="mt-14 text-2xl font-semibold tracking-tight">Parts 1–4</h2>
       <p className="mt-1 text-sm text-fd-muted-foreground">
-        A part appears here only once its experiments are finished, with its numbers
-        measured and its docs written.
+        Part 3 is localization and is planned; Part 4 is mapping and contains Chapter 4.
       </p>
-      <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-        {published.map((p) => (
-          <li key={p.phase} className="rounded-lg border border-fd-border bg-fd-card p-5">
-            <p className="text-xs font-medium tracking-wide text-fd-muted-foreground uppercase">Part {p.phase}</p>
-            <h3 className="mt-1 text-lg font-semibold">{p.title}</h3>
-            <p className="mt-2 text-sm text-fd-muted-foreground">{p.scope}</p>
-            <ul className="mt-3 space-y-1 text-sm">
-              {p.chapters.map((c) => (
-                <li key={c.slug}>
-                  <Link href={`/chapters/${c.slug}`} className="text-fd-primary hover:underline">
-                    Chapter {c.n} · {c.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {currentParts.map((part) => (
+          <li key={part.phase} className="rounded-lg border border-fd-border bg-fd-card p-4">
+            <p className="text-xs font-medium tracking-wide text-fd-muted-foreground uppercase">
+              Part {part.phase} · {part.status}
+            </p>
+            <h3 className="mt-1 font-semibold">{part.title}</h3>
           </li>
         ))}
       </ul>
 
-      <h2 className="mt-12 text-2xl font-semibold tracking-tight">Planned</h2>
+      <h2 className="mt-12 text-2xl font-semibold tracking-tight">Published chapters</h2>
       <p className="mt-1 text-sm text-fd-muted-foreground">
-        Not written yet, and not linked. A part is published once its work is finished and its chapters are written.
+        Read Chapters 1–4 in order, from foundations through mapping.
+      </p>
+      <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+        {CHAPTERS.map((chapter) => (
+          <li key={chapter.slug} className="rounded-lg border border-fd-border bg-fd-card p-5">
+            <p className="text-xs font-medium tracking-wide text-fd-muted-foreground uppercase">Chapter {chapter.n}</p>
+            <h3 className="mt-1 text-lg font-semibold">
+              <Link href={`/chapters/${chapter.slug}`} className="text-fd-primary hover:underline">
+                {chapter.title}
+              </Link>
+            </h3>
+          </li>
+        ))}
+      </ul>
+
+      <h2 className="mt-12 text-2xl font-semibold tracking-tight">Later parts</h2>
+      <p className="mt-1 text-sm text-fd-muted-foreground">
+        Planned parts have no chapter link until their chapters are written.
       </p>
       <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {planned.map((p) => (
+        {laterParts.map((p) => (
           <li key={p.phase} className="rounded-lg border border-dashed border-fd-border p-4 text-fd-muted-foreground">
             <p className="text-xs font-medium tracking-wide uppercase">Part {p.phase} · planned</p>
             <h3 className="mt-1 font-semibold text-fd-foreground/80">{p.title}</h3>
