@@ -1,0 +1,40 @@
+# Phase 4 evaluation route 6 (round two, 3 of 3): the perimeter at 0.45 m from the walls, with inward detours round the pillars.
+#
+# Used by claim M1 of ../../../docs/phase-4-mapping/problem.md section 4 in the second round of
+# evaluation runs (the first three, route_eval_cross, route_eval_wall_lobes and route_eval_diamond, were burned
+# by the analysis that followed them: ../../../docs/phase-4-mapping/implementation.md section 5.4). Written
+# from the geometry of the room alone, after the mapper's parameters were frozen for development run 4 and
+# before that run and before any run on this route; it is not shaped to avoid, or to hit, any place where an earlier
+# map was wrong. No waypoint is shared with any earlier route or with the other two of this round.
+# Driver rate: the default 0.8 rad/s turn in place.
+#
+# What the route is: from the spawn pose to the east wall at (2.55, -0.8), north along it, west along the north
+# wall, a detour inward round pillar B (along y = 1.4), down the west wall, a detour round pillar C (along y = -0.2
+# and x = -1.1), along the south wall, a detour round pillar D (up to y = -1.3 and east along it), and on to the
+# east wall. 12 waypoints, 22.8 m, twelve turns, mostly 90 degrees.
+#
+# Why this shape, and what it stresses: every wall is driven along for most of its length, at 0.45 m, so that the
+# walls are seen side-on at close range and obliquely at the far ends, and so that the mapper writes thin wall lines
+# in the cells next to the lattice lines the faces sit on; the pillars are seen from outside the detours, from the side.
+# The start is 17 degrees off the east wall's normal.
+#
+# Clearance, over every leg: landmark_a 0.49 m, landmark_b 0.34 m, landmark_c 0.54 m, landmark_d 0.43 m. Walls: 0.45 m
+# from the face, 0.34 m clear of the footprint. Turning is 14 per cent of the time.
+# Coordinates are the map frame of ./landmarks.yaml, metres.
+
+route:
+  name: perimeter-detours
+
+waypoints:
+  - {x: 2.550, y: -0.800}
+  - {x: 2.550, y: 2.550}
+  - {x: -0.100, y: 2.550}
+  - {x: -0.400, y: 1.400}
+  - {x: -2.550, y: 1.400}
+  - {x: -2.550, y: -0.200}
+  - {x: -1.100, y: -0.200}
+  - {x: -1.100, y: -2.550}
+  - {x: 0.300, y: -2.550}
+  - {x: 0.000, y: -1.300}
+  - {x: 2.000, y: -1.300}
+  - {x: 2.550, y: -0.800}

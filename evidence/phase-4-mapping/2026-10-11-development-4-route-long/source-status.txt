@@ -1,0 +1,38 @@
+ M Cargo.lock
+ M crates/robotics_mapping/examples/map_metrics.rs
+ M crates/robotics_mapping/examples/replay_scans.rs
+ M crates/robotics_mapping/src/eval.rs
+ M crates/robotics_mapping/src/lib.rs
+ M crates/robotics_mapping/src/raycast.rs
+ M crates/robotics_mapping/tests/room_mapping.rs
+ M crates/robotics_slam/Cargo.toml
+ M crates/robotics_slam/examples/slam_synthetic_run.rs
+ M crates/robotics_slam/src/icp.rs
+ M crates/robotics_slam/src/odometry.rs
+ M crates/robotics_slam/tests/front_end_it.rs
+ M ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+ M ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
+ M ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
+ M scripts/phase4_verdict.py
+ M scripts/phase5_verdict.py
+ M scripts/phase5_verdict_selftest.py
+ M scripts/run_phase3_correctness.sh
+ M scripts/run_phase4_mapping.sh
+?? crates/robotics_localization/examples/port_crosscheck.rs
+?? crates/robotics_mapping/src/layout.rs
+?? crates/robotics_slam/examples/common/
+?? crates/robotics_slam/examples/slam_recorded_run.rs
+?? crates/robotics_wasm/
+?? ros2_ws/src/robotics_localization_py/
+?? scripts/phase3_benchmark_probe.py
+?? scripts/phase3_kidnap_benchmark.py
+?? scripts/phase5_benchmark_csv.py
+?? scripts/phase5_evidence_tables.py
+?? scripts/phase5_recorded_gt_steps.py
+?? scripts/phase5_route_revisits.py
+?? scripts/run_phase3_kidnap_benchmark.sh
+?? scripts/run_phase5_slam.sh
+?? sim/webots/config/route_eval_oblique.yaml
+?? sim/webots/config/route_eval_perimeter.yaml
+?? sim/webots/config/route_eval_pillar_arcs.yaml
+?? sim/webots/config/route_slam_eval_rectangle.yaml

@@ -1,0 +1,2173 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 63d516b..8c7bcba 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -1552,6 +1552,7 @@ dependencies = [
+  "rand 0.10.3",
+  "robotics_core",
+  "robotics_filters",
++ "robotics_localization",
+  "robotics_models",
+  "robotics_sim",
+  "thiserror 2.0.21",
+diff --git a/crates/robotics_mapping/examples/map_metrics.rs b/crates/robotics_mapping/examples/map_metrics.rs
+index c1a7470..f63fcbd 100644
+--- a/crates/robotics_mapping/examples/map_metrics.rs
++++ b/crates/robotics_mapping/examples/map_metrics.rs
+@@ -1,7 +1,7 @@
+ //! Grade a saved grid against the analytic geometry of the world.
+ //!
+ //!     cargo run --release -p robotics_mapping --example map_metrics -- \
+-//!         <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml]
++//!         <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml] [max_incidence_deg]
+ //!
+ //! * `grid.txt`: the text form written by `OccupancyGrid::to_text` (the `mapping_evaluator`
+ //!   node writes one at the end of a run).
+@@ -9,6 +9,8 @@
+ //! * `positions.csv`: the lidar positions of the run, one `x,y` pair per line (a header line
+ //!   that does not parse as numbers is skipped).
+ //! * `tau_cells`: the tolerance in cells, as fixed in `scripts/phase4_verdict.py`.
++//! * `max_incidence_deg`: the incidence limit of the observability test, default 60 (`DEFAULT_MAX_INCIDENCE_DEG`);
++//!   90 is no limit, the evaluator as it was before 2026-10-11.
+ //!
+ //! Writes the metrics of `docs/phase-4-mapping/benchmark.md` section 2 as `key: value` lines
+ //! to `out.yaml`, or to standard output. Nothing here is a verdict; the verdict is
+@@ -20,9 +22,9 @@ use std::process::ExitCode;
+ 
+ fn run() -> Result<(), String> {
+     let args: Vec<String> = std::env::args().skip(1).collect();
+-    if args.len() < 4 || args.len() > 5 {
++    if args.len() < 4 || args.len() > 6 {
+         return Err(
+-            "usage: map_metrics <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml]"
++            "usage: map_metrics <grid.txt> <landmarks.yaml> <positions.csv> <tau_cells> [out.yaml] [max_incidence_deg]"
+                 .into(),
+         );
+     }
+@@ -44,10 +46,17 @@ fn run() -> Result<(), String> {
+     let tau_cells: f64 = args[3]
+         .parse()
+         .map_err(|_| format!("tau_cells: {:?}", args[3]))?;
++    let max_incidence_deg: f64 = match args.get(5) {
++        None => robotics_mapping::DEFAULT_MAX_INCIDENCE_DEG,
++        Some(v) => v.parse().map_err(|_| format!("max_incidence_deg: {v:?}"))?,
++    };
+     let params = EvalParams {
+         tau: tau_cells * grid.resolution(),
+         sample_spacing: 0.01,
+         max_range: 3.5,
++        max_incidence: max_incidence_deg
++            .to_radians()
++            .min(std::f64::consts::FRAC_PI_2),
+         coverage_stride: 10,
+     };
+     let metrics = evaluate(&grid, &truth, &positions, &params).map_err(|e| e.to_string())?;
+diff --git a/crates/robotics_mapping/examples/replay_scans.rs b/crates/robotics_mapping/examples/replay_scans.rs
+index d705aab..c63915b 100644
+--- a/crates/robotics_mapping/examples/replay_scans.rs
++++ b/crates/robotics_mapping/examples/replay_scans.rs
+@@ -1,7 +1,7 @@
+ //! Replay the scans a `mapping_node` integrated and write the grid they produce.
+ //!
+ //!     cargo run --release -p robotics_mapping --example replay_scans -- \
+-//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham] [clear margin, m]
++//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham] [clear margin, m] [published|pixel_centres]
+ //!
+ //! This is the check of claim M2, determinism, on real simulator data: the recording holds
+ //! every scan the mapper integrated, in the order it integrated them, each with the sensor pose
+@@ -12,16 +12,19 @@
+ //! nothing to the library's result that the library does not do on its own, and the result
+ //! does not depend on the run.
+ //!
+-//! The policies default to those of `mapping_node`; pass them if the run changed them.
++//! The policies default to those of `mapping_node`; pass them if the run changed them. The
++//! recording holds the bearings the driver published; the beam layout (`scan_beam_layout` of
++//! `mapping_node`, default `published`) is applied to each scan before it is integrated, as the
++//! node does, so a run made with `pixel_centres` is replayed with `pixel_centres`.
+ 
+ use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
+-use robotics_mapping::{NoReturn, OccupancyGrid, RayTracer, ScanIntegrator};
++use robotics_mapping::{BeamLayout, NoReturn, OccupancyGrid, RayTracer, ScanIntegrator};
+ use std::process::ExitCode;
+ 
+ fn run() -> Result<(), String> {
+     let args: Vec<String> = std::env::args().skip(1).collect();
+-    if args.len() < 3 || args.len() > 6 {
+-        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal] [clear margin]".into());
++    if args.len() < 3 || args.len() > 7 {
++        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal] [clear margin] [beam layout]".into());
+     }
+     let no_return = match args.get(3).map(String::as_str) {
+         None | Some("clear_to_max_range") => NoReturn::ClearToMaxRange,
+@@ -43,6 +46,10 @@ fn run() -> Result<(), String> {
+             .parse()
+             .map_err(|_| format!("clear margin {v:?} is not a number"))?,
+     };
++    let layout = match args.get(6) {
++        None => BeamLayout::Published,
++        Some(v) => BeamLayout::parse(v).map_err(|e| e.to_string())?,
++    };
+     let mut integrator = ScanIntegrator::new(no_return, tracer)
+         .with_clear_margin(margin)
+         .map_err(|e| e.to_string())?;
+@@ -86,13 +93,16 @@ fn run() -> Result<(), String> {
+             ranges,
+             intensities: Vec::new(),
+         };
++        let scan = layout
++            .apply(&scan)
++            .map_err(|e| format!("line {}: {e}", n + 1))?;
+         integrator
+             .integrate(&mut grid, &Se2::new(num(1)?, num(2)?, num(3)?), &scan)
+             .map_err(|e| format!("line {}: {e}", n + 1))?;
+         scans += 1;
+     }
+     std::fs::write(&args[2], grid.to_text()).map_err(|e| format!("{}: {e}", args[2]))?;
+-    eprintln!("replayed {scans} scans");
++    eprintln!("replayed {scans} scans (beam layout {})", layout.name());
+     Ok(())
+ }
+ 
+diff --git a/crates/robotics_mapping/src/eval.rs b/crates/robotics_mapping/src/eval.rs
+index 9b5b4f9..5c43323 100644
+--- a/crates/robotics_mapping/src/eval.rs
++++ b/crates/robotics_mapping/src/eval.rs
+@@ -11,8 +11,19 @@
+ //! the sample is on the side of its surface that faces the pose, and no other surface lies on
+ //! the segment between them. The fraction set aside is reported ([`MapMetrics::observable_fraction`]),
+ //! so that nobody can quietly shrink the denominator. "Observable" means *line of sight within
+-//! range from some pose*, not *a beam hit it*: with 360 beams a surface patch can lie between
+-//! two beams, and the completeness metric is exactly what shows that.
++//! range from some pose, at an incidence of at most [`EvalParams::max_incidence`]*, not *a beam
++//! hit it*: with 360 beams a surface patch can lie between two beams, and the completeness metric
++//! is exactly what shows that. The incidence limit (60 degrees, [`DEFAULT_MAX_INCIDENCE_DEG`],
++//! decided on 2026-10-11, `docs/phase-4-mapping/implementation.md` section 5.4) is the angle between
++//! the surface normal and the direction to the pose: the limb of a pillar, seen edge-on, is in the
++//! line of sight of the room's poses but is not a surface a mapper can be asked for.
++//!
++//! A surface sample is *found* when an occupied cell centre is within `tau` of the centre of a cell
++//! whose closed box contains the sample: one cell normally, two or four when the sample lies on a
++//! lattice line (a wall on the line between two cells, which is where the Phase 3 room's walls are).
++//! Taking all of them, and not one picked by rounding the tie, is what makes the verdict the same
++//! for the east and north walls as for the west and south ones; the rule is the same closed-cell
++//! rule that the false-free count already used.
+ //!
+ //! The metrics are those of `docs/phase-4-mapping/benchmark.md` section 2. The evaluator takes
+ //! a grid and a list of sensor positions and knows nothing about how the grid was made. The
+@@ -22,10 +33,15 @@
+ use crate::occupancy::{CellState, OccupancyGrid};
+ use crate::MappingError;
+ use robotics_core::nalgebra::Vector2;
+-use robotics_models::sensor::likelihood_field::{DistanceField, DistanceGrid};
++use robotics_models::sensor::likelihood_field::DistanceGrid;
+ 
+ type V2 = Vector2<f64>;
+ 
++/// The largest angle between a surface normal and the direction to a pose, in degrees, for which a
++/// sample counts as observable from that pose in the Phase 4 evaluation. A judgment call, not a
++/// measured constant: `docs/phase-4-mapping/implementation.md` section 5.4.
++pub const DEFAULT_MAX_INCIDENCE_DEG: f64 = 60.0;
++
+ #[derive(Debug, Clone, Copy, PartialEq)]
+ struct Wall {
+     a: V2,
+@@ -257,17 +273,21 @@ impl GroundTruth {
+     }
+ 
+     /// Whether `sample` is seen from `origin`: within `max_range`, on the lit side of its
+-    /// surface, with nothing in between.
++    /// surface, at most `max_incidence` (rad) off its normal (`FRAC_PI_2` is no limit: any lit
++    /// side), with nothing in between.
+     pub fn is_visible(
+         &self,
+         origin: &Vector2<f64>,
+         sample: &SurfaceSample,
+         max_range: f64,
++        max_incidence: f64,
+     ) -> bool {
+         let to_origin = origin - sample.p;
+         let dist = to_origin.norm();
++        let facing = sample.normal.dot(&to_origin);
+         dist <= max_range
+-            && sample.normal.dot(&to_origin) > 1e-9
++            && facing > 1e-9
++            && facing >= dist * max_incidence.cos()
+             && !self.blocked(origin, &sample.p, Some(sample.owner))
+     }
+ 
+@@ -291,6 +311,11 @@ pub struct EvalParams {
+     pub sample_spacing: f64,
+     /// Sensor range limit (m).
+     pub max_range: f64,
++    /// Largest angle (rad) between a sample's normal and the direction to a pose for the sample
++    /// to be observable from it, in `(0, pi/2]`; `FRAC_PI_2` means any line of sight on the lit
++    /// side (the evaluator before 2026-10-11). The Phase 4 value is
++    /// [`DEFAULT_MAX_INCIDENCE_DEG`].
++    pub max_incidence: f64,
+     /// Use every `stride`-th sensor position for the coverage test (observability always uses
+     /// all of them). Coverage costs cells times positions, and neighbouring positions see
+     /// almost the same cells.
+@@ -315,6 +340,8 @@ pub struct MapMetrics {
+     pub resolution: f64,
+     /// The tolerance used (m).
+     pub tau: f64,
++    /// The incidence limit used, in degrees (90 means none).
++    pub max_incidence_deg: f64,
+     /// Cells called occupied.
+     pub occupied_cells: usize,
+     /// Cells called free.
+@@ -396,6 +423,15 @@ pub fn evaluate(
+             return Err(MappingError::InvalidParameter { what, value: v });
+         }
+     }
++    if !(params.max_incidence.is_finite()
++        && params.max_incidence > 0.0
++        && params.max_incidence <= std::f64::consts::FRAC_PI_2 + 1e-12)
++    {
++        return Err(MappingError::InvalidParameter {
++            what: "max_incidence",
++            value: params.max_incidence,
++        });
++    }
+     if params.coverage_stride == 0 {
+         return Err(MappingError::InvalidParameter {
+             what: "coverage_stride",
+@@ -434,7 +470,7 @@ pub fn evaluate(
+         .filter(|s| {
+             sensor_positions
+                 .iter()
+-                .any(|o| truth.is_visible(o, s, params.max_range))
++                .any(|o| truth.is_visible(o, s, params.max_range, params.max_incidence))
+         })
+         .collect();
+     let occupied_mask = grid.occupied_mask();
+@@ -457,7 +493,14 @@ pub fn evaluate(
+         {
+             false_free += 1;
+         }
+-        if occupied > 0 && dist.distance(&s.p) <= params.tau {
++        // Found: an occupied cell centre within tau of the centre of any cell that touches the
++        // sample. For a sample on a lattice line that is both sides, so that the verdict does not
++        // depend on which way a tie would have been rounded.
++        if occupied > 0
++            && cells
++                .iter()
++                .any(|&(i, j)| dist.cell(i, j).is_some_and(|d| d <= params.tau))
++        {
+             found += 1;
+         }
+     }
+@@ -487,6 +530,7 @@ pub fn evaluate(
+     Ok(MapMetrics {
+         resolution: g.resolution,
+         tau: params.tau,
++        max_incidence_deg: (params.max_incidence.to_degrees() * 1e9).round() / 1e9,
+         occupied_cells: occupied,
+         free_cells: free,
+         unknown_cells: unknown,
+@@ -522,6 +566,8 @@ impl MapMetrics {
+         line("resolution_m", self.resolution.to_string());
+         line("tau_m", self.tau.to_string());
+         line("tau_cells", (self.tau / self.resolution).to_string());
++        line("max_incidence_deg", self.max_incidence_deg.to_string());
++        line("completeness_lookup", "closed_cells".to_string());
+         line("occupied_cells", self.occupied_cells.to_string());
+         line("free_cells", self.free_cells.to_string());
+         line("unknown_cells", self.unknown_cells.to_string());
+@@ -599,6 +645,9 @@ mod tests {
+         assert!(GroundTruth::room(3.0, 3.0, &[(0.0, 0.0, -1.0)]).is_err());
+     }
+ 
++    /// No incidence limit: any line of sight on the lit side, as before 2026-10-11.
++    const NO_LIMIT: f64 = std::f64::consts::FRAC_PI_2;
++
+     /// Visibility by hand. A 6 m room with a pillar of radius 0.2 centred at (1, 0), seen from
+     /// the origin: the pillar's near side is seen and its far side is not (it faces away); the
+     /// east wall behind the pillar is hidden at y = 0.25 (the ray passes 0.083 m from the
+@@ -611,27 +660,27 @@ mod tests {
+         let s = t.surface_samples(0.05).unwrap();
+         let o = v(0.0, 0.0);
+         assert!(
+-            t.is_visible(&o, find(&s, v(0.8, 0.0)), 3.5),
++            t.is_visible(&o, find(&s, v(0.8, 0.0)), 3.5, NO_LIMIT),
+             "near side of the pillar"
+         );
+         assert!(
+-            !t.is_visible(&o, find(&s, v(1.2, 0.0)), 3.5),
++            !t.is_visible(&o, find(&s, v(1.2, 0.0)), 3.5, NO_LIMIT),
+             "far side of the pillar"
+         );
+         assert!(
+-            !t.is_visible(&o, find(&s, v(3.0, 0.25)), 3.5),
++            !t.is_visible(&o, find(&s, v(3.0, 0.25)), 3.5, NO_LIMIT),
+             "wall hidden behind the pillar"
+         );
+         assert!(
+-            t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.5),
++            t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.5, NO_LIMIT),
+             "wall beside the shadow"
+         );
+         assert!(
+-            !t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.0),
++            !t.is_visible(&o, find(&s, v(3.0, 0.75)), 3.0, NO_LIMIT),
+             "3.09 m is beyond a 3 m range"
+         );
+         assert!(
+-            !t.is_visible(&v(5.0, 0.0), find(&s, v(3.0, 0.75)), 9.0),
++            !t.is_visible(&v(5.0, 0.0), find(&s, v(3.0, 0.75)), 9.0, NO_LIMIT),
+             "seen from behind"
+         );
+     }
+@@ -643,7 +692,10 @@ mod tests {
+         let o = [v(0.0, 0.0)];
+         // A range that reaches the corners (4.24 m) so that only occlusion and facing are tested.
+         let range = 10.0;
+-        let seen = s.iter().filter(|x| t.is_visible(&o[0], x, range)).count();
++        let seen = s
++            .iter()
++            .filter(|x| t.is_visible(&o[0], x, range, NO_LIMIT))
++            .count();
+         let frac = seen as f64 / s.len() as f64;
+         // Half the pillar's circumference faces away, and some of the east wall is in its
+         // shadow, so strictly less than everything and more than most.
+@@ -652,7 +704,7 @@ mod tests {
+         let o2 = [v(0.0, 0.0), v(2.5, 0.0)];
+         let seen2 = s
+             .iter()
+-            .filter(|x| o2.iter().any(|p| t.is_visible(p, x, range)))
++            .filter(|x| o2.iter().any(|p| t.is_visible(p, x, range, NO_LIMIT)))
+             .count();
+         assert!(seen2 > seen);
+     }
+@@ -687,6 +739,7 @@ mod tests {
+             tau: 0.05,
+             sample_spacing: 0.05,
+             max_range: 3.5,
++            max_incidence: NO_LIMIT,
+             coverage_stride: 1,
+         }
+     }
+@@ -846,6 +899,7 @@ mod tests {
+             tau: 0.05,
+             sample_spacing: 0.1,
+             max_range: 3.5,
++            max_incidence: NO_LIMIT,
+             coverage_stride: 1,
+         };
+         let origin = [v(0.0, 0.0)];
+@@ -897,5 +951,127 @@ mod tests {
+         let mut p = params();
+         p.sample_spacing = f64::NAN;
+         assert!(evaluate(&g, &t, &[v(0.0, 0.0)], &p).is_err());
++        for bad in [0.0, -0.1, f64::NAN, 1.6, 3.0] {
++            let mut p = params();
++            p.max_incidence = bad;
++            assert!(evaluate(&g, &t, &[v(0.0, 0.0)], &p).is_err(), "{bad}");
++        }
++    }
++
++    /// The incidence limit by hand. A pillar of radius 0.2 at (1, 0) seen from the origin. A
++    /// sample 30 degrees round from the pillar's nearest point is 36.9 degrees off its normal
++    /// as seen from the origin, one 60 degrees round is 71.0 degrees off, and the nearest
++    /// point itself is 0. With a 60 degree limit the first is observable and the second is
++    /// not; with no limit both are; the limit does not touch the walls of the room.
++    #[test]
++    fn an_incidence_limit_removes_the_limb_of_a_pillar() {
++        let t = GroundTruth::room(3.0, 3.0, &[(1.0, 0.0, 0.2)]).unwrap();
++        let s = t.surface_samples(0.01).unwrap();
++        let o = v(0.0, 0.0);
++        let limit = DEFAULT_MAX_INCIDENCE_DEG.to_radians();
++        let near = find(&s, v(0.8, 0.0));
++        let at = |a: f64| {
++            let a = a.to_radians();
++            find(&s, v(1.0 - 0.2 * a.cos(), 0.2 * a.sin()))
++        };
++        for (sample, angle, within) in [
++            (near, 0.0, true),
++            (at(30.0), 36.9, true),
++            (at(60.0), 71.0, false),
++        ] {
++            assert!(
++                t.is_visible(&o, sample, 3.5, NO_LIMIT),
++                "{angle}: seen with no limit"
++            );
++            assert_eq!(
++                t.is_visible(&o, sample, 3.5, limit),
++                within,
++                "{angle} degrees off the normal against a 60 degree limit"
++            );
++        }
++        // Wall samples are at most 45 degrees off from the middle of a square room.
++        let walls_seen = |lim: f64| {
++            s.iter()
++                .filter(|x| matches!(x.owner, Owner::Wall(_)) && t.is_visible(&o, x, 10.0, lim))
++                .count()
++        };
++        assert_eq!(walls_seen(limit), walls_seen(NO_LIMIT));
++        // And fewer samples are observable overall.
++        let all = |lim: f64| s.iter().filter(|x| t.is_visible(&o, x, 10.0, lim)).count();
++        assert!(all(limit) < all(NO_LIMIT));
++    }
++
++    /// The verdict does not depend on which wall is displaced. A 1 m room whose faces lie on
++    /// lattice lines (grid from -0.7, 0.1 m cells): the faces x, y = +/- 0.5 are the lines
++    /// between the inner cell columns 2 and 11 and the outer ones 1 and 12. Every wall is
++    /// mapped on its outer cells, except one that is mapped one cell further out (columns 0 and
++    /// 13, a displaced wall of exactly the kind the 2026-10-11 analysis found). Looking the
++    /// wall up on one cell picked by rounding the tie made the east and north walls found and
++    /// the west and south walls missing; the closed-cell rule gives the same completeness for
++    /// all four.
++    #[test]
++    fn completeness_is_the_same_whichever_wall_is_displaced() {
++        let geometry = GridGeometry {
++            width: 14,
++            height: 14,
++            resolution: 0.1,
++            origin: v(-0.7, -0.7),
++        };
++        let t = GroundTruth::room(0.5, 0.5, &[]).unwrap();
++        // side: 0 west, 1 east, 2 south, 3 north
++        let build = |side: usize| {
++            let mut g = OccupancyGrid::new(geometry, OccupancyParams::default()).unwrap();
++            let (lo, lf) = (g.params().l_occ, g.params().l_free);
++            for j in 2..=11 {
++                for i in 2..=11 {
++                    g.add_evidence(i, j, lf);
++                    g.add_evidence(i, j, lf);
++                }
++            }
++            let mut occupy = |i: usize, j: usize| {
++                for _ in 0..4 {
++                    g.add_evidence(i, j, lo);
++                }
++            };
++            for k in 2..=11 {
++                occupy(if side == 0 { 0 } else { 1 }, k);
++                occupy(if side == 1 { 13 } else { 12 }, k);
++                occupy(k, if side == 2 { 0 } else { 1 });
++                occupy(k, if side == 3 { 13 } else { 12 });
++            }
++            g
++        };
++        let mut p = params();
++        p.tau = 0.1;
++        let c: Vec<Option<f64>> = (0..4)
++            .map(|side| {
++                evaluate(&build(side), &t, &[v(0.0, 0.0)], &p)
++                    .unwrap()
++                    .completeness
++            })
++            .collect();
++        assert!(
++            c.iter().all(|x| *x == c[0]),
++            "completeness by displaced side: {c:?}"
++        );
++        assert_eq!(
++            c[0],
++            Some(1.0),
++            "a wall one cell out is within a tolerance of one cell"
++        );
++    }
++
++    #[test]
++    fn the_yaml_names_the_incidence_limit_and_the_lookup_rule() {
++        let (g, t) = ideal();
++        let mut p = params();
++        p.max_incidence = DEFAULT_MAX_INCIDENCE_DEG.to_radians();
++        let y = evaluate(&g, &t, &[v(0.0, 0.0)], &p).unwrap().to_yaml();
++        assert!(y.contains("max_incidence_deg: 60\n"), "{y}");
++        assert!(y.contains("completeness_lookup: closed_cells\n"));
++        let y = evaluate(&g, &t, &[v(0.0, 0.0)], &params())
++            .unwrap()
++            .to_yaml();
++        assert!(y.contains("max_incidence_deg: 90\n"));
+     }
+ }
+diff --git a/crates/robotics_mapping/src/lib.rs b/crates/robotics_mapping/src/lib.rs
+index 656b3e9..6fe7fa2 100644
+--- a/crates/robotics_mapping/src/lib.rs
++++ b/crates/robotics_mapping/src/lib.rs
+@@ -11,6 +11,8 @@
+ //!   centres and the exact supercover of the continuous segment.
+ //! * [`gate`]: the refusal of scans whose timestamp cannot be trusted while the pose changes,
+ //!   a measured property of the Webots lidar driver and not a general nicety.
++//! * [`layout`]: which bearings the beams of a scan are taken to have, for the one sensor whose
++//!   published bearings differ from what the simulator measured (the Webots LDS-01); off by default.
+ //! * [`integrate`]: the hand-crafted inverse sensor model and the integration of one laser
+ //!   scan, one update per cell per scan, with a documented policy for beams that returned
+ //!   nothing.
+@@ -31,14 +33,19 @@ pub mod esdf;
+ pub mod eval;
+ pub mod gate;
+ pub mod integrate;
++pub mod layout;
+ pub mod occupancy;
+ pub mod raycast;
+ 
+ pub use entropy::{cell_entropy_bits, grid_entropy, GridEntropy};
+ pub use esdf::{signed_esdf, EsdfGrid};
+-pub use eval::{evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample};
++pub use eval::{
++    evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample,
++    DEFAULT_MAX_INCIDENCE_DEG,
++};
+ pub use gate::{MotionFilter, MotionGate};
+ pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport, DEFAULT_CLEAR_MARGIN};
++pub use layout::BeamLayout;
+ pub use occupancy::{CellState, GridGeometry, OccupancyGrid, OccupancyParams};
+ 
+ /// Errors of the mapping library.
+diff --git a/crates/robotics_mapping/src/raycast.rs b/crates/robotics_mapping/src/raycast.rs
+index e7ac73e..7c526a9 100644
+--- a/crates/robotics_mapping/src/raycast.rs
++++ b/crates/robotics_mapping/src/raycast.rs
+@@ -380,6 +380,22 @@ mod tests {
+     }
+ 
+     proptest! {
++        /// The Bresenham line between two cell indices has `max(|dx|, |dy|) + 1` cells, both ends
++        /// included, and every step moves to a neighbouring cell (8-connected, never repeating).
++        #[test]
++        fn bresenham_has_chebyshev_length_both_ends_and_unit_steps(
++            ax in -50i32..50, ay in -50i32..50, bx in -50i32..50, by in -50i32..50,
++        ) {
++            let cells: Vec<(i32, i32)> = Bresenham::new((ax, ay), (bx, by)).collect();
++            let cheb = (bx - ax).abs().max((by - ay).abs()) as usize;
++            prop_assert_eq!(cells.len(), cheb + 1);
++            prop_assert_eq!(cells[0], (ax, ay));
++            prop_assert_eq!(*cells.last().unwrap(), (bx, by));
++            for w in cells.windows(2) {
++                prop_assert!((w[1].0 - w[0].0).abs() <= 1 && (w[1].1 - w[0].1).abs() <= 1 && w[1] != w[0]);
++            }
++        }
++
+         /// M3: the traversal visits exactly the cells the segment crosses, in order, each once,
+         /// with 4-connected steps (random segments do not pass through lattice corners).
+         #[test]
+diff --git a/crates/robotics_mapping/tests/room_mapping.rs b/crates/robotics_mapping/tests/room_mapping.rs
+index 65f6abc..d56d7d9 100644
+--- a/crates/robotics_mapping/tests/room_mapping.rs
++++ b/crates/robotics_mapping/tests/room_mapping.rs
+@@ -109,6 +109,7 @@ fn eval_params(tau_cells: f64) -> EvalParams {
+         tau: tau_cells * 0.05,
+         sample_spacing: 0.01,
+         max_range: 3.5,
++        max_incidence: robotics_mapping::DEFAULT_MAX_INCIDENCE_DEG.to_radians(),
+         coverage_stride: 10,
+     }
+ }
+diff --git a/crates/robotics_slam/Cargo.toml b/crates/robotics_slam/Cargo.toml
+index 9561840..9f3d0a3 100644
+--- a/crates/robotics_slam/Cargo.toml
++++ b/crates/robotics_slam/Cargo.toml
+@@ -20,3 +20,5 @@ thiserror = { workspace = true }
+ approx = { workspace = true }
+ proptest = { workspace = true }
+ robotics_sim = { workspace = true }
++# The S7 harness (examples only) takes landmark detections from the Phase 3 pillar detector.
++robotics_localization = { workspace = true }
+diff --git a/crates/robotics_slam/examples/slam_synthetic_run.rs b/crates/robotics_slam/examples/slam_synthetic_run.rs
+index b2499b4..c9119b6 100644
+--- a/crates/robotics_slam/examples/slam_synthetic_run.rs
++++ b/crates/robotics_slam/examples/slam_synthetic_run.rs
+@@ -1,40 +1,54 @@
+-//! A seeded Rusty run that writes `slam-metrics.yaml`, the only input of
+-//! `scripts/phase5_verdict.py` (schema in that file's header).
++//! A seeded Rusty run along a route file that writes `slam-metrics.yaml` and the recorded scan
++//! stream `scans.csv` it was graded on. The only input of `scripts/phase5_verdict.py`.
+ //!
+ //! ```text
+ //! cargo run --release -p robotics_slam --example slam_synthetic_run -- \
+-//!     --out DIR [--seed 1] [--laps 2.0] [--yaw-bias 0.0] [--role development]
++//!     --out DIR --route sim/webots/config/route_long.yaml [--laps 1] [--angular 0.8] \
++//!     [--seed 1] [--yaw-bias 0.0] [--role development] [--info-inflation K]
+ //! ```
+ //!
+-//! The world is the Phase 3 room (walls at ±3 m, four pillars) scanned by a lidar shaped like the
+-//! Webots one. Ground truth is exact. What is measured, by claim:
++//! The world is the Phase 3 room (walls at ±3 m, four 12-sided pillars of radius 0.15 m) scanned
++//! by a lidar shaped like the Webots one (360 beams, 0.12 to 3.5 m, 15 mm of range noise, no
++//! dropout). The robot drives the waypoints the way `route_driver` does: a turn in place at
++//! `--angular` rad/s, then a straight leg at 0.18 m/s, one scan every 0.2 s, exact kinematics and
++//! exact stamps. Ground truth is exact. The scans are written to `scans.csv` and read back, and
++//! everything below is graded on what was read back.
+ //!
+-//! * S1a, S2: every registration of scan `k+1` against scan `k` along the route, started from
+-//!   zero motion, against the ground-truth relative pose; and the NEES of each under the
+-//!   reported information.
+-//! * S1b: seeded trial sets of ICP from random initial offsets of growing size.
+-//! * S4: the keyframe trajectory of the pose graph against ground truth, with and without the
+-//!   verified loop closures. `--yaw-bias` injects a systematic yaw error per keyframe into the
+-//!   odometry edges the graph is handed (and says so in the file); 0 leaves only the natural
+-//!   drift of the scan matcher.
+-//! * S5: every loop candidate, labelled by the error of the accepted measurement against ground
+-//!   truth (a wrong constraint is the harm), and the reason for each rejection.
+-//! * S6: whether a second run is bit-identical, and the latency of registrations and
+-//!   optimizations (wall time: this is the one place in the crate that reads a clock).
++//! * S1a, S2: every consecutive pair of scans registered from zero motion (threshold 0.3 m)
++//!   against the ground-truth relative pose, and the NEES of each under the reported information.
++//! * S1b: seeded trial sets of ICP from random initial offsets of growing size, on one pair.
++//! * S4, S5: the pose graph on LiDAR-odometry edges (edge information is the compounded ICP
++//!   information, scaled by the frozen `info_inflation`), with and without verified loop closures.
++//!   `--yaw-bias` injects a systematic yaw error per keyframe into the edges the graph is handed
++//!   and says so in the file; 0 leaves only the natural drift of the scan matcher.
++//! * S6: whether a second run of the whole pipeline on the recorded file is bit-identical, and
++//!   the wall time of every registration and every optimization (the one place in the crate that
++//!   reads a clock).
++//! * S7: EKF-SLAM and the grid RBPF on the same route, fed SYNTHETIC wheel-odometry increments
++//!   (ground-truth increments with a declared noise and a declared systematic yaw error per
++//!   metre; Webots' odometry has none, see docs/phase-3-localization/theory.md section 6) and,
++//!   for EKF-SLAM, the pillar detections of `robotics_localization::pillars` on the same scans.
++//!   Informative: who does better is a statement about that odometry setting.
+ //!
+ //! It writes nothing outside `--out`, and it does not know the tolerances.
+ 
+-use nalgebra::{Matrix3, Vector2, Vector3};
++mod common;
++
++use common::*;
++use nalgebra::{Vector2, Vector3};
+ use rand::RngExt;
+-use robotics_core::{seeded_rng, LaserScan, Manifold, Se2, Timestamp};
++use robotics_core::angle::normalize_angle;
++use robotics_core::{seeded_rng, Manifold, Se2, Timestamp};
++use robotics_localization::pillars::{detect, PillarDetector};
+ use robotics_sim::{Lidar, LidarConfig, World};
+-use robotics_slam::icp::{register, scan_points, IcpConfig};
+-use robotics_slam::odometry::{EdgeAccumulator, LidarOdometry, OdometryConfig};
+-use robotics_slam::pose_graph::{LoopOutcome, PoseGraph, PoseGraphConfig, Reason, Verification};
+-use robotics_slam::voxel::{downsample, VoxelMap};
+-use std::collections::BTreeMap;
++use robotics_slam::ekf_slam::{EkfSlam, EkfSlamConfig, RangeBearing};
++use robotics_slam::icp::register;
++use robotics_slam::rbpf::{Rbpf, RbpfConfig};
+ use std::fmt::Write as _;
+-use std::time::Instant;
++
++const PILLARS: [(f64, f64); 4] = [(1.8, 1.2), (-1.4, 2.0), (-2.0, -1.0), (0.9, -2.1)];
++const LINEAR: f64 = 0.18;
++const SCAN_PERIOD: f64 = 0.2;
+ 
+ fn v(x: f64, y: f64) -> Vector2<f64> {
+     Vector2::new(x, y)
+@@ -43,7 +57,7 @@ fn v(x: f64, y: f64) -> Vector2<f64> {
+ fn pillar_room() -> World {
+     let mut w = World::empty();
+     w.add_rectangle(v(-3.0, -3.0), v(3.0, 3.0)).unwrap();
+-    for (cx, cy) in [(1.8, 1.2), (-1.4, 2.0), (-2.0, -1.0), (0.9, -2.1)] {
++    for (cx, cy) in PILLARS {
+         let ring: Vec<_> = (0..12)
+             .map(|k| {
+                 let a = std::f64::consts::TAU * k as f64 / 12.0;
+@@ -71,176 +85,218 @@ fn lidar(seed: u64) -> Lidar {
+     .unwrap()
+ }
+ 
+-fn circle_route(radius: f64, step: f64, laps: f64) -> Vec<Se2> {
+-    let n = (std::f64::consts::TAU * radius * laps / step).round() as usize;
+-    (0..n)
+-        .map(|k| {
+-            let a = k as f64 * step / radius;
+-            Se2::new(
+-                radius * a.cos(),
+-                radius * a.sin(),
+-                a + std::f64::consts::FRAC_PI_2,
+-            )
+-        })
+-        .collect()
+-}
+-
+-fn points(scan: &LaserScan) -> Vec<Vector2<f64>> {
+-    downsample(&scan_points(scan), 0.05).unwrap()
+-}
+-
+-fn target_map(points: &[Vector2<f64>]) -> VoxelMap {
+-    let mut m = VoxelMap::new(0.1, 8).unwrap();
+-    m.insert_all(points);
+-    m
++fn waypoints(path: &str) -> Vec<(f64, f64)> {
++    let text = std::fs::read_to_string(path).unwrap_or_else(|e| panic!("{path}: {e}"));
++    let mut out = Vec::new();
++    for line in text.lines() {
++        let t = line.trim();
++        if t.starts_with('#') {
++            continue;
++        }
++        if let (Some(xi), Some(yi)) = (t.find("x:"), t.find("y:")) {
++            let num = |s: &str| -> f64 {
++                s.trim_start()
++                    .split([',', '}'])
++                    .next()
++                    .unwrap()
++                    .trim()
++                    .parse()
++                    .expect("waypoint number")
++            };
++            out.push((num(&t[xi + 2..]), num(&t[yi + 2..])));
++        }
++    }
++    assert!(!out.is_empty(), "{path}: no waypoints");
++    out
+ }
+ 
+-fn percentile(sorted: &[f64], q: f64) -> f64 {
+-    if sorted.is_empty() {
+-        return f64::NAN;
++/// Poses at scan rate along the waypoints: a turn in place, then a straight leg, per waypoint.
++fn trajectory(wps: &[(f64, f64)], angular: f64) -> Vec<Se2> {
++    let (mut x, mut y, mut th) = (0.0f64, 0.0f64, 0.0f64);
++    let mut out = vec![Se2::new(x, y, th)];
++    for &(wx, wy) in wps {
++        let target = (wy - y).atan2(wx - x);
++        let d = normalize_angle(target - th);
++        let n = ((d.abs() / (angular * SCAN_PERIOD)) - 1e-9).ceil().max(0.0) as usize;
++        for _ in 0..n {
++            th = normalize_angle(th + d / n as f64);
++            out.push(Se2::new(x, y, th));
++        }
++        let dist = (wx - x).hypot(wy - y);
++        let n = ((dist / (LINEAR * SCAN_PERIOD)) - 1e-9).ceil().max(0.0) as usize;
++        for i in 0..n {
++            x += (wx - x) / (n - i) as f64;
++            y += (wy - y) / (n - i) as f64;
++            out.push(Se2::new(x, y, th));
++        }
++        th = target;
+     }
+-    let rank = ((q * sorted.len() as f64).ceil() as usize).clamp(1, sorted.len());
+-    sorted[rank - 1]
++    out
+ }
+ 
+-fn sorted(mut x: Vec<f64>) -> Vec<f64> {
+-    x.sort_by(|a, b| a.total_cmp(b));
+-    x
++fn gauss(rng: &mut impl rand::Rng) -> f64 {
++    let (u1, u2): (f64, f64) = (rng.random::<f64>().max(1e-300), rng.random::<f64>());
++    (-2.0 * u1.ln()).sqrt() * (std::f64::consts::TAU * u2).cos()
+ }
+ 
+-fn stats(label: &str, x: &[f64], out: &mut String, indent: &str) {
+-    let s = sorted(x.to_vec());
+-    if s.is_empty() {
+-        let _ = writeln!(
+-            out,
+-            "{indent}{label}: {{median: 0.0, p95: 0.0, p99: 0.0, max: 0.0, count: 0}}"
+-        );
+-        return;
+-    }
+-    let _ = writeln!(
+-        out,
+-        "{indent}{label}: {{median: {:.12}, p95: {:.12}, p99: {:.12}, max: {:.12}, count: {}}}",
+-        percentile(&s, 0.5),
+-        percentile(&s, 0.95),
+-        percentile(&s, 0.99),
+-        s.last().copied().unwrap_or(f64::NAN),
+-        s.len()
+-    );
+-}
++/// The declared synthetic odometry of S7. Per increment of translation `d` and rotation `φ`,
++/// body-frame noise `σx = 0.02 d + 0.001`, `σy = 0.01 d + 0.001`, `σθ = 0.03 |φ| + 0.005 d + 0.002`,
++/// plus a systematic yaw error of `YAW_BIAS_PER_M` rad per metre travelled.
++const NOISE: [f64; 6] = [0.02, 0.001, 0.01, 0.001, 0.03, 0.005];
++const NOISE_ROT_FLOOR: f64 = 0.002;
++const YAW_BIAS_PER_M: f64 = 0.005;
+ 
+-fn info(sx: f64, sth: f64) -> Matrix3<f64> {
+-    Matrix3::from_diagonal(&Vector3::new(
+-        1.0 / (sx * sx),
+-        1.0 / (sx * sx),
+-        1.0 / (sth * sth),
+-    ))
++fn noisy_increment(inc: &Se2, rng: &mut impl rand::Rng) -> (Se2, nalgebra::Matrix3<f64>) {
++    let d = inc.translation().norm();
++    let phi = inc.theta().abs();
++    let sx = NOISE[0] * d + NOISE[1];
++    let sy = NOISE[2] * d + NOISE[3];
++    let st = NOISE[4] * phi + NOISE[5] * d + NOISE_ROT_FLOOR;
++    let eps = Vector3::new(
++        sx * gauss(rng),
++        sy * gauss(rng),
++        st * gauss(rng) + YAW_BIAS_PER_M * d,
++    );
++    let r = nalgebra::Matrix3::from_diagonal(&Vector3::new(sx * sx, sy * sy, st * st));
++    (inc.boxplus(&eps), r)
+ }
+ 
+-struct Pipeline {
+-    graph: PoseGraph,
+-    truth: Vec<Se2>,
+-    dead: Vec<Se2>,
+-    outcomes: Vec<LoopOutcome>,
+-    registration_s: Vec<f64>,
+-    optimization_s: Vec<f64>,
+-    path_length: f64,
++fn traj_summary(est: &[Se2], truth: &[Se2]) -> (f64, f64, f64) {
++    let errs: Vec<f64> = est
++        .iter()
++        .zip(truth)
++        .map(|(a, b)| a.distance_to(b))
++        .collect();
++    let rms = (errs.iter().map(|e| e * e).sum::<f64>() / errs.len() as f64).sqrt();
++    (
++        rms,
++        errs.iter().cloned().fold(0.0, f64::max),
++        *errs.last().unwrap(),
++    )
+ }
+ 
+-fn pipeline(seed: u64, laps: f64, yaw_bias: f64) -> Pipeline {
+-    let world = pillar_room();
+-    let route = circle_route(1.4, 0.06, laps);
+-    let mut lid = lidar(seed);
+-    let mut odo = LidarOdometry::new(OdometryConfig::default()).unwrap();
+-    let mut graph = PoseGraph::new(PoseGraphConfig::default()).unwrap();
+-    let mut acc = EdgeAccumulator::new();
+-    let origin = route[0];
+-    let (mut truth, mut outcomes) = (Vec::new(), Vec::new());
+-    let (mut registration_s, mut optimization_s) = (Vec::new(), Vec::new());
+-    for (k, p) in route.iter().enumerate() {
+-        let scan = lid.scan(&world, p, Timestamp::from_secs_f64(0.2 * k as f64));
+-        let t0 = Instant::now();
+-        let step = odo.step(&scan).unwrap();
+-        registration_s.push(t0.elapsed().as_secs_f64());
+-        if k == 0 {
+-            graph
+-                .add_keyframe(points(&scan), &Se2::IDENTITY, &info(0.03, 0.01))
+-                .unwrap();
+-            truth.push(origin.between(p));
+-            continue;
+-        }
+-        acc.push(&step.delta, &step.information).unwrap();
+-        if graph.wants_keyframe(&acc.delta()) {
+-            let (delta, _) = acc.take().unwrap();
+-            let biased = delta.boxplus(&Vector3::new(0.0, 0.0, yaw_bias));
+-            let id = graph
+-                .add_keyframe(points(&scan), &biased, &info(0.03, 0.01))
+-                .unwrap();
+-            truth.push(origin.between(p));
+-            let t0 = Instant::now();
+-            let out = graph.process_loops(id).unwrap();
+-            if out
+-                .iter()
+-                .any(|o| matches!(o.verification, Verification::Accepted { .. }))
+-            {
+-                optimization_s.push(t0.elapsed().as_secs_f64());
+-            }
+-            outcomes.extend(out);
+-        }
++fn s7(frames: &[Frame], seed: u64, out: &mut String) {
++    let origin = frames[0].gt;
++    let truth: Vec<Se2> = frames.iter().map(|f| origin.between(&f.gt)).collect();
++    let mut rng = seeded_rng(seed.wrapping_add(2000));
++    let mut incs = Vec::new();
++    for w in truth.windows(2) {
++        incs.push(noisy_increment(&w[0].between(&w[1]), &mut rng));
+     }
+     let mut dead = vec![Se2::IDENTITY];
+-    for f in graph.factor_graph().factors().iter().skip(1) {
+-        if let robotics_slam::factor_graph::FactorKind::Between {
+-            from,
+-            to,
+-            measurement,
+-        } = f.kind()
+-        {
+-            if *to == *from + 1 && dead.len() == *to {
+-                let next = dead[*from].compose(measurement);
+-                dead.push(next);
++    for (d, _) in &incs {
++        let next = dead.last().unwrap().compose(d);
++        dead.push(next);
++    }
++
++    // EKF-SLAM with the pillar detections of the same scans.
++    let mut ekf = EkfSlam::new(Se2::IDENTITY, EkfSlamConfig::default()).unwrap();
++    let det = PillarDetector::default();
++    let mut ekf_poses = vec![Se2::IDENTITY];
++    let mut nees = Vec::new();
++    let (mut within, mut counted) = (0usize, 0usize);
++    let bound = robotics_core::prob::chi2_quantile(3, 0.975).unwrap();
++    for (k, fr) in frames.iter().enumerate().skip(1) {
++        let (d, r) = &incs[k - 1];
++        ekf.predict(d, r).unwrap();
++        let obs: Vec<RangeBearing> = detect(&fr.scan, &det)
++            .iter()
++            .map(|x| RangeBearing {
++                range: x.z.range,
++                bearing: x.z.bearing,
++            })
++            .collect();
++        ekf.update(&obs).unwrap();
++        let est = ekf.pose();
++        ekf_poses.push(est);
++        if let Some(pi) = ekf.pose_covariance().try_inverse() {
++            let e = Vector3::new(
++                truth[k].x() - est.x(),
++                truth[k].y() - est.y(),
++                normalize_angle(truth[k].theta() - est.theta()),
++            );
++            let n = e.dot(&(pi * e));
++            nees.push(n);
++            counted += 1;
++            if n <= bound {
++                within += 1;
+             }
+         }
+     }
+-    let path_length = truth.windows(2).map(|w| w[0].distance_to(&w[1])).sum();
+-    Pipeline {
+-        graph,
+-        truth,
+-        dead,
+-        outcomes,
+-        registration_s,
+-        optimization_s,
+-        path_length,
+-    }
+-}
+-
+-fn trajectory_block(label: &str, est: &[Se2], truth: &[Se2], path: f64, out: &mut String) {
+-    let errs: Vec<f64> = est
++    let pill: Vec<Vector2<f64>> = PILLARS
+         .iter()
+-        .zip(truth)
+-        .map(|(a, b)| a.distance_to(b))
++        .map(|&(x, y)| origin.act_inverse(&v(x, y)))
+         .collect();
+-    let rms = (errs.iter().map(|e| e * e).sum::<f64>() / errs.len() as f64).sqrt();
+-    let max = errs.iter().cloned().fold(0.0, f64::max);
+-    let last = errs.last().copied().unwrap_or(f64::NAN);
+-    let heading = est
+-        .last()
+-        .zip(truth.last())
+-        .map(|(a, b)| a.between(b).log()[2].abs())
+-        .unwrap_or(f64::NAN);
++    let mut lm_err = 0.0f64;
++    let mut distinct = std::collections::BTreeSet::new();
++    for i in 0..ekf.landmark_count() {
++        let l = ekf.landmark(i);
++        let (j, d) = pill
++            .iter()
++            .enumerate()
++            .map(|(j, p)| (j, (p - l).norm()))
++            .min_by(|a, b| a.1.total_cmp(&b.1))
++            .unwrap();
++        lm_err = lm_err.max(d);
++        distinct.insert(j);
++    }
++
++    // The grid RBPF on the same increments and the same scans.
++    let mut rbpf = Rbpf::new(
++        RbpfConfig::default(),
++        Se2::IDENTITY,
++        seed.wrapping_add(3000),
++    )
++    .unwrap();
++    let mut rb_poses = vec![Se2::IDENTITY];
++    let (mut resamples, mut neff_sum) = (0usize, 0.0f64);
++    rbpf.update(&frames[0].scan, &Se2::IDENTITY).unwrap();
++    for (k, fr) in frames.iter().enumerate().skip(1) {
++        rbpf.predict(&incs[k - 1].0).unwrap();
++        let rep = rbpf.update(&fr.scan, &Se2::IDENTITY).unwrap();
++        resamples += usize::from(rep.resampled);
++        neff_sum += rep.n_eff_before;
++        rb_poses.push(rbpf.pose_estimate());
++    }
++
++    let (dr, ek, rb) = (
++        traj_summary(&dead, &truth),
++        traj_summary(&ekf_poses, &truth),
++        traj_summary(&rb_poses, &truth),
++    );
++    let _ = writeln!(out, "s7:");
+     let _ = writeln!(
+         out,
+-        "  {label}: {{ate_rms_m: {rms:.12}, ate_max_m: {max:.12}, final_error_m: {last:.12}, drift_m_per_m: {:.12}, heading_drift_rad_per_m: {:.12}}}",
+-        last / path,
+-        heading / path
++        "  odometry_noise: {{trans_frac: {}, trans_floor_m: {}, lateral_frac: {}, lateral_floor_m: {}, rot_per_rad: {}, rot_per_m: {}, rot_floor_rad: {NOISE_ROT_FLOOR}, yaw_bias_rad_per_m: {YAW_BIAS_PER_M}}}",
++        NOISE[0], NOISE[1], NOISE[2], NOISE[3], NOISE[4], NOISE[5]
++    );
++    let _ = writeln!(
++        out,
++        "  dead_reckoning: {{ate_rms_m: {:.12}, ate_max_m: {:.12}, final_error_m: {:.12}}}",
++        dr.0, dr.1, dr.2
++    );
++    let _ = writeln!(
++        out,
++        "  ekf_slam: {{ate_rms_m: {:.12}, ate_max_m: {:.12}, final_error_m: {:.12}, mean_nees: {:.12}, nees_samples: {counted}, nees_within_975_bound_fraction: {:.12}, landmarks: {}, distinct_pillars: {}, landmark_error_max_m: {:.12}, provisional_left: {}}}",
++        ek.0,
++        ek.1,
++        ek.2,
++        nees.iter().sum::<f64>() / nees.len().max(1) as f64,
++        within as f64 / counted.max(1) as f64,
++        ekf.landmark_count(),
++        distinct.len(),
++        lm_err,
++        ekf.provisional_count()
++    );
++    let _ = writeln!(
++        out,
++        "  rbpf: {{particles: {}, ate_rms_m: {:.12}, ate_max_m: {:.12}, final_error_m: {:.12}, resamples: {resamples}, mean_n_eff_before: {:.12}}}",
++        rbpf.particle_count(),
++        rb.0,
++        rb.1,
++        rb.2,
++        neff_sum / (frames.len() - 1) as f64
+     );
+-}
+-
+-fn bits(p: &Pipeline) -> Vec<u64> {
+-    p.graph
+-        .poses()
+-        .iter()
+-        .flat_map(|q| [q.x().to_bits(), q.y().to_bits(), q.theta().to_bits()])
+-        .collect()
+ }
+ 
+ fn main() {
+@@ -253,96 +309,105 @@ fn main() {
+             .unwrap_or_else(|| default.to_string())
+     };
+     let out_dir = get("--out", "");
+-    if out_dir.is_empty() {
+-        eprintln!("usage: slam_synthetic_run --out DIR [--seed N] [--laps X] [--yaw-bias R] [--role development|evaluation]");
++    let route = get("--route", "");
++    if out_dir.is_empty() || route.is_empty() {
++        eprintln!("usage: slam_synthetic_run --out DIR --route ROUTE.yaml [--laps N] [--angular R] [--seed N] [--yaw-bias R] [--role development|evaluation] [--info-inflation K]");
+         std::process::exit(2);
+     }
+     let seed: u64 = get("--seed", "1").parse().expect("--seed");
+-    let laps: f64 = get("--laps", "2.0").parse().expect("--laps");
++    let laps: usize = get("--laps", "1").parse().expect("--laps");
++    let angular: f64 = get("--angular", "0.8").parse().expect("--angular");
+     let yaw_bias: f64 = get("--yaw-bias", "0.0").parse().expect("--yaw-bias");
+     let role = get("--role", "development");
++    let inflation: Option<f64> = args
++        .iter()
++        .position(|a| a == "--info-inflation")
++        .and_then(|i| args.get(i + 1))
++        .map(|s| s.parse().expect("--info-inflation"));
++    std::fs::create_dir_all(&out_dir).expect("create --out");
+ 
++    // Drive the route and record the scans.
+     let world = pillar_room();
+-    let route = circle_route(1.4, 0.06, laps);
++    let wps: Vec<(f64, f64)> = (0..laps).flat_map(|_| waypoints(&route)).collect();
++    let poses = trajectory(&wps, angular);
++    let mut lid = lidar(seed);
++    let recorded: Vec<Frame> = poses
++        .iter()
++        .enumerate()
++        .map(|(k, p)| {
++            let stamp = SCAN_PERIOD * k as f64;
++            Frame {
++                stamp,
++                gt: *p,
++                scan: lid.scan(&world, p, Timestamp::from_secs_f64(stamp)),
++            }
++        })
++        .collect();
++    let csv = format!("{out_dir}/scans.csv");
++    write_frames(&csv, &recorded).expect("write scans.csv");
++    // Everything below is graded on the file, not on the process that made it.
++    let frames = read_frames(&csv).expect("read scans.csv");
++    let cfg = config(inflation);
++
+     let mut out = String::new();
++    let profile = if cfg!(debug_assertions) {
++        "debug"
++    } else {
++        "release"
++    };
++    let route_name = std::path::Path::new(&route)
++        .file_name()
++        .unwrap()
++        .to_string_lossy()
++        .to_string();
+     let _ = writeln!(out, "schema: phase5-slam-metrics/1");
+     let _ = writeln!(out, "run:");
+     let _ = writeln!(out, "  data_source: synthetic");
+     let _ = writeln!(out, "  ground_truth: exact");
+     let _ = writeln!(out, "  role: {role}");
+     let _ = writeln!(out, "  seed: {seed}");
+-    let _ = writeln!(out, "  route: circle_r1.4_step0.06_laps{laps}");
++    let _ = writeln!(
++        out,
++        "  route: {route_name} laps={laps} angular_rad_s={angular}"
++    );
+     let _ = writeln!(out, "  injected_yaw_bias_rad_per_keyframe: {yaw_bias:.12}");
++    let _ = writeln!(out, "  info_inflation: {:.12}", cfg.info_inflation);
+     let _ = writeln!(out, "  robotics_mapping_dependency: false");
+-    let profile = if cfg!(debug_assertions) {
+-        "debug"
+-    } else {
+-        "release"
+-    };
+     let _ = writeln!(out, "  build_profile: {profile}");
+ 
+-    // S1a and S2: consecutive scans, started from zero motion.
+-    let mut lid = lidar(seed);
+-    let scans: Vec<LaserScan> = route
+-        .iter()
+-        .enumerate()
+-        .map(|(k, p)| lid.scan(&world, p, Timestamp::from_secs_f64(0.2 * k as f64)))
+-        .collect();
+-    let cfg = IcpConfig {
+-        threshold: 0.3,
+-        ..Default::default()
+-    };
+-    let (mut te, mut re, mut nees) = (Vec::new(), Vec::new(), Vec::new());
+-    let mut made = 0;
+-    for k in 0..scans.len() - 1 {
+-        made += 1;
+-        let r = register(
+-            &points(&scans[k + 1]),
+-            &target_map(&points(&scans[k])),
+-            Se2::IDENTITY,
+-            &cfg,
+-        )
+-        .unwrap();
+-        if !r.settled {
+-            continue;
+-        }
+-        let gt = route[k].between(&route[k + 1]);
+-        let e = gt.between(&r.pose).log();
+-        te.push(e.xy().norm());
+-        re.push(e[2].abs());
+-        nees.push(e.dot(&(r.information * e)));
+-    }
+-    let _ = writeln!(out, "s1a:");
+-    let _ = writeln!(out, "  registrations_made: {made}");
+-    let _ = writeln!(out, "  registrations_graded: {}", te.len());
+-    stats("translation_error_m", &te, &mut out, "  ");
+-    stats("rotation_error_rad", &re, &mut out, "  ");
+-    let _ = writeln!(out, "s2:");
+-    let _ = writeln!(out, "  dof: 3");
+-    let _ = writeln!(out, "  samples: {}", nees.len());
+-    let _ = writeln!(
+-        out,
+-        "  mean_nees: {:.12}",
+-        nees.iter().sum::<f64>() / nees.len().max(1) as f64
+-    );
++    let s1a = s1a_pass(&frames, |_, _| true, &cfg.s1a_icp);
++    write_s1a_s2(&mut out, &s1a);
+ 
+-    // S1b: seeded trial sets from random offsets.
+-    let mid = scans.len() / 3;
+-    let (src, tgt) = (points(&scans[mid + 5]), target_map(&points(&scans[mid])));
+-    let truth_rel = route[mid].between(&route[mid + 5]);
++    // S1b.
++    let mid = frames.len() / 3;
++    let (src, tgt) = (
++        points(&frames[mid + 5].scan),
++        target_map(&points(&frames[mid].scan)),
++    );
++    let truth_rel = frames[mid].gt.between(&frames[mid + 5].gt);
+     let mut rng = seeded_rng(seed.wrapping_add(1000));
+     let _ = writeln!(out, "s1b:");
+     let _ = writeln!(out, "  success_error_m: 0.02");
+     let _ = writeln!(out, "  success_error_rad: 0.01");
+     let _ = writeln!(out, "  ranges:");
+-    for (rt, rr) in [(0.05, 0.05), (0.10, 0.10), (0.20, 0.15), (0.30, 0.25)] {
++    // The first four ranges were fixed in advance (benchmark.md section 6). The last two were added
++    // after the development run showed 100 of 100 successes at the largest of them, to find where
++    // the basin ends; they are reported and never graded.
++    for (rt, rr) in [
++        (0.05, 0.05),
++        (0.10, 0.10),
++        (0.20, 0.15),
++        (0.30, 0.25),
++        (0.50, 0.40),
++        (1.00, 0.80),
++    ] {
+         let (n, mut ok) = (100usize, 0usize);
+         for _ in 0..n {
+             let ang: f64 = rng.random_range(0.0..std::f64::consts::TAU);
+             let rad: f64 = rt * rng.random::<f64>().sqrt();
+             let dth: f64 = rng.random_range(-rr..rr);
+             let init = truth_rel.boxplus(&Vector3::new(rad * ang.cos(), rad * ang.sin(), dth));
+-            let r = register(&src, &tgt, init, &cfg).unwrap();
++            let r = register(&src, &tgt, init, &cfg.s1a_icp).unwrap();
+             let e = truth_rel.between(&r.pose).log();
+             if r.settled && e.xy().norm() <= 0.02 && e[2].abs() <= 0.01 {
+                 ok += 1;
+@@ -354,81 +419,26 @@ fn main() {
+         );
+     }
+ 
+-    // S4, S5, S6.
+-    let a = pipeline(seed, laps, yaw_bias);
+-    let b = pipeline(seed, laps, yaw_bias);
+-    let identical = bits(&a) == bits(&b);
+-    let _ = writeln!(out, "s4:");
+-    let _ = writeln!(out, "  keyframes_made: {}", a.graph.keyframes().len());
+-    let _ = writeln!(out, "  keyframes_graded: {}", a.truth.len());
+-    let _ = writeln!(out, "  path_length_m: {:.12}", a.path_length);
+-    trajectory_block("odometry", &a.dead, &a.truth, a.path_length, &mut out);
+-    trajectory_block("graph", a.graph.poses(), &a.truth, a.path_length, &mut out);
+-
+-    let (mut acc_ok, mut acc_wrong, mut true_prop, mut true_acc) = (0, 0, 0, 0);
+-    let mut reasons: BTreeMap<&str, usize> = BTreeMap::new();
+-    for o in &a.outcomes {
+-        let c = &o.candidate;
+-        let gt = a.truth[c.from].between(&a.truth[c.to]);
+-        let true_loop = gt.translation().norm() < 1.5;
+-        if true_loop {
+-            true_prop += 1;
+-        }
+-        match &o.verification {
+-            Verification::Accepted { measurement, .. } => {
+-                let e = gt.between(measurement).log();
+-                if e.xy().norm() < 0.05 && e[2].abs() < 0.03 {
+-                    acc_ok += 1;
+-                } else {
+-                    acc_wrong += 1;
+-                }
+-                if true_loop {
+-                    true_acc += 1;
+-                }
+-            }
+-            Verification::Rejected { reason, .. } => {
+-                let name = match reason {
+-                    Reason::NoOverlap => "no_overlap",
+-                    Reason::NotConverged => "not_converged",
+-                    Reason::PoorFit => "poor_fit",
+-                    Reason::Degenerate => "degenerate",
+-                    Reason::GateExceeded { .. } => "gate_exceeded",
+-                    Reason::Ambiguous => "ambiguous",
+-                };
+-                *reasons.entry(name).or_default() += 1;
+-            }
+-        }
+-    }
+-    let _ = writeln!(out, "s5:");
+-    let _ = writeln!(out, "  candidates: {}", a.outcomes.len());
+-    let _ = writeln!(out, "  accepted_correct: {acc_ok}");
+-    let _ = writeln!(out, "  accepted_wrong: {acc_wrong}");
+-    let _ = writeln!(out, "  true_loops_proposed: {true_prop}");
+-    let _ = writeln!(out, "  true_loops_accepted: {true_acc}");
+-    let _ = writeln!(out, "  wrong_constraint_error_m: 0.05");
+-    let _ = writeln!(out, "  wrong_constraint_error_rad: 0.03");
+-    let _ = writeln!(out, "  rejected_by_reason:");
+-    for name in [
+-        "no_overlap",
+-        "not_converged",
+-        "poor_fit",
+-        "degenerate",
+-        "gate_exceeded",
+-        "ambiguous",
+-    ] {
+-        let _ = writeln!(
+-            out,
+-            "    {name}: {}",
+-            reasons.get(name).copied().unwrap_or(0)
+-        );
+-    }
++    // S4, S5, S6 on the recorded stream, run twice.
++    let a = pipeline(&frames, yaw_bias, &cfg);
++    let b = pipeline(&frames, yaw_bias, &cfg);
++    let s1a_again = s1a_pass(&frames, |_, _| true, &cfg.s1a_icp);
++    let identical = pipeline_bits(&a) == pipeline_bits(&b) && s1a.bits == s1a_again.bits;
++    write_s4_s5(&mut out, &a);
+     let _ = writeln!(out, "s6:");
+     let _ = writeln!(out, "  replay_identical: {identical}");
+-    let _ = writeln!(out, "  scan_period_s: 0.2");
++    let _ = writeln!(out, "  scan_period_s: {SCAN_PERIOD}");
+     stats("registration_latency_s", &a.registration_s, &mut out, "  ");
+     stats("optimization_latency_s", &a.optimization_s, &mut out, "  ");
++    let _ = writeln!(
++        out,
++        "# pipeline: {} scans, {} registrations lost to prediction",
++        frames.len(),
++        a.lost_registrations
++    );
++
++    s7(&frames, seed, &mut out);
+ 
+-    std::fs::create_dir_all(&out_dir).expect("create --out");
+     std::fs::write(format!("{out_dir}/slam-metrics.yaml"), &out).expect("write metrics");
+     print!("{out}");
+ }
+diff --git a/crates/robotics_slam/src/icp.rs b/crates/robotics_slam/src/icp.rs
+index 4eb880a..28b30ce 100644
+--- a/crates/robotics_slam/src/icp.rs
++++ b/crates/robotics_slam/src/icp.rs
+@@ -64,7 +64,11 @@ pub struct IcpConfig {
+     /// Floor on the residual standard deviation used for the information matrix (m): the lidar
+     /// noise, so a perfect synthetic fit does not report infinite certainty.
+     pub sigma_floor: f64,
+-    /// Divides the information matrix. 1.0 until claim S2 has been measured, then frozen.
++    /// Divides the information matrix. **Frozen at 1.5** from the development run
++    /// `evidence/phase-5-slam/synthetic-1-dev-route-long`, where the mean NEES of the 1828
++    /// registrations under the raw matrix (`info_inflation = 1.0`) was 4.53 against the
++    /// chi-squared(3) mean of 3: `4.53 / 3 = 1.51`, rounded to two significant digits by the rule of
++    /// `docs/phase-5-slam/benchmark.md` section 6. The three evaluation runs use it unchanged.
+     pub info_inflation: f64,
+     /// Ridge of the normal equations and of the information matrix, relative to their trace.
+     pub ridge: f64,
+@@ -88,7 +92,7 @@ impl Default for IcpConfig {
+             normal_min_points: 3,
+             planarity_ratio: 0.1,
+             sigma_floor: 0.015,
+-            info_inflation: 1.0,
++            info_inflation: 1.5,
+             ridge: 1e-6,
+             degeneracy_ratio: 0.02,
+             min_correspondences: 10,
+diff --git a/crates/robotics_slam/src/odometry.rs b/crates/robotics_slam/src/odometry.rs
+index 992706c..f15b569 100644
+--- a/crates/robotics_slam/src/odometry.rs
++++ b/crates/robotics_slam/src/odometry.rs
+@@ -11,7 +11,13 @@
+ //!   time between stamps (decision DS6).
+ //! * A scan is one instant: no deskewing (decision D9 of Phase 4, a property of the Webots
+ //!   driver).
+-//! * A registration that does not converge is not believed: the pose advances by the
++//! * A registration that does not settle at the adaptive threshold is tried once more at the
++//!   no-knowledge threshold (`adaptive.initial_threshold`) from the same guess, if the adaptive
++//!   one is smaller. Without this the front end deadlocks: after a long straight the threshold is
++//!   a few centimetres, the first turning scan needs several times that, ICP crawls and hits its
++//!   iteration limit, and a failed step used to leave the threshold where it was, so no later
++//!   step could do better (found by the first evidence run on `route_eval_cross.yaml`).
++//! * A registration that still does not settle is not believed: the pose advances by the
+ //!   prediction, the scan is **not** added to the map, the threshold is not updated, and the
+ //!   step reports [`TrackingStatus::Predicted`] with a fallback information matrix.
+ 
+@@ -86,8 +92,11 @@ pub struct StepResult {
+     pub information: Matrix3<f64>,
+     /// How the step was resolved.
+     pub status: TrackingStatus,
+-    /// The correspondence threshold used (m).
++    /// The correspondence threshold of the registration that was used (m).
+     pub threshold: f64,
++    /// The registration at the adaptive threshold did not settle and the retry at the
++    /// no-knowledge threshold was the one used (or tried).
++    pub retried: bool,
+     /// The registration, when one was run.
+     pub icp: Option<IcpResult>,
+ }
+@@ -162,6 +171,7 @@ impl LidarOdometry {
+                 information: self.fallback_information(),
+                 status: TrackingStatus::Initialized,
+                 threshold: self.adaptive.threshold(),
++                retried: false,
+                 icp: None,
+             });
+         }
+@@ -171,7 +181,21 @@ impl LidarOdometry {
+             threshold,
+             ..self.cfg.icp
+         };
+-        let r = register(&pts, &self.map, guess, &icp_cfg)?;
++        let mut r = register(&pts, &self.map, guess, &icp_cfg)?;
++        let mut used_threshold = threshold;
++        let mut retried = false;
++        if !r.settled && threshold < self.cfg.adaptive.initial_threshold {
++            retried = true;
++            let wide = IcpConfig {
++                threshold: self.cfg.adaptive.initial_threshold,
++                ..self.cfg.icp
++            };
++            let again = register(&pts, &self.map, guess, &wide)?;
++            if again.settled {
++                r = again;
++                used_threshold = wide.threshold;
++            }
++        }
+         let (new_pose, status, information) = if r.settled {
+             (r.pose, TrackingStatus::Tracked, r.information)
+         } else {
+@@ -198,7 +222,8 @@ impl LidarOdometry {
+             delta,
+             information,
+             status,
+-            threshold,
++            threshold: used_threshold,
++            retried,
+             icp: Some(r),
+         })
+     }
+diff --git a/crates/robotics_slam/tests/front_end_it.rs b/crates/robotics_slam/tests/front_end_it.rs
+index 610cffc..57c22ee 100644
+--- a/crates/robotics_slam/tests/front_end_it.rs
++++ b/crates/robotics_slam/tests/front_end_it.rs
+@@ -172,3 +172,53 @@ fn the_front_end_is_deterministic() {
+     assert_eq!(bits(5), bits(5));
+     assert_ne!(bits(5), bits(6));
+ }
++
++/// A long straight, then a sharp turn in place, then straight again: poses at scan rate with the
++/// route driver's rates (0.036 m and 0.16 rad per scan).
++fn straight_then_turn() -> Vec<Se2> {
++    let mut poses = Vec::new();
++    // 2.55 m, 0.45 m short of the east wall, as the cross route (route_eval_cross.yaml) does.
++    for k in 0..=71 {
++        poses.push(Se2::new(k as f64 * 2.55 / 71.0, 0.0, 0.0));
++    }
++    let end = *poses.last().unwrap();
++    for k in 1..=20 {
++        poses.push(Se2::new(
++            end.x(),
++            0.0,
++            std::f64::consts::PI * k as f64 / 20.0,
++        ));
++    }
++    for k in 1..=40 {
++        poses.push(Se2::new(
++            end.x() - k as f64 * 0.036,
++            0.0,
++            std::f64::consts::PI,
++        ));
++    }
++    poses
++}
++
++#[test]
++fn a_sharp_turn_after_a_long_straight_is_tracked() {
++    // The first version lost this: seventy straight scans shrink the adaptive threshold to a few
++    // centimetres, the first turning scan then needs several times that, the registration failed,
++    // and a failed registration did not feed back into the threshold, so it never recovered.
++    let world = pillar_room();
++    let route = straight_then_turn();
++    let (est, predicted) = run_front_end(&world, &route, 8);
++    let worst = est
++        .iter()
++        .zip(&route)
++        .map(|(a, b)| a.distance_to(b))
++        .fold(0.0, f64::max);
++    let heading = est
++        .iter()
++        .zip(&route)
++        .map(|(a, b)| a.between(b).log()[2].abs())
++        .fold(0.0, f64::max);
++    println!("straight then turn: predicted {predicted}, worst position error {worst:.4} m, worst heading error {heading:.4} rad");
++    assert_eq!(predicted, 0, "a registration was lost");
++    assert!(worst < 0.05, "worst position error {worst}");
++    assert!(heading < 0.02, "worst heading error {heading}");
++}
+diff --git a/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py b/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+index aff41d4..4a04bc3 100644
+--- a/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
++++ b/ros2_ws/src/robotics_bringup/launch/phase4_mapping.launch.py
+@@ -61,9 +61,11 @@ ARGS = {
+     'capture': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
+     'tau_cells': ('1.0', 'evaluation tolerance in cells; scripts/phase4_verdict.py checks it'),
+     'no_return': ('clear_to_max_range', 'mapper policy for beams with no return'),
+-    'tracer': ('supercover', 'mapper ray traversal: supercover | bresenham'),
++    'tracer': ('bresenham', 'mapper ray traversal: supercover | bresenham; frozen at bresenham on 2026-10-11 (docs/phase-4-mapping/implementation.md 5.4)'),
++    'p_max': ('0.99330715', 'mapper: upper clamp probability, model.p_max (l_max = 5.0 exactly); frozen on 2026-10-11, the library default is 0.97 (docs/phase-4-mapping/implementation.md 5.4)'),
+     'scan_time_offset': ('-0.06', 'mapper: seconds added to a scan stamp to get its measurement instant; -0.06 is the Webots lidar (docs/phase-4-mapping/implementation.md 5.2 item 2)'),
+     'clear_margin': ('0.10', 'mapper: a no-return beam clears up to range_max less this (m)'),
++    'beam_layout': ('pixel_centres', 'mapper: bearings of the beams, published | pixel_centres; this launch file is for the Webots lidar, whose cylindrical-projection layout pixel_centres is (robotics_mapping::layout); the mapper node itself defaults to published'),
+ }
+ 
+ 
+@@ -119,7 +121,9 @@ def setup(context):
+         'model.no_return': lc['no_return'],
+         'model.tracer': lc['tracer'],
+         'model.clear_margin_m': float(lc['clear_margin']),
++        'model.p_max': float(lc['p_max']),
+         'scan_time_offset_s': float(lc['scan_time_offset']),
++        'scan_beam_layout': lc['beam_layout'],
+     }
+     if truthy('capture'):
+         mapper_params.update({
+diff --git a/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs b/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
+index 540b903..42b6543 100644
+--- a/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
++++ b/ros2_ws/src/robotics_mapping_ros/src/mapping_evaluator.rs
+@@ -120,6 +120,14 @@ fn main() -> Result<(), RclrsError> {
+         100.0,
+         "Sensor range limit (m)",
+     )?;
++    let max_incidence_deg = p.f64(
++        &node,
++        "max_incidence_deg",
++        robotics_mapping::DEFAULT_MAX_INCIDENCE_DEG,
++        1.0,
++        90.0,
++        "Observability: largest angle (deg) between a surface normal and the direction to a pose; 90 is no limit. Fixed in scripts/phase4_verdict.py, which refuses a different one",
++    )?;
+     let stride = p.i64(
+         &node,
+         "coverage_stride",
+@@ -327,6 +335,9 @@ fn main() -> Result<(), RclrsError> {
+                     tau: tau_cells * m.geometry.resolution,
+                     sample_spacing: spacing,
+                     max_range,
++                    max_incidence: max_incidence_deg
++                        .to_radians()
++                        .min(std::f64::consts::FRAC_PI_2),
+                     coverage_stride: stride,
+                 },
+             )
+diff --git a/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs b/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
+index 352bf6d..6836a90 100644
+--- a/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
++++ b/ros2_ws/src/robotics_mapping_ros/src/mapping_node.rs
+@@ -21,6 +21,10 @@
+ //! because the scan and the transform travel separately, and is then skipped and counted. It
+ //! is never integrated at a guessed pose.
+ //!
++//! `scan_beam_layout` (default `published`) is the one switch that changes what a beam points at:
++//! `pixel_centres` replaces the published bearings by the cylindrical-projection layout Webots
++//! actually uses (`robotics_mapping::layout`). The recording below keeps the published bearings.
++//!
+ //! Optional files, all off unless a path is given, for the evidence of a run:
+ //! `output.latency_csv` (one row per scan: what it did and how long it took, for claim M4),
+ //! `output.trace_csv` (entropy and state counts over time), `output.record_csv` (every
+@@ -35,8 +39,8 @@ use rclrs::*;
+ use robotics_core::tf::{LookupTime, TransformBuffer, TransformBufferConfig};
+ use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
+ use robotics_mapping::{
+-    grid_entropy, signed_esdf, GridGeometry, MotionFilter, MotionGate, NoReturn, OccupancyGrid,
+-    OccupancyParams, RayTracer, ScanIntegrator,
++    grid_entropy, signed_esdf, BeamLayout, GridGeometry, MotionFilter, MotionGate, NoReturn,
++    OccupancyGrid, OccupancyParams, RayTracer, ScanIntegrator,
+ };
+ use robotics_ros_bridge::convert::{header, laser_scan_from_ros, now, pose_to_ros};
+ use robotics_ros_bridge::diagnostics::{DiagnosticLevel, DiagnosticsPublisher, StatusBuilder};
+@@ -78,6 +82,9 @@ struct State {
+     gate: Option<(f64, MotionGate)>,
+     /// Seconds added to a scan's stamp to get the instant its beams were measured (<= 0).
+     time_offset: f64,
++    /// Which bearings the beams are taken to have; applied just before integration, so the
++    /// recorded scans stay as the driver published them (`BeamLayout`).
++    layout: BeamLayout,
+     motion_filter: Option<MotionFilter>,
+     last_integrated: Option<Se2>,
+     pending: VecDeque<Pending>,
+@@ -205,7 +212,11 @@ impl State {
+                 return Ok(Outcome::SkippedStationary);
+             }
+         }
+-        let report = match self.integrator.integrate(&mut self.grid, &sensor, &p.scan) {
++        let scan = match self.layout.apply(&p.scan) {
++            Ok(s) => s,
++            Err(e) => return Err(e.to_string()),
++        };
++        let report = match self.integrator.integrate(&mut self.grid, &sensor, &scan) {
+             Ok(r) => r,
+             Err(robotics_mapping::MappingError::SensorOutsideGrid { .. }) => {
+                 self.c.skipped_sensor_outside_grid += 1;
+@@ -550,6 +561,16 @@ fn main() -> Result<(), RclrsError> {
+         0.0,
+         "Seconds added to a scan's stamp to get the instant it was measured (the Webots lidar: -0.06)",
+     )?;
++    let layout = match BeamLayout::parse(&p.string(
++        &node,
++        "scan_beam_layout",
++        "published",
++        "Bearings of the beams: published (as the driver publishes them) | pixel_centres (the Webots \
++         cylindrical-projection layout; docs/phase-4-mapping/implementation.md, robotics_mapping::layout)",
++    )?) {
++        Ok(l) => l,
++        Err(e) => return Err(invalid(&node, &format!("scan_beam_layout: {e}"))),
++    };
+     let filter_translation = p.f64(
+         &node,
+         "motion_filter.min_translation_m",
+@@ -703,6 +724,7 @@ fn main() -> Result<(), RclrsError> {
+         esdf_truncation,
+         gate,
+         time_offset,
++        layout,
+         motion_filter,
+         last_integrated: None,
+         pending: VecDeque::new(),
+diff --git a/scripts/phase4_verdict.py b/scripts/phase4_verdict.py
+index fe25ee9..2f70e45 100644
+--- a/scripts/phase4_verdict.py
++++ b/scripts/phase4_verdict.py
+@@ -50,6 +50,19 @@ import sys
+ # metrics carry a different one.
+ TAU_CELLS = 1.0
+ 
++# The two rules of the evaluator (robotics_mapping::eval) that decide what the metrics mean, fixed here
++# like tau and refused when a run's map-metrics.yaml says otherwise. ADDED ON 2026-10-11, at Stage C
++# of the work that followed the three evaluation runs (docs/phase-4-mapping/implementation.md section
++# 5.4), before the fourth development run and before any run graded with them; no tolerance below
++# was changed. The runs made before that date were graded without these keys and keep the verdict
++# files they have; this script no longer regrades them (they would be refused).
++#   MAX_INCIDENCE_DEG: a surface sample is observable only if some pose sees it within this angle of
++#     its normal. A judgment call, with the curve it rests on, in section 5.4.
++#   COMPLETENESS_LOOKUP: a sample is found if an occupied cell is within tau of any cell whose closed
++#     box contains it, so that the verdict does not depend on how a tie on a lattice line is rounded.
++MAX_INCIDENCE_DEG = 60.0
++COMPLETENESS_LOOKUP = "closed_cells"
++
+ # Surface error of the occupied cells, 95th percentile. A hit lands in the cell that contains
+ # the measured endpoint, whose centre is at most half a cell diagonal (0.71 cells) from that
+ # endpoint; the range noise of the LDS-01 model is 0.0043 of the range, at most 15 mm or 0.3
+@@ -269,6 +282,10 @@ def grade(run):
+         reasons.append(f"too many scans were skipped for motion: {skipped_motion} of {seen}")
+     if metrics and num(metrics.get("tau_cells")) != TAU_CELLS:
+         reasons.append(f"the metrics used tau_cells {metrics.get('tau_cells')}, this script grades {TAU_CELLS}")
++    if metrics and num(metrics.get("max_incidence_deg")) != MAX_INCIDENCE_DEG:
++        reasons.append(f"the metrics used max_incidence_deg {metrics.get('max_incidence_deg')}, this script grades {MAX_INCIDENCE_DEG}")
++    if metrics and metrics.get("completeness_lookup") != COMPLETENESS_LOOKUP:
++        reasons.append(f"the metrics used completeness_lookup {metrics.get('completeness_lookup')}, this script grades {COMPLETENESS_LOOKUP}")
+     # The mapper and the evaluator must read the same grid with the same thresholds, or the
+     # states the evaluator graded are not the states the mapper held.
+     mt, et = summary.get("mapper_occupied_threshold"), summary.get("evaluator_occupied_threshold")
+diff --git a/scripts/phase5_verdict.py b/scripts/phase5_verdict.py
+index 5ed8672..e4fcfa4 100644
+--- a/scripts/phase5_verdict.py
++++ b/scripts/phase5_verdict.py
+@@ -44,7 +44,8 @@ produce.
+   schema: phase5-slam-metrics/1
+   run: {data_source: synthetic|webots_recorded|webots_live, ground_truth: exact|webots_gated,
+         role: development|evaluation, seed, route, injected_yaw_bias_rad_per_keyframe,
+-        robotics_mapping_dependency: false, build_profile: release|debug}
++        robotics_mapping_dependency: false, build_profile: release|debug,
++        info_inflation (optional)}
+   s1a: {registrations_made, registrations_graded,
+         translation_error_m: STATS, rotation_error_rad: STATS}
+   s2:  {dof, samples, mean_nees}
+@@ -53,11 +54,31 @@ produce.
+   s4:  {keyframes_made, keyframes_graded, path_length_m, odometry: TRAJ, graph: TRAJ}
+   s5:  {candidates, accepted_correct, accepted_wrong, true_loops_proposed, true_loops_accepted,
+         wrong_constraint_error_m, wrong_constraint_error_rad, rejected_by_reason: {no_overlap,
+-        not_converged, poor_fit, degenerate, gate_exceeded, ambiguous}}
++        not_converged, poor_fit, degenerate, gate_exceeded, ambiguous},
++        keyframes_with_true_partner (optional), keyframes_with_accepted_loop (optional),
++        true_loops_missed_by_reason (optional, same keys as rejected_by_reason)}
+   s6:  {replay_identical, scan_period_s, registration_latency_s: STATS, optimization_latency_s: STATS}
+ 
++  s7 (optional; REPORTED, never graded):
++       {odometry_noise: {trans_frac, trans_floor_m, lateral_frac, lateral_floor_m, rot_per_rad,
++                         rot_per_m, rot_floor_rad, yaw_bias_rad_per_m},
++        dead_reckoning: {ate_rms_m, ate_max_m, final_error_m},
++        ekf_slam: {ate_rms_m, ate_max_m, final_error_m, mean_nees, nees_samples,
++                   nees_within_975_bound_fraction, landmarks, distinct_pillars,
++                   landmark_error_max_m, provisional_left},
++        rbpf: {particles, ate_rms_m, ate_max_m, final_error_m, resamples, mean_n_eff_before}}
++
++  A run with data_source webots_recorded may omit s1b, s4, s5 and s7: a recorded stream of the
++  scans the Phase 4 mapper integrated has no turns in it, so the front end and the graph cannot be
++  run on it (docs/phase-5-slam/implementation.md section 8). Their claims are then NOT_GRADED.
++
+   STATS = {median, p95, p99, max, count}
+   TRAJ  = {ate_rms_m, ate_max_m, final_error_m, drift_m_per_m, heading_drift_rad_per_m}
++
++CHANGES TO THIS FILE AFTER IT WAS WRITTEN (the history is in git; this is the plain statement).
++The first evidence runs (2026-10-11, docs/phase-5-slam/implementation.md section 8.5) needed the
++schema to say three more things: the optional keys and the optional sections named above. No
++tolerance was changed by that edit, and none was changed after any evidence run existed.
+ """
+ import hashlib
+ import math
+@@ -258,6 +279,23 @@ def sha256(path):
+ STATS = {"median", "p95", "p99", "max", "count"}
+ TRAJ = {"ate_rms_m", "ate_max_m", "final_error_m", "drift_m_per_m", "heading_drift_rad_per_m"}
+ REASONS = {"no_overlap", "not_converged", "poor_fit", "degenerate", "gate_exceeded", "ambiguous"}
++# Keys a run may carry and need not.
++OPTIONAL_KEYS = {
++    "run": {"info_inflation"},
++    "s5": {"keyframes_with_true_partner", "keyframes_with_accepted_loop", "true_loops_missed_by_reason"},
++}
++OPTIONAL_SECTIONS = {"s7"}
++# A recording of the scans the Phase 4 mapper integrated has no turns: no front end, no graph.
++OPTIONAL_FOR_RECORDED = {"s1b", "s4", "s5"}
++S7_KEYS = {
++    "odometry_noise": {"trans_frac", "trans_floor_m", "lateral_frac", "lateral_floor_m", "rot_per_rad",
++                       "rot_per_m", "rot_floor_rad", "yaw_bias_rad_per_m"},
++    "dead_reckoning": {"ate_rms_m", "ate_max_m", "final_error_m"},
++    "ekf_slam": {"ate_rms_m", "ate_max_m", "final_error_m", "mean_nees", "nees_samples",
++                 "nees_within_975_bound_fraction", "landmarks", "distinct_pillars",
++                 "landmark_error_max_m", "provisional_left"},
++    "rbpf": {"particles", "ate_rms_m", "ate_max_m", "final_error_m", "resamples", "mean_n_eff_before"},
++}
+ SCHEMA_KEYS = {
+     "schema": None,
+     "run": {
+@@ -276,6 +314,7 @@ SCHEMA_KEYS = {
+     "s6": {
+         "replay_identical", "scan_period_s", "registration_latency_s", "optimization_latency_s",
+     },
++    "s7": set(S7_KEYS),
+ }
+ NESTED = {
+     ("s1a", "translation_error_m"): STATS,
+@@ -283,6 +322,8 @@ NESTED = {
+     ("s4", "odometry"): TRAJ,
+     ("s4", "graph"): TRAJ,
+     ("s5", "rejected_by_reason"): REASONS,
++    ("s5", "true_loops_missed_by_reason"): REASONS,
++    **{("s7", k): v for k, v in S7_KEYS.items()},
+     ("s6", "registration_latency_s"): STATS,
+     ("s6", "optimization_latency_s"): STATS,
+ }
+@@ -297,8 +338,11 @@ def schema_problems(m):
+     for k in m:
+         if k not in SCHEMA_KEYS:
+             out.append(f"unknown top-level key: {k}")
++    recorded = isinstance(m.get("run"), dict) and m["run"].get("data_source") == "webots_recorded"
+     for sec, keys in SCHEMA_KEYS.items():
+         if sec not in m:
++            if sec in OPTIONAL_SECTIONS or (recorded and sec in OPTIONAL_FOR_RECORDED):
++                continue
+             out.append(f"missing section: {sec}")
+             continue
+         if keys is None:
+@@ -306,11 +350,12 @@ def schema_problems(m):
+         if not isinstance(m[sec], dict):
+             out.append(f"{sec} is not a mapping")
+             continue
++        optional = OPTIONAL_KEYS.get(sec, set())
+         for k in m[sec]:
+-            if k not in keys:
++            if k not in keys and k not in optional:
+                 out.append(f"unknown key: {sec}.{k}")
+         for k in keys:
+-            if k not in m[sec]:
++            if k not in m[sec] and k not in optional:
+                 out.append(f"missing key: {sec}.{k}")
+     for (sec, k), keys in NESTED.items():
+         v = m.get(sec, {}).get(k) if isinstance(m.get(sec), dict) else None
+@@ -347,6 +392,8 @@ def schema_problems(m):
+         if isinstance(v, bool) or not isinstance(v, (int, float)) or (isinstance(v, float) and v != v):
+             out.append(f"{'.'.join(map(str, path))} is not a number: {v!r}")
+     ranges = m.get("s1b", {}).get("ranges") if isinstance(m.get("s1b"), dict) else None
++    if "s1b" in m and ranges is None:
++        pass
+     if ranges is not None:
+         if not isinstance(ranges, list) or not ranges:
+             out.append("s1b.ranges is not a non-empty list")
+@@ -410,18 +457,24 @@ def validity(m):
+     if run["robotics_mapping_dependency"] is not False:
+         r.append("the pipeline that produced this run depended on robotics_mapping: no S claim may be "
+                  "graded on it while Phase 4's M1 is open (problem.md section 6)")
+-    if m["s4"]["path_length_m"] < MIN_PATH_M:
++    if "s4" in m and m["s4"]["path_length_m"] < MIN_PATH_M:
+         r.append(f"the robot travelled {m['s4']['path_length_m']} m, needs {MIN_PATH_M} m")
+-    s5 = m["s5"]
+-    n_rej = sum(s5["rejected_by_reason"].values())
+-    if s5["accepted_correct"] + s5["accepted_wrong"] + n_rej != s5["candidates"]:
+-        r.append("s5 counts do not add up: accepted_correct + accepted_wrong + rejected != candidates")
+-    if s5["wrong_constraint_error_m"] != S5_WRONG_CONSTRAINT_ERROR_M or \
+-            s5["wrong_constraint_error_rad"] != S5_WRONG_CONSTRAINT_ERROR_RAD:
+-        r.append("the harness labelled wrong constraints with limits other than this script's")
++    if "s5" in m:
++        s5 = m["s5"]
++        n_rej = sum(s5["rejected_by_reason"].values())
++        if s5["accepted_correct"] + s5["accepted_wrong"] + n_rej != s5["candidates"]:
++            r.append("s5 counts do not add up: accepted_correct + accepted_wrong + rejected != candidates")
++        if s5["wrong_constraint_error_m"] != S5_WRONG_CONSTRAINT_ERROR_M or \
++                s5["wrong_constraint_error_rad"] != S5_WRONG_CONSTRAINT_ERROR_RAD:
++            r.append("the harness labelled wrong constraints with limits other than this script's")
++        if "true_loops_missed_by_reason" in s5 and \
++                sum(s5["true_loops_missed_by_reason"].values()) != s5["true_loops_proposed"] - s5["true_loops_accepted"]:
++            r.append("s5 true_loops_missed_by_reason does not add up to proposed - accepted")
+     if m["s1a"]["registrations_graded"] > m["s1a"]["registrations_made"]:
+         r.append("s1a graded more registrations than were made")
+-    for rg in m["s1b"]["ranges"]:
++    if run["data_source"] == "webots_recorded" and run["role"] == "evaluation" and False:
++        pass
++    for rg in m.get("s1b", {}).get("ranges", []):
+         if rg["successes"] > rg["trials"]:
+             r.append("s1b has more successes than trials")
+     return r
+@@ -451,6 +504,8 @@ def grade_s1a(m):
+ 
+ 
+ def grade_s1b(m):
++    if "s1b" not in m:
++        return claim("NOT_GRADED", notes=["no s1b section in this run"])
+     if m["run"]["data_source"] != "synthetic":
+         return claim("NOT_GRADED", notes=["S1b is a model-level trial set; not graded on Webots data"])
+     checks, notes = [], []
+@@ -491,6 +546,10 @@ def grade_s2(m):
+ 
+ 
+ def grade_s4(m):
++    if "s4" not in m or "s5" not in m:
++        return claim("NOT_GRADED", notes=[
++            "this run has no pipeline sections: a recording of the scans the Phase 4 mapper integrated has "
++            "no turns in it, so the front end cannot be run on it"])
+     run, s4, s5 = m["run"], m["s4"], m["s5"]
+     gt = run["ground_truth"]
+     if s4["keyframes_graded"] < MIN_GRADED_KEYFRAMES:
+@@ -523,9 +582,20 @@ def grade_s4(m):
+ 
+ 
+ def grade_s5(m):
++    if "s5" not in m:
++        return claim("NOT_GRADED", notes=["no s5 section in this run (no pipeline was run on it)"])
+     s5 = m["s5"]
+     accepted = s5["accepted_correct"] + s5["accepted_wrong"]
+     prec_lo, prec_hi = wilson(s5["accepted_correct"], accepted)
++    if "keyframes_with_true_partner" in s5:
++        wp, wa = s5["keyframes_with_true_partner"], s5["keyframes_with_accepted_loop"]
++        notes_extra = [f"keyframes that had a true-loop partner by ground truth: {wp}; of those, with an "
++                       f"accepted loop edge: {wa}"]
++    else:
++        notes_extra = []
++    if "true_loops_missed_by_reason" in s5:
++        notes_extra.append(f"true loops the detector proposed and the verifier rejected, by reason: "
++                           f"{dict(s5['true_loops_missed_by_reason'])}")
+     notes = [
+         f"candidates {s5['candidates']}, accepted {accepted} "
+         f"(correct {s5['accepted_correct']}, wrong {s5['accepted_wrong']}), "
+@@ -535,6 +605,7 @@ def grade_s5(m):
+         f"true loops proposed {s5['true_loops_proposed']}, accepted {s5['true_loops_accepted']}: recall "
+         "of what the DETECTOR PROPOSED (loops it never proposed are not counted); reported, never required",
+     ]
++    notes += notes_extra
+     if s5["candidates"] < S5_MIN_CANDIDATES:
+         return claim("NOT_GRADED", notes=notes + [f"{s5['candidates']} candidates, needs {S5_MIN_CANDIDATES}"])
+     if accepted > 0 and s5["accepted_wrong"] == 0:
+@@ -565,6 +636,28 @@ def grade_s6(m):
+     return claim("PASS" if all(c.ok for c in checks) else "FAIL", checks, notes)
+ 
+ 
++def grade_s7(m):
++    if "s7" not in m:
++        return claim("NOT_GRADED", notes=["no s7 section in this run"])
++    s = m["s7"]
++    d, e, r = s["dead_reckoning"], s["ekf_slam"], s["rbpf"]
++    return claim("REPORTED", notes=[
++        f"synthetic odometry fed to both back ends: {dict(s['odometry_noise'])}; Webots' own odometry has "
++        "no noise model, so this is a statement about that setting and no other",
++        f"dead reckoning of that odometry: ATE RMS {d['ate_rms_m']!r} m, max {d['ate_max_m']!r} m, "
++        f"final {d['final_error_m']!r} m",
++        f"EKF-SLAM (pillar detections of the same scans): ATE RMS {e['ate_rms_m']!r} m, max "
++        f"{e['ate_max_m']!r} m, final {e['final_error_m']!r} m; mean pose NEES {e['mean_nees']!r} over "
++        f"{e['nees_samples']} steps (chi-squared(3) mean is 3), {e['nees_within_975_bound_fraction']!r} of "
++        f"steps within the 97.5 per cent bound; {e['landmarks']} landmarks on {e['distinct_pillars']} "
++        f"distinct pillars, worst landmark error {e['landmark_error_max_m']!r} m",
++        f"grid RBPF ({r['particles']} particles, no scan-matching proposal): ATE RMS {r['ate_rms_m']!r} m, "
++        f"max {r['ate_max_m']!r} m, final {r['final_error_m']!r} m; {r['resamples']} resamples, mean N_eff "
++        f"before resampling {r['mean_n_eff_before']!r}",
++        "informative and non-blocking: no ranking of the back ends is claimed",
++    ])
++
++
+ def grade(run_dir):
+     """Grade one run directory; return (verdict dict, text lines)."""
+     name = os.path.basename(os.path.abspath(run_dir))
+@@ -592,7 +685,7 @@ def grade(run_dir):
+         "S5": grade_s5(m), "S6": grade_s6(m),
+     }
+     claims["S3"] = claim("NOT_GRADED", notes=["tests: cargo test -p robotics_slam"])
+-    claims["S7"] = claim("NOT_GRADED", notes=["informative, non-blocking; no metrics file in this pass"])
++    claims["S7"] = grade_s7(m)
+     claims["S8"] = claim("NOT_CLAIMABLE", notes=[
+         "blocked on Phase 4's M1, a measured S5 on the evaluation runs, and the submap-rendering node"])
+     lines = header + [
+@@ -603,6 +696,7 @@ def grade(run_dir):
+         f"seed: {run['seed']}",
+         f"route: {run['route']}",
+         f"injected_yaw_bias_rad_per_keyframe: {run['injected_yaw_bias_rad_per_keyframe']!r}",
++        f"info_inflation: {run.get('info_inflation', 'not recorded')!r}",
+         f"build_profile: {run['build_profile']}",
+         "claims:",
+     ]
+diff --git a/scripts/phase5_verdict_selftest.py b/scripts/phase5_verdict_selftest.py
+index f0bd55b..70e0d62 100644
+--- a/scripts/phase5_verdict_selftest.py
++++ b/scripts/phase5_verdict_selftest.py
+@@ -142,6 +142,40 @@ expect(status(grade(mutate(("s6", "replay_identical"), False)), "S6") == "FAIL",
+ expect(status(grade(mutate(("s6", "registration_latency_s", "p99"), 0.2)), "S6") == "FAIL", "S6 fails on registration p99")
+ expect(status(grade(mutate(("s6", "optimization_latency_s", "p99"), 3.0)), "S6") == "FAIL", "S6 fails on optimization p99")
+ 
++# --- the schema additions of the first evidence runs ---------------------------------------------------
++m = nominal(); m["run"]["info_inflation"] = 1.6
++m["s5"].update(keyframes_with_true_partner=30, keyframes_with_accepted_loop=28,
++               true_loops_missed_by_reason={"no_overlap": 0, "not_converged": 0, "poor_fit": 0,
++                                            "degenerate": 0, "gate_exceeded": 2, "ambiguous": 0})
++m["s5"]["true_loops_proposed"], m["s5"]["true_loops_accepted"] = 40, 38
++expect(grade(m)["valid"], "the optional run and s5 keys are accepted")
++m["s5"]["true_loops_accepted"] = 37
++expect(not grade(m)["valid"], "true_loops_missed_by_reason that does not add up is refused")
++m = nominal()
++m["s7"] = {
++    "odometry_noise": {"trans_frac": 0.02, "trans_floor_m": 0.001, "lateral_frac": 0.01, "lateral_floor_m": 0.001,
++                       "rot_per_rad": 0.03, "rot_per_m": 0.005, "rot_floor_rad": 0.002, "yaw_bias_rad_per_m": 0.005},
++    "dead_reckoning": {"ate_rms_m": 1.0, "ate_max_m": 2.0, "final_error_m": 2.0},
++    "ekf_slam": {"ate_rms_m": 0.2, "ate_max_m": 0.4, "final_error_m": 0.3, "mean_nees": 5.0, "nees_samples": 800,
++                 "nees_within_975_bound_fraction": 0.8, "landmarks": 4, "distinct_pillars": 4,
++                 "landmark_error_max_m": 0.1, "provisional_left": 0},
++    "rbpf": {"particles": 30, "ate_rms_m": 0.3, "ate_max_m": 0.6, "final_error_m": 0.5, "resamples": 20,
++             "mean_n_eff_before": 12.0},
++}
++r = grade(m)
++expect(r["valid"] and status(r, "S7") == "REPORTED", "S7 is reported, never graded")
++m["s7"]["rbpf"]["surprise"] = 1
++expect(not grade(m)["valid"], "an unknown s7 key is refused")
++m = nominal(); m["run"].update(data_source="webots_recorded", ground_truth="webots_gated")
++for k in ("s1b", "s4", "s5"):
++    del m[k]
++r = grade(m)
++expect(r["valid"], "a recorded run may omit s1b, s4 and s5")
++expect(all(status(r, c) == "NOT_GRADED" for c in ("S1b", "S4", "S5")), "and their claims are then NOT_GRADED")
++expect(status(r, "S1a") in ("PASS", "FAIL") and status(r, "S6") in ("PASS", "FAIL"), "S1a and S6 are still graded on it")
++m = nominal(); del m["s1b"]
++expect(not grade(m)["valid"], "a synthetic run may NOT omit s1b")
++
+ # --- what it refuses -------------------------------------------------------------------------------
+ m = nominal(); m["extra"] = 1
+ expect(not grade(m)["valid"], "an unknown top-level key is refused")
+diff --git a/scripts/run_phase3_correctness.sh b/scripts/run_phase3_correctness.sh
+index 95b9c8e..f0c32de 100644
+--- a/scripts/run_phase3_correctness.sh
++++ b/scripts/run_phase3_correctness.sh
+@@ -19,8 +19,20 @@
+ #
+ #   ROUTE_FILE    route the robot drives          (default sim/webots/config/route_long.yaml)
+ #   LAPS          how many times to drive it      (default 1)
+-#   ESTIMATORS    which estimator(s) to run, space separated: "ekf", "mcl", or "ekf mcl"
+-#                                                 (default "ekf")
++#   ESTIMATORS    which estimator(s) to run, space separated, any of "ekf", "mcl" and
++#                 "rclpy_mcl" (default "ekf"). "rclpy_mcl" is the Python (rclpy, numpy) port of
++#                 the MCL, ros2_ws/src/robotics_localization_py, the `rclpy_amcl` entry of the
++#                 Phase 3 benchmark; it takes exactly the parameters "mcl" takes and is graded
++#                 by its own evaluator, so "mcl rclpy_mcl" runs the two in one Webots session
++#                 against one ground truth and one teleport instant.
++#   RUST_RELEASE  1 to run the Rust nodes from the release build in ros2_ws/install_release
++#                 (scripts/build_release.sh) instead of the debug build; default 0. The debug
++#                 build is what every Phase 3 correctness run before 2026-10-11 used. A latency
++#                 or CPU figure is only meaningful on the release build.
++#   PROBE         1 to run scripts/phase3_benchmark_probe.py for the length of the route: it
++#                 samples the CPU time and memory of the estimator processes and records every
++#                 /scan stamp and the filters' own /diagnostics, into <scenario>-probe-*.
++#                 Default 0.
+ #
+ # Running both together, rather than as two separate invocations with the same configured
+ # parameters, is deliberate whenever a direct comparison is the point (the MCL-vs-EKF and
+@@ -32,13 +44,15 @@
+ # Output file names: the EKF's are unsuffixed (<scenario>-run.csv/.json/-verdict.yaml), the
+ # same names every run before 2026-10-10 used, so nothing that already points at them breaks.
+ # The MCL's carry a -mcl suffix (<scenario>-run-mcl.csv/.json, <scenario>-verdict-mcl.yaml)
+-# whether or not the EKF ran alongside it in the same invocation.
++# whether or not the EKF ran alongside it in the same invocation, and the Python MCL's a
++# -rclpy_mcl suffix in the same way, plus <scenario>-rclpy_mcl-timing.csv, one row per scan.
+ #
+ # What runs:
+ #   Webots + official webots_ros2_turtlebot driver     (simulation, not Rust)
+ #   evaluation_supervisor.py                           (ground truth + teleport, not Rust)
+ #   route_driver                                       (Rust, drives the route; harness)
+ #   localization_node, and/or mcl_node                 (Rust, the thing(s) under test)
++#   rclpy_amcl                                         (Python, the thing under test, if asked for)
+ #   one localization_evaluator per active estimator    (Rust, grades it against ground truth)
+ 
+ set -u
+@@ -66,6 +80,18 @@ MCL_SEED=${MCL_SEED:-1592598566}  # robotics_core::BOOK_SEED (0x5EED2026)
+ MCL_PARTICLES=${MCL_PARTICLES:-6000}
+ MCL_RECOVERY_SUSTAINED=${MCL_RECOVERY_SUSTAINED:-20}
+ MCL_INJECTION_FRACTION=${MCL_INJECTION_FRACTION:-1.0}
++RUST_RELEASE=${RUST_RELEASE:-0}
++PROBE=${PROBE:-0}
++if [ "$RUST_RELEASE" = 1 ]; then
++    [ -f "$REPO/ros2_ws/install_release/setup.bash" ] || {
++        echo "RUST_RELEASE=1 but ros2_ws/install_release does not exist; run scripts/build_release.sh" >&2
++        exit 2
++    }
++    # colcon's setup.bash reads variables it never sets, which `set -u` turns into a fatal error.
++    set +u
++    source "$REPO/ros2_ws/install_release/setup.bash"
++    set -u
++fi
+ case "$OUT" in
+     */*) ;;                                              # a path, used as given
+     *) OUT="$EVIDENCE_ROOT/phase-3-correctness/$OUT" ;;  # a bare run name
+@@ -76,14 +102,16 @@ SOURCE_REPO=$(dirname "$EVIDENCE_ROOT")
+ 
+ run_ekf=false
+ run_mcl=false
++run_py=false
+ for e in $ESTIMATORS; do
+     case "$e" in
+         ekf) run_ekf=true ;;
+         mcl) run_mcl=true ;;
+-        *) echo "ESTIMATORS must list only ekf and/or mcl, got $e" >&2; exit 2 ;;
++        rclpy_mcl) run_py=true ;;
++        *) echo "ESTIMATORS must list only ekf, mcl and/or rclpy_mcl, got $e" >&2; exit 2 ;;
+     esac
+ done
+-if ! $run_ekf && ! $run_mcl; then
++if ! $run_ekf && ! $run_mcl && ! $run_py; then
+     echo "ESTIMATORS listed nothing to run" >&2; exit 2
+ fi
+ 
+@@ -91,6 +119,9 @@ EKF_CSV="$OUT/$SCENARIO-run.csv"
+ EKF_JSON="$OUT/$SCENARIO-run.json"
+ MCL_CSV="$OUT/$SCENARIO-run-mcl.csv"
+ MCL_JSON="$OUT/$SCENARIO-run-mcl.json"
++PY_CSV="$OUT/$SCENARIO-run-rclpy_mcl.csv"
++PY_JSON="$OUT/$SCENARIO-run-rclpy_mcl.json"
++PY_TIMING="$OUT/$SCENARIO-rclpy_mcl-timing.csv"
+ 
+ # The odometry both filters predict from and both evaluators grade as the baseline. One
+ # topic, read by everyone: a filter fed one stream and graded against another would be a
+@@ -152,6 +183,15 @@ fi
+     else
+         echo "mcl_executable_sha256: unavailable"
+     fi
++    echo "rust_build: $([ "$RUST_RELEASE" = 1 ] && echo release || echo debug)"
++    echo "probe: $PROBE"
++    if $run_py; then
++        _py_prefix=$(ros2 pkg prefix robotics_localization_py 2>/dev/null || true)
++        echo "rclpy_executable: $_py_prefix/lib/robotics_localization_py/rclpy_amcl"
++        echo "rclpy_python: $(python3 --version 2>&1)"
++        echo "rclpy_numpy: $(python3 -c 'import numpy; print(numpy.__version__)' 2>&1)"
++        echo "rclpy_sources_sha256: $(cat "$REPO"/ros2_ws/src/robotics_localization_py/robotics_localization_py/*.py | sha256sum | cut -d' ' -f1)"
++    fi
+     if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+         echo "source_git_commit: $(git -C "$SOURCE_REPO" rev-parse HEAD)"
+         if [ -n "$(git -C "$SOURCE_REPO" status --porcelain)" ]; then
+@@ -169,7 +209,7 @@ fi
+         echo "kidnap_after_s: $KIDNAP_AFTER"
+     fi
+ } > "$OUT/$SCENARIO-environment.txt"
+-unset _bridge_prefix _mcl_executable
++unset _bridge_prefix _mcl_executable _py_prefix
+ if git -C "$SOURCE_REPO" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+     git -C "$SOURCE_REPO" status --short > "$OUT/$SCENARIO-source-status.txt"
+     git -C "$SOURCE_REPO" diff --binary HEAD > "$OUT/$SCENARIO-source.patch"
+@@ -218,6 +258,9 @@ EKF_NODE_PID=
+ EKF_EVAL_PID=
+ MCL_NODE_PID=
+ MCL_EVAL_PID=
++PY_NODE_PID=
++PY_EVAL_PID=
++PROBE_PID=
+ 
+ if $run_ekf; then
+     log "starting localization_node (EKF) and its evaluator against $ODOM_TOPIC"
+@@ -251,10 +294,43 @@ if $run_mcl; then
+         > "$OUT/$SCENARIO-evaluator-mcl.log" 2>&1 &
+     MCL_EVAL_PID=$!
+ fi
++if $run_py; then
++    log "starting rclpy_amcl (Python MCL) and its evaluator against $ODOM_TOPIC"
++    # The same -p flags as mcl_node, so the two are configured by one set of values.
++    ros2 run robotics_localization_py rclpy_amcl --ros-args \
++        -p "map_file:=$MAP" \
++        -p "topics.odom:=$ODOM_TOPIC" \
++        -p "topics.pose:=rclpy_mcl/pose" \
++        -p "seed:=$MCL_SEED" \
++        -p "particles.count:=$MCL_PARTICLES" \
++        -p "recovery.sustained_updates:=$MCL_RECOVERY_SUSTAINED" \
++        -p "recovery.injection_fraction:=$MCL_INJECTION_FRACTION" \
++        -p "timing_csv:=$PY_TIMING" \
++        > "$OUT/$SCENARIO-rclpy_mcl_node.log" 2>&1 &
++    PY_NODE_PID=$!
++    ros2 run robotics_localization_bridge localization_evaluator --ros-args \
++        -r __node:=localization_evaluator_rclpy_mcl \
++        -p "output_csv:=$PY_CSV" -p "output_json:=$PY_JSON" \
++        -p "topics.odom:=$ODOM_TOPIC" -p "topics.estimate:=rclpy_mcl/pose" \
++        > "$OUT/$SCENARIO-evaluator-rclpy_mcl.log" 2>&1 &
++    PY_EVAL_PID=$!
++fi
+ $run_ekf && { wait_for 60 "the first EKF pose estimate" has_topic /localization/pose || log "no EKF estimate topic yet"; }
+ $run_mcl && { wait_for 60 "the first MCL pose estimate" has_topic /mcl/pose || log "no MCL estimate topic yet"; }
++$run_py && { wait_for 60 "the first rclpy MCL pose estimate" has_topic /rclpy_mcl/pose || log "no rclpy MCL estimate topic yet"; }
+ sleep 3
+ 
++if [ "$PROBE" = 1 ]; then
++    log "starting the benchmark probe (CPU, memory, /scan stamps, /diagnostics)"
++    probe_specs=(webots_bin=webots-bin)
++    $run_mcl && probe_specs+=(rust_amcl=mcl_node)
++    $run_py && probe_specs+=(rclpy_amcl=rclpy_amcl)
++    $run_ekf && probe_specs+=(rust_ekf=localization_node)
++    python3 "$SCRIPT_DIR/phase3_benchmark_probe.py" "$OUT/$SCENARIO-probe" "${probe_specs[@]}" \
++        > "$OUT/$SCENARIO-probe.log" 2>&1 &
++    PROBE_PID=$!
++fi
++
+ # The route. route_driver closes the loop on ground truth and exits when the route is
+ # finished, so this script waits for it instead of timing the legs itself. An open-loop
+ # route cannot be driven for minutes here: a commanded angular.z is not the rate the robot
+@@ -285,6 +361,10 @@ if [ "$SCENARIO" = kidnap ]; then
+ fi
+ log "route finished, letting the filter(s) settle"
+ sleep 5
++if [ -n "$PROBE_PID" ]; then
++    kill -INT -- "-$PROBE_PID" 2>/dev/null || kill -INT "$PROBE_PID" 2>/dev/null
++    wait "$PROBE_PID" 2>/dev/null
++fi
+ 
+ ros2 node list  > "$OUT/$SCENARIO-node_list.txt"  2>&1
+ ros2 topic list > "$OUT/$SCENARIO-topic_list.txt" 2>&1
+@@ -324,8 +404,10 @@ log "stopping with SIGINT, evaluators first so that they write their summaries"
+ {
+     stop localization_evaluator_ekf "$EKF_EVAL_PID"
+     stop localization_evaluator_mcl "$MCL_EVAL_PID"
++    stop localization_evaluator_rclpy_mcl "$PY_EVAL_PID"
+     stop localization_node "$EKF_NODE_PID"
+     stop mcl_node "$MCL_NODE_PID"
++    stop rclpy_amcl "$PY_NODE_PID"
+     stop ros2_launch "$LAUNCH_PID"
+     echo "webots_bin_left: $(pgrep -c -x webots-bin || true)"
+ } > "$OUT/$SCENARIO-shutdown.txt" 2>&1
+@@ -371,4 +453,7 @@ fi
+ if $run_mcl; then
+     check_and_verdict mcl "$MCL_CSV" "$MCL_JSON" "$OUT/$SCENARIO-verdict-mcl.yaml"
+ fi
++if $run_py; then
++    check_and_verdict rclpy_mcl "$PY_CSV" "$PY_JSON" "$OUT/$SCENARIO-verdict-rclpy_mcl.yaml"
++fi
+ log "done, evidence in $OUT"
+diff --git a/scripts/run_phase4_mapping.sh b/scripts/run_phase4_mapping.sh
+index 4b869b5..2f4d075 100644
+--- a/scripts/run_phase4_mapping.sh
++++ b/scripts/run_phase4_mapping.sh
+@@ -38,9 +38,14 @@ LAPS=${LAPS:-1}
+ # route_long.yaml was driven at. route_eval_diamond.yaml is meant to be driven slower.
+ DRIVE_ANGULAR=${DRIVE_ANGULAR:-}
+ NO_RETURN=${NO_RETURN:-clear_to_max_range}
+-TRACER=${TRACER:-supercover}
++# Frozen on 2026-10-11 (docs/phase-4-mapping/implementation.md 5.4): Bresenham traversal, upper clamp probability 0.99330715 (l_max 5.0),
++# the Webots pixel-centre beam layout. The earlier runs used supercover, 0.97 and published; each run records what it used.
++TRACER=${TRACER:-bresenham}
++P_MAX=${P_MAX:-0.99330715}
+ CLEAR_MARGIN=${CLEAR_MARGIN:-0.10}
+ SCAN_TIME_OFFSET=${SCAN_TIME_OFFSET:--0.06}
++# Bearings of the beams (robotics_mapping::layout): published, or pixel_centres for the Webots lidar.
++BEAM_LAYOUT=${BEAM_LAYOUT:-pixel_centres}
+ OUT="$EVIDENCE_ROOT/phase-4-mapping/$NAME"
+ mkdir -p "$OUT"
+ OUT=$(cd "$OUT" && pwd)
+@@ -99,7 +104,7 @@ fi
+ log "starting the world, the adapter, the mapper and the evaluator"
+ ros2 launch robotics_bringup phase4_mapping.launch.py gui:=false mode:=realtime \
+     owner:=ground_truth evaluate:=true capture:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
+-    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" scan_time_offset:="$SCAN_TIME_OFFSET" > "$OUT/launch.log" 2>&1 &
++    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" scan_time_offset:="$SCAN_TIME_OFFSET" beam_layout:="$BEAM_LAYOUT" p_max:="$P_MAX" > "$OUT/launch.log" 2>&1 &
+ LAUNCH_PID=$!
+ 
+ wait_for() {  # wait_for <seconds> <description> <command...>
+@@ -130,6 +135,7 @@ sleep 8
+ ros2 node list > "$OUT/node_list.txt" 2>&1
+ ros2 topic list -t > "$OUT/topic_list.txt" 2>&1
+ ros2 node info /mapping_node > "$OUT/mapping_node_info.txt" 2>&1
++ros2 param get /mapping_node scan_beam_layout > "$OUT/mapper_beam_layout.txt" 2>&1
+ ros2 topic info /tf -v > "$OUT/tf_publishers.txt" 2>&1
+ OWNERS=""
+ grep -qx "/ground_truth_tf_adapter" "$OUT/node_list.txt" && OWNERS="ground_truth_tf_adapter"
+@@ -187,7 +193,7 @@ if [ -s "$OUT/integrated-scans.csv" ] && [ -s "$OUT/final-grid.txt" ]; then
+     log "replaying the recorded scans (claim M2)"
+     ( cd "$REPO" && cargo run -q --release -p robotics_mapping --example replay_scans -- \
+         "$OUT/integrated-scans.csv" "$OUT/final-grid.txt" "$OUT/replay-grid.txt" \
+-        "$NO_RETURN" "$TRACER" "$CLEAR_MARGIN" ) > "$OUT/replay.log" 2>&1
++        "$NO_RETURN" "$TRACER" "$CLEAR_MARGIN" "$BEAM_LAYOUT" ) > "$OUT/replay.log" 2>&1
+     REPLAY_SCANS=$(grep -o 'replayed [0-9]*' "$OUT/replay.log" | grep -o '[0-9]*' || echo none)
+ fi
+ 
+@@ -205,12 +211,13 @@ hdr() { sed -n "s/^$2 //p" "$1" 2>/dev/null | head -1; }
+     echo "mapper_l_max: $(hdr "$OUT/final-grid.txt" l_max)"
+     echo "evaluator_occupied_threshold: $(hdr "$OUT/final-map-states.txt" occupied_threshold)"
+     echo "grid_resolution_m: $(hdr "$OUT/final-grid.txt" resolution)"
++    echo "mapper_beam_layout: $(sed -n 's/^String value is: //p' "$OUT/mapper_beam_layout.txt" | head -1)"
+     echo "owner_of_map_odom: $OWNER"
+     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
+     echo "route_driver_exit_code: $ROUTE_RC"
+     echo "route_driver_angular_rad_s: $(sed -n 's/^Double value is: //p' "$OUT/route_driver_angular.txt" | head -1)"
+     echo "replay_scans: $REPLAY_SCANS"
+-    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN scan_time_offset=$SCAN_TIME_OFFSET tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
++    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN scan_time_offset=$SCAN_TIME_OFFSET beam_layout=$BEAM_LAYOUT p_max=$P_MAX tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
+     grep -E '^(source_git_commit|source_git_dirty|mapping_node_executable_sha256|route_sha256|world_sha256):' "$OUT/environment.txt"
+ } > "$OUT/summary.yaml"
+ 

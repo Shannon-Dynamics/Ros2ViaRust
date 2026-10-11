@@ -1,0 +1,54 @@
+# Phase 4 evaluation route 5 (round two, 2 of 3): arcs round the pillars, seen from several sides.
+#
+# Used by claim M1 of ../../../docs/phase-4-mapping/problem.md section 4 in the second round of
+# evaluation runs (the first three, route_eval_cross, route_eval_wall_lobes and route_eval_diamond, were burned
+# by the analysis that followed them: ../../../docs/phase-4-mapping/implementation.md section 5.4). Written
+# from the geometry of the room alone, after the mapper's parameters were frozen for development run 4 and
+# before that run and before any run on this route; it is not shaped to avoid, or to hit, any place where an earlier
+# map was wrong. No waypoint is shared with any earlier route or with the other two of this round.
+# Driver rate: the default 0.8 rad/s turn in place.
+#
+# What the route is: from the spawn pose to pillar B, then the half of a circle of radius 0.7 m round each of pillars
+# B, C and D that faces the middle of the room (clockwise, four 45 degree steps, 0.54 m each), with a transfer between
+# them, and finally a full circle (counter-clockwise, eight steps) round pillar A. 24 waypoints, 19.7 m, 24 turns,
+# 45 degrees on the arcs.
+#
+# Why this shape, and what it stresses: THIS ROUTE IS A DELIBERATE STRESS ON THE OPEN ITEM, not a way round it. The
+# pillar samples are where the evaluation routes lost most of their completeness
+# (../../../evidence/phase-4-mapping/2026-10-11-evaluation-group/NOTE-pillar-evidence-diagnosis.md): a pillar cell is
+# built by near-normal views and eroded by grazing ones, and the burned routes passed each pillar once, from one side.
+# This route looks at each pillar from a quarter-turn of directions or more, at 0.7 m, so that near-normal and
+# grazing views alternate. The robot never goes between a pillar and its wall.
+#
+# Clearance, over every leg: pillars A, B, C and D 0.39 m (the polygon's edge is 0.647 m from the centre). Walls: the
+# nearest approach is 0.5 m from a face (0.39 m clear of the footprint). Turning is 25 per cent of the time.
+# Coordinates are the map frame of ./landmarks.yaml, metres.
+
+route:
+  name: pillar-arcs
+
+waypoints:
+  - {x: -0.827, y: 2.402}
+  - {x: -0.711, y: 1.878}
+  - {x: -0.998, y: 1.427}
+  - {x: -1.522, y: 1.311}
+  - {x: -1.973, y: 1.598}
+  - {x: -2.313, y: -0.374}
+  - {x: -1.779, y: -0.336}
+  - {x: -1.374, y: -0.687}
+  - {x: -1.336, y: -1.221}
+  - {x: -1.687, y: -1.626}
+  - {x: 0.256, y: -2.374}
+  - {x: 0.251, y: -1.838}
+  - {x: 0.626, y: -1.456}
+  - {x: 1.162, y: -1.451}
+  - {x: 1.544, y: -1.826}
+  - {x: 1.800, y: 0.500}
+  - {x: 2.295, y: 0.705}
+  - {x: 2.500, y: 1.200}
+  - {x: 2.295, y: 1.695}
+  - {x: 1.800, y: 1.900}
+  - {x: 1.305, y: 1.695}
+  - {x: 1.100, y: 1.200}
+  - {x: 1.305, y: 0.705}
+  - {x: 1.800, y: 0.500}

@@ -1,0 +1,43 @@
+# Phase 4 evaluation route 4 (round two, 1 of 3): oblique wall approaches, and driving away from them.
+#
+# Used by claim M1 of ../../../docs/phase-4-mapping/problem.md section 4 in the second round of
+# evaluation runs (the first three, route_eval_cross, route_eval_wall_lobes and route_eval_diamond, were burned
+# by the analysis that followed them: ../../../docs/phase-4-mapping/implementation.md section 5.4). Written
+# from the geometry of the room alone, after the mapper's parameters were frozen for development run 4 and
+# before that run and before any run on this route; it is not shaped to avoid, or to hit, any place where an earlier
+# map was wrong. No waypoint is shared with any earlier route or with the other two of this round.
+# Driver rate: the default 0.8 rad/s turn in place.
+#
+# What the route is: for each of the four walls a lead-in point about 1.4 m from the middle of the room,
+# then a 1.6 m leg to a point 0.45 m from the wall face that is 45 degrees off the wall's normal (north wall at
+# (1.0, 2.55), west at (-2.55, 1.0), south at (-1.0, -2.55), east at (2.55, -1.0)), a turn of 180 degrees there, and
+# the same leg back. 12 waypoints, 20.3 m, twelve turns of which four are the 180 degree reversals at the walls.
+#
+# Why this shape, and what it stresses: the 2026-10-11 analysis found that the beam-angle error only shows where a
+# wall is met obliquely (a beam's range error is range x tan(incidence) x angle); the three burned routes were
+# axis-aligned or at 45 degrees to the room far from the walls. Here every wall is approached at 45 degrees to its
+# normal at 0.45 m, and after every reversal the robot drives away with that wall behind it at 45 degrees, which is
+# exactly what puts the beams 0 to 14 and 345 to 359 on an oblique wall. The four lead-ins and the transfers between
+# them cross the middle of the room, so the pillars are seen from inside.
+#
+# Clearance, `centre-to-leg distance - pillar radius 0.15 - footprint 0.11`, over every leg: landmark_a 0.88 m,
+# landmark_b 1.09 m, landmark_c 0.78 m, landmark_d 0.77 m. Walls: the wall points are 0.45 m from the face, 0.34 m
+# clear of the footprint. Turning is 18 per cent of the time (the verdict's validity bound is 50).
+# Coordinates are the map frame of ./landmarks.yaml, metres.
+
+route:
+  name: oblique-wall-approaches
+
+waypoints:
+  - {x: -0.130, y: 1.420}
+  - {x: 1.000, y: 2.550}
+  - {x: -0.130, y: 1.420}
+  - {x: -1.420, y: -0.130}
+  - {x: -2.550, y: 1.000}
+  - {x: -1.420, y: -0.130}
+  - {x: 0.130, y: -1.420}
+  - {x: -1.000, y: -2.550}
+  - {x: 0.130, y: -1.420}
+  - {x: 1.420, y: 0.130}
+  - {x: 2.550, y: -1.000}
+  - {x: 1.420, y: 0.130}
