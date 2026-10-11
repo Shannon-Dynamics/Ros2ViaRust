@@ -21,6 +21,10 @@
 //! because the scan and the transform travel separately, and is then skipped and counted. It
 //! is never integrated at a guessed pose.
 //!
+//! `scan_beam_layout` (default `published`) is the one switch that changes what a beam points at:
+//! `pixel_centres` replaces the published bearings by the cylindrical-projection layout Webots
+//! actually uses (`robotics_mapping::layout`). The recording below keeps the published bearings.
+//!
 //! Optional files, all off unless a path is given, for the evidence of a run:
 //! `output.latency_csv` (one row per scan: what it did and how long it took, for claim M4),
 //! `output.trace_csv` (entropy and state counts over time), `output.record_csv` (every
@@ -35,8 +39,8 @@ use rclrs::*;
 use robotics_core::tf::{LookupTime, TransformBuffer, TransformBufferConfig};
 use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
 use robotics_mapping::{
-    grid_entropy, signed_esdf, GridGeometry, MotionFilter, MotionGate, NoReturn, OccupancyGrid,
-    OccupancyParams, RayTracer, ScanIntegrator,
+    grid_entropy, signed_esdf, BeamLayout, GridGeometry, MotionFilter, MotionGate, NoReturn,
+    OccupancyGrid, OccupancyParams, RayTracer, ScanIntegrator,
 };
 use robotics_ros_bridge::convert::{header, laser_scan_from_ros, now, pose_to_ros};
 use robotics_ros_bridge::diagnostics::{DiagnosticLevel, DiagnosticsPublisher, StatusBuilder};
@@ -78,6 +82,9 @@ struct State {
     gate: Option<(f64, MotionGate)>,
     /// Seconds added to a scan's stamp to get the instant its beams were measured (<= 0).
     time_offset: f64,
+    /// Which bearings the beams are taken to have; applied just before integration, so the
+    /// recorded scans stay as the driver published them (`BeamLayout`).
+    layout: BeamLayout,
     motion_filter: Option<MotionFilter>,
     last_integrated: Option<Se2>,
     pending: VecDeque<Pending>,
@@ -205,7 +212,11 @@ impl State {
                 return Ok(Outcome::SkippedStationary);
             }
         }
-        let report = match self.integrator.integrate(&mut self.grid, &sensor, &p.scan) {
+        let scan = match self.layout.apply(&p.scan) {
+            Ok(s) => s,
+            Err(e) => return Err(e.to_string()),
+        };
+        let report = match self.integrator.integrate(&mut self.grid, &sensor, &scan) {
             Ok(r) => r,
             Err(robotics_mapping::MappingError::SensorOutsideGrid { .. }) => {
                 self.c.skipped_sensor_outside_grid += 1;
@@ -550,6 +561,16 @@ fn main() -> Result<(), RclrsError> {
         0.0,
         "Seconds added to a scan's stamp to get the instant it was measured (the Webots lidar: -0.06)",
     )?;
+    let layout = match BeamLayout::parse(&p.string(
+        &node,
+        "scan_beam_layout",
+        "published",
+        "Bearings of the beams: published (as the driver publishes them) | pixel_centres (the Webots \
+         cylindrical-projection layout; docs/phase-4-mapping/implementation.md, robotics_mapping::layout)",
+    )?) {
+        Ok(l) => l,
+        Err(e) => return Err(invalid(&node, &format!("scan_beam_layout: {e}"))),
+    };
     let filter_translation = p.f64(
         &node,
         "motion_filter.min_translation_m",
@@ -703,6 +724,7 @@ fn main() -> Result<(), RclrsError> {
         esdf_truncation,
         gate,
         time_offset,
+        layout,
         motion_filter,
         last_integrated: None,
         pending: VecDeque::new(),

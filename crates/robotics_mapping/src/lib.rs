@@ -11,6 +11,8 @@
 //!   centres and the exact supercover of the continuous segment.
 //! * [`gate`]: the refusal of scans whose timestamp cannot be trusted while the pose changes,
 //!   a measured property of the Webots lidar driver and not a general nicety.
+//! * [`layout`]: which bearings the beams of a scan are taken to have, for the one sensor whose
+//!   published bearings differ from what the simulator measured (the Webots LDS-01); off by default.
 //! * [`integrate`]: the hand-crafted inverse sensor model and the integration of one laser
 //!   scan, one update per cell per scan, with a documented policy for beams that returned
 //!   nothing.
@@ -31,6 +33,7 @@ pub mod esdf;
 pub mod eval;
 pub mod gate;
 pub mod integrate;
+pub mod layout;
 pub mod occupancy;
 pub mod raycast;
 
@@ -39,6 +42,7 @@ pub use esdf::{signed_esdf, EsdfGrid};
 pub use eval::{evaluate, EvalParams, GroundTruth, MapMetrics, SurfaceErrorStats, SurfaceSample};
 pub use gate::{MotionFilter, MotionGate};
 pub use integrate::{NoReturn, RayTracer, ScanIntegrator, ScanReport, DEFAULT_CLEAR_MARGIN};
+pub use layout::BeamLayout;
 pub use occupancy::{CellState, GridGeometry, OccupancyGrid, OccupancyParams};
 
 /// Errors of the mapping library.

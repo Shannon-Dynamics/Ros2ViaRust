@@ -1,7 +1,7 @@
 //! Replay the scans a `mapping_node` integrated and write the grid they produce.
 //!
 //!     cargo run --release -p robotics_mapping --example replay_scans -- \
-//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham] [clear margin, m]
+//!         <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [clear_to_max_range|drop] [supercover|bresenham] [clear margin, m] [published|pixel_centres]
 //!
 //! This is the check of claim M2, determinism, on real simulator data: the recording holds
 //! every scan the mapper integrated, in the order it integrated them, each with the sensor pose
@@ -12,16 +12,19 @@
 //! nothing to the library's result that the library does not do on its own, and the result
 //! does not depend on the run.
 //!
-//! The policies default to those of `mapping_node`; pass them if the run changed them.
+//! The policies default to those of `mapping_node`; pass them if the run changed them. The
+//! recording holds the bearings the driver published; the beam layout (`scan_beam_layout` of
+//! `mapping_node`, default `published`) is applied to each scan before it is integrated, as the
+//! node does, so a run made with `pixel_centres` is replayed with `pixel_centres`.
 
 use robotics_core::{FrameId, LaserScan, Se2, Timestamp};
-use robotics_mapping::{NoReturn, OccupancyGrid, RayTracer, ScanIntegrator};
+use robotics_mapping::{BeamLayout, NoReturn, OccupancyGrid, RayTracer, ScanIntegrator};
 use std::process::ExitCode;
 
 fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    if args.len() < 3 || args.len() > 6 {
-        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal] [clear margin]".into());
+    if args.len() < 3 || args.len() > 7 {
+        return Err("usage: replay_scans <integrated-scans.csv> <final-grid.txt> <out-grid.txt> [no-return policy] [traversal] [clear margin] [beam layout]".into());
     }
     let no_return = match args.get(3).map(String::as_str) {
         None | Some("clear_to_max_range") => NoReturn::ClearToMaxRange,
@@ -42,6 +45,10 @@ fn run() -> Result<(), String> {
         Some(v) => v
             .parse()
             .map_err(|_| format!("clear margin {v:?} is not a number"))?,
+    };
+    let layout = match args.get(6) {
+        None => BeamLayout::Published,
+        Some(v) => BeamLayout::parse(v).map_err(|e| e.to_string())?,
     };
     let mut integrator = ScanIntegrator::new(no_return, tracer)
         .with_clear_margin(margin)
@@ -86,13 +93,16 @@ fn run() -> Result<(), String> {
             ranges,
             intensities: Vec::new(),
         };
+        let scan = layout
+            .apply(&scan)
+            .map_err(|e| format!("line {}: {e}", n + 1))?;
         integrator
             .integrate(&mut grid, &Se2::new(num(1)?, num(2)?, num(3)?), &scan)
             .map_err(|e| format!("line {}: {e}", n + 1))?;
         scans += 1;
     }
     std::fs::write(&args[2], grid.to_text()).map_err(|e| format!("{}: {e}", args[2]))?;
-    eprintln!("replayed {scans} scans");
+    eprintln!("replayed {scans} scans (beam layout {})", layout.name());
     Ok(())
 }
 
