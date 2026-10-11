@@ -1,0 +1,737 @@
+---
+title: 'State Estimation: Fusing Wheels and a Gyro'
+description: Why wheel odometry drifts and does not know it, how an error-state Kalman filter lets a gyro and the wheels correct each other, and how to test whether the filter's own uncertainty is honest.
+chapter: 2
+phase: 2
+phaseTitle: State estimation, sensor models, simulation
+difficulty: Intermediate
+readingTime: 60 min
+quote: "A nonlinear difference (or differential) equation is derived for the covariance matrix of the optimal estimation error."
+quoteAuthor: R. E. Kalman
+quoteSource: A New Approach to Linear Filtering and Prediction Problems (1960), abstract
+---
+
+import { DeadReckoning } from '@/components/ch/ch02/dead-reckoning';
+import { GyroAlone } from '@/components/ch/ch02/gyro-alone';
+import { Trust } from '@/components/ch/ch02/trust';
+import { BiasPolicy } from '@/components/ch/ch02/bias-policy';
+import { LateWheel } from '@/components/ch/ch02/late-wheel';
+
+<Overview
+  goals={[
+    'say why wheel odometry drifts, and why its covariance does not say so',
+    'write the error-state Kalman filter on SE(2) that fuses the wheels with a gyro: state, process, measurement, injection and reset',
+    'compute NEES and NIS, read them against a χ² band, and say what a result outside the band means and what it does not',
+    'explain two decisions the equations do not make for you: when the gyro bias may be corrected, and what to do with a late sample',
+    'find each of these in the repository: the file, the function and the test or check that pins it',
+  ]}
+  prerequisites={[
+    'Chapter 1: SE(2), the ⊞ step, and the Kalman filter on a cart',
+    'matrices and the idea of a covariance; no ROS knowledge: this chapter is about the crate underneath the node',
+  ]}
+>
+
+Chapter 1 ended with a robot that integrates its wheels exactly and keeps a distribution over where
+it is. Drive that robot for three minutes and two things go wrong at once. The pose is wrong, by
+metres, because a wheel is a little larger than its twin and the floor is a little slippery. And the
+robot does not know it is wrong: the covariance that comes with its odometry stays small.
+
+A gyro is the obvious second opinion, and the second half of the problem is that it is an opinion
+with its own error, a slowly wandering bias. This chapter builds the filter that lets each sensor
+correct the other, then does what a filter's author owes the reader: it asks whether the
+filter's *own* idea of its error is right. That question has a precise form (NEES and NIS), and it
+turns out that the answer depends on decisions the equations do not contain.
+
+</Overview>
+
+## The problem
+
+Rusty is the repository's headless differential-drive simulator (Chapter 3 opens it up). Give it the
+mixed 180 s trajectory of the repository's estimation tests (straight runs, turns in place, arcs,
+a spin across ±π, stops) and the three imperfections a real TurtleBot3 has: 2 % random slip per
+wheel per step, a right wheel whose radius is 0.2 % too large, and a gyro with a bias of about
+0.005 rad/s that drifts. Then ask two questions of the raw wheel odometry, one about accuracy and
+one about honesty.
+
+On the repository's recorded run (seed 1), the raw odometry ends with a position RMSE of 0.710 m
+and a heading RMSE of 0.2564 rad. Its own covariance claims far better: the mean *normalized estimation
+error squared* of its pose is 185.24, where a filter whose covariance describes its error averages 3.
+After fusing the gyro, the same run gives 0.152 m and 0.0476 rad, a mean NEES of 0.45 and a mean
+*normalized innovation squared* of 0.90 where 2 is expected (`docs/STATE_ESTIMATION.md`, §4.1).
+Better, and no longer lying: if anything, too modest.
+
+Here is the drive, run on the repository's own Rust. The dashed gray line is the truth, the orange
+line is the wheels alone, and the orange ellipse is the region the odometry's *own covariance* says
+contains the robot with 3σ confidence.
+
+<DeadReckoning />
+
+The truth leaves the ellipse early and stays out. That is the first number to take away, and it
+is not about a particular robot: a covariance is a claim, and a claim can be checked.
+
+<Callout type="warn" title="Same Rust, different noise">
+
+The widgets on this page run the repository's code compiled to WebAssembly, and the numbers they
+show are not the numbers quoted above for "seed 1". The reason is not in the filter. Every random
+stream in the repository comes from `robotics_core::seeded_rng`, which returns `rand`'s `SmallRng`,
+and `SmallRng` is a *different generator* on 32-bit targets than on 64-bit ones (Xoshiro128++ where
+a pointer is 32 bits, Xoshiro256++ where it is 64). WebAssembly is 32-bit, so a seed names different
+noise there: `seeded_rng(1)` yields `14971601782005023387` on the robot's side and
+`11103346041267129828` in the page. The book's build pins both words.
+
+So this chapter quotes two kinds of number and never mixes them. *Recorded* numbers are the
+repository's native runs, quoted from its documents, and `cargo test` in `crates/robotics_wasm`
+asserts every one. *Page* numbers come from the same drive with the page's draw of the noise; the
+widgets show them and the build pins them. What does not use a random stream (the closed forms, the
+noise-free run) is identical on both. The conclusions that must hold on both do hold on both, and
+the build asserts them for five seeds each. Making a seed mean the same noise everywhere is a small
+change to `robotics_core`; it is not made here because that crate is shared with work still under
+way.
+
+</Callout>
+
+## Building intuition
+
+If the wheels drift, listen to something else. A gyro measures the heading's rate directly, with no
+wheel and no floor in the way. Integrate it and you have a heading that does not care about slip.
+Try it.
+
+<GyroAlone />
+
+Two things stand out. With the bias set to zero the gyro alone is usually the best of the three, better than the wheels
+and than the fused filter, which is what a sensor that measures rotation directly should be. But a real gyro has
+a bias, a small constant rate it reports when the robot is not turning, and integrating a rate
+integrates its bias with it: 0.005 rad/s held for 180 s is 0.9 rad. The error of the gyro alone
+grows linearly in time, in proportion to the bias you drag in, while the fused filter's error barely
+moves. It does not ignore the bias; it *measures* it, by noticing that the wheels and the gyro
+disagree about a robot that is standing still or turning in place. The chapter is the arithmetic of
+that sentence.
+
+## The mathematics
+
+### Why an error state
+
+A pose has three numbers and one of them wraps. A Kalman filter wants a state in a vector space,
+and a Gaussian over `(x, y, θ)` is wrong near ±π and wrong again because the motion is not linear in
+those coordinates. The way out is the one Chapter 1's `⊞` already provides. Keep a *nominal* state
+that lives on the manifold and is integrated exactly, and keep a Gaussian only over the small
+*error* between the truth and the nominal state, which lives in the tangent space, a plain vector
+space where the Gaussian is a fine description. This is the error-state Kalman filter
+(Solà, 2017), here on SE(2).
+
+The nominal state is the pose, the forward speed and the gyro bias:
+
+$$
+\hat x = (\hat T,\, \hat v,\, \hat b),\qquad \hat T \in \SEtwo .
+$$
+
+The error is five numbers, with the position error in the body frame of the estimate (the *right*
+perturbation, Chapter 1):
+
+$$
+T = \hat T \,\exp(\delta\xi),\quad v = \hat v + \delta v,\quad b = \hat b + \delta b,\qquad
+\delta x = (\delta\rho_x,\, \delta\rho_y,\, \delta\theta,\, \delta v,\, \delta b) \in \R^5 ,
+$$
+
+with covariance $P \in \R^{5\times 5}$. Everything the filter knows about its own uncertainty is
+that matrix.
+
+### Process: integrate the gyro, propagate the error
+
+Between measurements the gyro rate $\omega_m$ is held constant, the bias estimate is subtracted,
+and the nominal pose takes the exact step of Chapter 1:
+
+$$
+\omega = \omega_m - \hat b,\qquad \tau = (\hat v\,\Delta t,\; 0,\; \omega\,\Delta t),\qquad \hat T \leftarrow \hat T \bplus \tau .
+$$
+
+The error moves by a matrix $F$ that the derivation below produces, and the covariance by
+$P \leftarrow F P F^{\T} + Q$:
+
+$$
+F = \begin{pmatrix} \Ad(\exp\tau)^{-1} & \Delta t\, e_x & -\Delta t\, e_\theta \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix},
+\qquad
+Q = \diag(\sigma_{\text{lat}}^2,\ \sigma_{\text{lat}}^2,\ \sigma_g^2,\ \sigma_a^2,\ \sigma_{bw}^2)\,\Delta t .
+$$
+
+Read the columns. A speed error $\delta v$ becomes a position error along the body $x$ axis
+($\Delta t\, e_x$). A bias error $\delta b$ becomes a heading error that grows by $-\Delta t$ per step,
+because $\omega = \omega_m - \hat b - \delta b$. The block $\Ad(\exp\tau)^{-1}$ carries last step's pose
+error into the frame of the new estimate. The noise densities are the gyro's white noise $\sigma_g$, a
+random walk of the speed $\sigma_a$ and of the bias $\sigma_{bw}$, and a small planar slip diffusion
+$\sigma_{\text{lat}}$ that keeps unmodeled slip from making the filter over-confident.
+
+<Derivation title="Where F comes from" result="δξ⁺ ≈ Ad(exp τ̂)⁻¹ δξ + δτ, and δτ = (δv Δt, 0, −δb Δt)">
+
+The true pose after the step is $T\,\exp(\tau_{\text{true}})$ and the nominal one is $\hat T\,\exp(\hat\tau)$,
+with $\tau_{\text{true}} = \hat\tau + \delta\tau$. The new error $\delta\xi^{+}$ is defined by
+$T\exp(\tau_{\text{true}}) = \hat T\exp(\hat\tau)\exp(\delta\xi^{+})$, so, with $T = \hat T\exp(\delta\xi)$,
+
+$$
+\exp(\delta\xi^{+}) = \exp(\hat\tau)^{-1}\exp(\delta\xi)\exp(\hat\tau)\;\exp(\delta\tau)
+\;=\; \exp\bigl(\Ad(\exp\hat\tau)^{-1}\delta\xi\bigr)\exp(\delta\tau),
+$$
+
+using the identity $g^{-1}\exp(\eta)\,g = \exp(\Ad(g^{-1})\eta)$ with $g = \exp\hat\tau$, and
+where $\exp(\delta\tau)$ stands for $\exp(\hat\tau)^{-1}\exp(\hat\tau + \delta\tau)$, which equals
+$\exp(J_r(\hat\tau)\,\delta\tau)$ to first order. For the short steps between samples the right
+Jacobian $J_r \approx I$, so to first order $\delta\xi^{+} \approx \Ad(\exp\hat\tau)^{-1}\delta\xi + \delta\tau$.
+The twist error comes from the speed and the rate: $\delta\tau = (\delta v\,\Delta t,\; 0,\; -\delta b\,\Delta t)$ plus noise.
+The two non-trivial columns of $F$ are exactly these.
+
+</Derivation>
+
+### Measurement: the wheels and the gyro disagree about the bias
+
+The wheel odometry reports a forward speed $v_w$ and a yaw rate $\omega_w$ over the last interval;
+the gyro reports $\omega_g = \omega + b + \text{noise}$. Take $\omega_w \approx \omega$, the true rate, and form
+
+$$
+z = (v_w,\; \omega_w - \omega_g),\qquad h(x) = (v,\; -b),\qquad
+H = \begin{pmatrix} 0&0&0&1&0 \\ 0&0&0&0&-1 \end{pmatrix},\qquad
+R = \diag\bigl(\sigma_v^2,\ \sigma_{\omega w}^2 + \sigma_{\omega g}^2\bigr).
+$$
+
+The first row observes the speed. The second observes *minus the bias*: if the wheels say the robot
+turns at the rate the gyro reports minus 0.005 rad/s, the bias is 0.005 rad/s. The update is
+Chapter 1's Joseph form on this $H$,
+
+$$
+S = H P H^{\T} + R,\qquad K = P H^{\T} S^{-1},\qquad
+P \leftarrow (I - KH)\,P\,(I - KH)^{\T} + K R K^{\T},
+$$
+
+with the innovation $r = z - h(\hat x)$ and the correction $\delta\hat x = K r$.
+
+### Injection and reset
+
+The correction is applied to the nominal state, $\hat x \leftarrow \hat x \bplus \delta\hat x$. After
+that the error is, by definition, measured from the *new* nominal state, so the covariance, which
+was the covariance of the error from the old one, has to be re-expressed:
+
+$$
+P \leftarrow G\,P\,G^{\T},\qquad G = \diag\bigl(I_3 - \tfrac12\,\mathrm{ad}(\delta\hat\xi),\ 1,\ 1\bigr),
+$$
+
+where $\mathrm{ad}$ is the Lie-algebra adjoint of $\mathfrak{se}(2)$. Many implementations skip it
+($G = I$) and call the error "small enough". The repository applies it, and keeps a switch to turn it
+off so a test can show the difference.
+
+<Derivation title="Where G comes from" result="δξ⁺ ≈ (I − ½ ad(δ̂ξ))(δξ − δ̂ξ)">
+
+Before injection the truth is $\hat T\exp(\delta\xi)$. After it the nominal pose is $\hat T^{+} = \hat T\exp(\hat\delta)$, with
+$\hat\delta$ the translational-and-heading part of the correction, and the new error satisfies
+$\hat T\exp(\delta\xi) = \hat T^{+}\exp(\delta\xi^{+})$, so $\exp(\delta\xi^{+}) = \exp(-\hat\delta)\exp(\delta\xi)$.
+The Baker–Campbell–Hausdorff formula, to first order in the small quantities, gives
+$\delta\xi^{+} \approx \delta\xi - \hat\delta - \tfrac12[\hat\delta, \delta\xi]$. The residual $\delta\xi - \hat\delta$ is
+small and $[\hat\delta,\hat\delta] = 0$, so $[\hat\delta, \delta\xi] = [\hat\delta, \delta\xi - \hat\delta]$ and
+
+$$
+\delta\xi^{+} \approx \bigl(I - \tfrac12\,\mathrm{ad}(\hat\delta)\bigr)(\delta\xi - \hat\delta).
+$$
+
+The speed and bias components add, so their block of $G$ is the identity. The mean of $\delta\xi - \hat\delta$ is zero, and
+its covariance is the corrected $P$; mapping it through $I - \tfrac12\mathrm{ad}(\hat\delta)$ gives $G P G^{\T}$.
+
+</Derivation>
+
+## Does the answer deserve trust?
+
+A filter produces a mean and a covariance. The mean is an estimate; the covariance is a
+*statement about the mean*: "my error is distributed like $\mathcal N(0, P)$". Statements can be
+tested.
+
+If the true error $e$ of an estimate has covariance $P$, then
+
+$$
+\varepsilon = e^{\T} P^{-1} e \;\sim\; \chi^2_N,\qquad \E[\varepsilon] = N,
+$$
+
+for an $N$-dimensional error. This is the **NEES**, the normalized estimation error squared. It needs
+the truth, so it exists only in simulation. Its sibling needs no truth: the *innovation* $r = z - h(\hat x)$ of each update has covariance $S$, so
+
+$$
+\nu = r^{\T} S^{-1} r \;\sim\; \chi^2_M,\qquad \E[\nu] = M ,
+$$
+
+the **NIS**, which the robot can compute about itself while it drives. The repository's update
+returns it with every correction.
+
+A single sample is noisy; the time average of $n$ samples of a $\chi^2_N$ statistic is
+$\chi^2_{nN}/n$, which concentrates around $N$. The filter passes the test at level $\alpha$ when the
+mean lies in the interval $\bigl[\chi^2_{nN}(\alpha/2)/n,\ \chi^2_{nN}(1-\alpha/2)/n\bigr]$. Two
+numbers pin the quantiles: $\chi^2_1(0.95) = 3.841459$ and $\chi^2_2(0.95) = 5.991465$, both reproduced by
+the repository's tests and by this book's checks. For the 9000 pose samples of a 180 s drive the
+95 % band for the mean is about $[2.95,\ 3.05]$, very narrow, which is why a filter that is only a
+little off fails it. One caveat belongs next to the test: successive samples of a running filter
+are correlated, the interval assumes they are not, and so a result near the edge is
+indicative, not a verdict.
+
+Which of the three outcomes a filter gets matters more than the pass or fail. Above the band, the
+covariance is too small: the filter is **over-confident**, which is the dangerous direction, because
+whatever consumes the estimate will trust it. Below the band it is **conservative**: safe, and
+wasteful. Inside, it is consistent. Now see all three.
+
+<Trust />
+
+Three things to take from the dashboard. First, the raw odometry's mean NEES is over 100 against
+an expected 3 at the documented radius error, and moving the slider shows the reason: the repository's raw covariance
+(Part 1's `OdometryNoise`) models neither slip nor a radius mismatch, so it is an honest covariance
+for a robot that does not exist. Second, the fused filter is *conservative* on every seed, and the repository
+means it to be: real wheels slip more than a simulator's white noise, so its wheel noise is left wide.
+Third, consistency is a property of the model against the world, not of the algorithm. The fused filter is
+the same code at every slider position, and toward a 2 % radius error it leaves the band (on every one of twelve seeds the build tries at 2 %,
+on about half of them at 1 %), because nothing in its model says that a wheel can be that wrong.
+
+## Two decisions the equations do not make
+
+### When may the filter correct the gyro bias?
+
+The second row of $z$ is the wheel yaw rate minus the gyro's. It measures $-b$ only if $\omega_w$ is
+the true rate. The reason it is not is that a wheel radius error makes
+$\omega_w$ wrong *in proportion to the motion*, and it does so for minutes at a time, an error
+no white noise can describe. Let the filter treat that difference as a measurement of the bias while the
+robot drives and it will do the only thing it can: move the bias estimate until the difference stops
+looking wrong. The bias estimate absorbs the radius error, and the heading inherits it.
+
+The repository's answer is a policy, not a term in a matrix. The two-row update is used only while the
+forward speed is at most `bias_update_max_speed`, 0.05 m/s: at standstill and in a turn in place, where
+the wheels' yaw rate is the trustworthy one (a zero-velocity update). Above it, the update observes the speed alone.
+
+<BiasPolicy />
+
+The repository's author measured the same effect on the recorded native run, and the document says
+it in one sentence: updating the bias at every speed raises the fused error to 0.62–0.79 m and
+0.19–0.27 rad over the five seeds, and drops the yaw ±3σ coverage to 42–89 %
+(`docs/STATE_ESTIMATION.md` §4.1; `cargo test` asserts that sentence). The page's own seeds agree in
+direction on all five, which the build also asserts. The lesson generalizes: when an error is
+correlated in time, a filter that models it as white noise is not merely sub-optimal, it is
+confidently wrong, and the NEES and the ±3σ coverage are the instruments that say so.
+
+### What to do with a late sample
+
+Messages arrive late. The filter integrates every measurement by its own timestamp, never by when
+it arrived, and keeps one time $t_f$. A sample stamped $t$ is handled by comparing it to $t_f$:
+inside `max_measurement_delay` (50 ms) behind it, the sample is applied at $t_f$ without
+propagation and counted as late; further behind, it is rejected as out of order and counted; ahead,
+the filter propagates to it first; and more than `max_dt` (0.5 s) ahead, it does not integrate
+across the gap at all, it inflates the covariance instead. The filter keeps no buffer, so a
+rejected sample is gone: the policy keeps it causal and its latency bounded.
+
+<LateWheel />
+
+The result is a cliff and not a slope. A sample a few milliseconds past the window is not "a little
+worse"; it is *absent*, and a filter that never receives the wheel speed has nothing to say about how far the robot went.
+The window is the filter's contract with the middleware, and the way to learn that it has been
+broken is the counter in the dashboard, which the node publishes on `/diagnostics`.
+
+## The algorithm
+
+<Algorithm name="ESKF-SE2 (T̂, v̂, b̂, P; ω_m, Δt; z)">
+
+1. propagate: $\omega = \omega_m - \hat b$, $\ \tau = (\hat v\Delta t,\, 0,\, \omega\Delta t)$, $\ \hat T \leftarrow \hat T \bplus \tau$
+2. $P \leftarrow F P F^{\T} + Q$, with $F$ and $Q$ as above
+3. wheel update: $z = (v_w,\ \omega_w - \omega_g)$; if $|v_w| \le$ `bias_update_max_speed` use both rows of $H$, otherwise only the speed row
+4. $S = H P H^{\T} + R$, $\ K = P H^{\T} S^{-1}$, $\ \delta\hat x = K\,(z - h(\hat x))$
+5. $P \leftarrow (I - KH)\,P\,(I - KH)^{\T} + KRK^{\T}$
+6. inject: $\hat x \leftarrow \hat x \bplus \delta\hat x$; reset: $P \leftarrow G P G^{\T}$
+7. return $\hat x$, $P$, and the NIS $\nu = r^{\T} S^{-1} r$
+
+</Algorithm>
+
+Steps 1–2 run at the gyro's rate and steps 3–7 at the wheels'. Between them is the timing rule above.
+
+## Implementation in Rust
+
+Everything in this chapter is in `robotics_filters`, which does not know ROS exists. `state_estimator_node`
+converts messages and calls `OdomImuFusion`, which calls the code below. Every listing is an excerpt of the file
+named in its title; the book's build fails if a line is not in that file, in that order.
+
+### The process model
+
+```rust title="crates/robotics_filters/src/eskf_se2.rs"
+    fn predict_inner(
+        &mut self,
+        rate: f64,
+        biased: bool,
+        yaw_var_per_s: f64,
+        dt: f64,
+    ) -> Result<(), FilterError> {
+// …
+        let omega = if biased {
+            rate - self.x.gyro_bias
+        } else {
+            rate
+        };
+        let tau = Tangent2::new(self.x.speed * dt, 0.0, omega * dt);
+        let mut f = EskfCov::identity();
+        f.fixed_view_mut::<3, 3>(0, 0)
+            .copy_from(&Se2::exp(&tau).inverse().adjoint());
+        f[(idx::PX, idx::V)] = dt;
+        if biased {
+            f[(idx::TH, idx::B)] = -dt;
+        }
+        let p = symmetrize(&(f * self.p * f.transpose() + self.noise.discrete(dt, yaw_var_per_s)));
+        let p = validate_covariance(&p, &self.tol)?;
+        let pose = self.x.pose.boxplus(&tau);
+// …
+        self.x.pose = pose;
+        self.p = p;
+        Ok(())
+    }
+```
+
+`omega` is the gyro rate minus the bias estimate, `tau` is the twist of the step, and `f` is the matrix
+$F$ above: an adjoint block, a `dt` from speed to the body-$x$ position error, and a `-dt` from the bias to the
+heading, which exists only when the rate came from the gyro. The nominal pose moves by `boxplus`, the
+exact step of Chapter 1; the covariance by $F P F^{\T}$ plus the noise of the step. The wheel-only variant
+(`biased` false) is what the filter falls back to without a fresh gyro.
+
+### The measurement
+
+```rust title="crates/robotics_filters/src/eskf_se2.rs"
+    pub fn update_wheel_with_gyro(
+        &mut self,
+        wheel_speed: f64,
+        wheel_yaw_rate: f64,
+        gyro_yaw_rate: f64,
+        var_speed: f64,
+        var_wheel_yaw_rate: f64,
+        var_gyro_yaw_rate: f64,
+    ) -> Result<GaussianCorrection<ESKF_DIM, 2>, FilterError> {
+// …
+        let z = Vector2::new(wheel_speed, wheel_yaw_rate - gyro_yaw_rate);
+        let z_hat = Vector2::new(self.x.speed, -self.x.gyro_bias);
+        let mut h = SMatrix::<f64, 2, ESKF_DIM>::zeros();
+        h[(0, idx::V)] = 1.0;
+        h[(1, idx::B)] = -1.0;
+        let r = nalgebra::Matrix2::new(var_speed, 0.0, 0.0, var_wheel_yaw_rate + var_gyro_yaw_rate);
+        self.update(&(z - z_hat), &h, &r)
+    }
+```
+
+The measurement is `z = (v_wheel, ω_wheel − ω_gyro)`, the prediction `z_hat = (v, −b)`, and `h` has a `1` in the
+speed column and a `−1` in the bias column. Nothing else about the measurement is special: it is handed to the generic
+`update`.
+
+### The correction, the injection and the reset
+
+```rust title="crates/robotics_filters/src/eskf_se2.rs"
+    pub fn update<const M: usize>(
+        &mut self,
+        innovation: &SVector<f64, M>,
+        h: &SMatrix<f64, M, ESKF_DIM>,
+        r: &SMatrix<f64, M, M>,
+    ) -> Result<GaussianCorrection<ESKF_DIM, M>, FilterError> {
+        let c = joseph_correction(&self.p, h, r, innovation, &self.tol)?;
+        let x_new = self.x.boxplus(&c.delta);
+// …
+        let mut p = c.covariance;
+        if self.reset_jacobian {
+            let mut g = EskfCov::identity();
+            let dxi = Tangent2::new(c.delta[0], c.delta[1], c.delta[2]);
+            g.fixed_view_mut::<3, 3>(0, 0)
+                .copy_from(&(Matrix3::identity() - se2_ad(&dxi) * 0.5));
+            p = validate_covariance(&symmetrize(&(g * p * g.transpose())), &self.tol)?;
+        }
+        self.x = x_new;
+        self.p = p;
+        Ok(c)
+    }
+```
+
+```rust title="crates/robotics_filters/src/update.rs"
+pub fn joseph_correction<const N: usize, const M: usize>(
+    p: &SMatrix<f64, N, N>,
+    h: &SMatrix<f64, M, N>,
+    r: &SMatrix<f64, M, M>,
+    innovation: &SVector<f64, M>,
+    tol: &Tolerances,
+) -> Result<GaussianCorrection<N, M>, FilterError> {
+// …
+    let r = validate_covariance(r, tol)?;
+    let s = symmetrize(&(h * p * h.transpose() + r));
+    let chol = factor_innovation(&s, tol)?;
+    // K = P Hᵀ S⁻¹  ⇔  Kᵀ = S⁻¹ H P  (S symmetric): one Cholesky solve, no explicit inverse.
+    let gain = chol.solve(&(h * p)).transpose();
+    let delta = gain * innovation;
+    let ikh = SMatrix::<f64, N, N>::identity() - gain * h;
+    let covariance = symmetrize(&(ikh * p * ikh.transpose() + gain * r * gain.transpose()));
+    let covariance = validate_covariance(&covariance, tol)?;
+    let nis = innovation.dot(&chol.solve(innovation));
+```
+
+`joseph_correction` is the Joseph form of Chapter 1 with one Cholesky solve in place of an inverse; it also returns the
+NIS, `innovation.dot(&chol.solve(innovation))`, so the quantity the robot uses to monitor itself costs nothing
+extra. `update` then injects the correction with `boxplus`, builds `G = I − ½ ad(δξ)`, and applies `G P Gᵀ`.
+
+### The policy, in two arms
+
+```rust title="crates/robotics_filters/src/fusion.rs"
+        let res = match (gyro, interval_gyro) {
+            (Some(_), Some((g_rate, g_var)))
+                if twist.vx.abs() <= self.cfg.bias_update_max_speed =>
+            {
+                eskf.update_wheel_with_gyro(twist.vx, twist.omega, g_rate, var_v, wheel.var, g_var)
+                    .map(|c| (c.nis, 2))
+            }
+            (Some(_), _) => eskf.update_speed(twist.vx, var_v).map(|c| (c.nis, 1)),
+            (None, _) => {
+                self.stats.wheel_only_updates += 1;
+                eskf.update_speed(twist.vx, var_v).map(|c| (c.nis, 1))
+            }
+        };
+```
+
+The first arm is the policy of the previous section, written as a guard: a fresh gyro, a gyro average covering the
+wheel's interval, and a speed at most `bias_update_max_speed`. Otherwise the update observes the speed alone,
+and with no gyro at all the filter counts it as a wheel-only update.
+
+### The consistency test
+
+```rust title="crates/robotics_filters/src/consistency.rs"
+pub fn nees<const N: usize>(
+    error: &SVector<f64, N>,
+    covariance: &SMatrix<f64, N, N>,
+) -> Result<f64, FilterError> {
+    quadratic_form(error, covariance)
+// …
+fn quadratic_form<const N: usize>(
+    v: &SVector<f64, N>,
+    m: &SMatrix<f64, N, N>,
+) -> Result<f64, FilterError> {
+// …
+    let chol = factor_innovation(m, &Tolerances::default())?;
+    Ok(v.dot(&chol.solve(v)))
+}
+```
+
+```rust title="crates/robotics_filters/src/consistency.rs"
+    pub fn report(&self, alpha: f64) -> Result<ConsistencyReport, FilterError> {
+        let (lower, upper) = chi2_mean_interval(self.dof, self.n.max(1), alpha)?;
+        Ok(ConsistencyReport {
+            dof: self.dof,
+            samples: self.n,
+            mean: self.mean(),
+            max: self.max,
+            lower,
+            upper,
+        })
+    }
+```
+
+```rust title="crates/robotics_core/src/prob/stats.rs"
+pub fn chi2_mean_interval(dof: usize, n: usize, alpha: f64) -> Result<(f64, f64), CoreError> {
+// …
+    let total = dof * n;
+    let lo = chi2_quantile(total, 0.5 * alpha)?;
+    let hi = chi2_quantile(total, 1.0 - 0.5 * alpha)?;
+    Ok((lo / n as f64, hi / n as f64))
+}
+```
+
+NEES and NIS are the same quadratic form, solved with a Cholesky factor, never an explicit inverse. The interval is the
+$\chi^2_{nN}$ quantile pair divided by $n$, as above.
+
+## The rest of the toolbox, on the cart
+
+Two more estimators belong in this chapter's toolbox, and they are worth meeting on Chapter 1's
+cart, where every number can be checked by hand. The **information filter** is the Kalman filter written in the
+canonical parameters $\Omega = \Sigma^{-1}$ and $\xi = \Sigma^{-1}\mu$, where a measurement *adds* information. The **RTS smoother** runs a backward
+pass over the beliefs a filter stored, and every belief improves because it now also knows the future. For the cart ($A = B = C = 1$, $R = 0.25$,
+$Q = 0.5$, prior $\mathcal N(0, 1)$, then $u = 1,\ z = 1.7$ and $u = 1,\ z = 2.1$):
+
+```text
+information form after predict 1:   Ω̄ = 0.8, ξ̄ = 0.8        (Σ̄ = 1.25, μ̄ = 1)
+evidence of z₁ = 1.7:               N(1.7; 1, 1.75) = 0.2622
+Kalman filter, t = 2:               μ = 2.280645161290323,  Σ = 0.2741935483870968
+information filter, t = 2:          the same, to 1e-12
+RTS smoother, t = 1 given t = 2:    μ = 85/62,   Σ = 15/62
+RTS smoother, t = 0 given t = 2:    μ = 18.4/62, Σ = 22/62
+RTS smoother, t = 2 given t = 2:    equal to the filtered belief
+```
+
+The repository pins these in `information::tests::worked_example_1d_cart_agrees_with_kalman` and
+`smoother::tests::worked_example_1d_cart`, and this book's checks assert them against the compiled module, the
+evidence against its closed form. They are libraries, not nodes: nothing in the robot's graph uses them yet.
+
+## Putting it together
+
+The two questions of the opening, answered for five seeds. The first block is the repository's *recorded* native run
+(`docs/STATE_ESTIMATION.md` §4.1, reproduced by `cargo test`); the second is the *page's* draw of the same five seeds
+(reproduced by `npm run check`). Position and heading are RMSE over 180 s; NEES is the mean pose NEES (3 degrees of
+freedom, 3 expected); NIS is the mean of the 2-degree-of-freedom wheel-and-gyro update (2 expected).
+
+| | seed | raw position (m) | raw heading (rad) | fused position (m) | fused heading (rad) | NEES raw | NEES fused | NIS |
+|---|---|---|---|---|---|---|---|---|
+| recorded, native | 1 | 0.710 | 0.2564 | 0.152 | 0.0476 | 185.24 | 0.45 | 0.90 |
+| | 2 | 0.700 | 0.2433 | 0.317 | 0.1475 | 176.28 | 2.29 | 0.95 |
+| | 3 | 0.923 | 0.3123 | 0.175 | 0.0516 | 274.14 | 0.50 | 0.97 |
+| | 4 | 0.687 | 0.2264 | 0.255 | 0.0659 | 145.37 | 0.95 | 0.96 |
+| | 5 | 0.887 | 0.3085 | 0.108 | 0.0347 | 291.30 | 0.38 | 0.98 |
+| the page's draw | 1 | 0.726 | 0.2676 | 0.455 | 0.1382 | 229.62 | 1.53 | 0.97 |
+| | 2 | 0.520 | 0.1916 | 0.393 | 0.1335 | 105.58 | 1.29 | 0.99 |
+| | 3 | 0.712 | 0.2502 | 0.254 | 0.0675 | 170.61 | 0.71 | 1.02 |
+| | 4 | 0.951 | 0.3183 | 0.206 | 0.0919 | 304.79 | 0.97 | 0.95 |
+| | 5 | 0.812 | 0.2652 | 0.122 | 0.0498 | 212.87 | 0.48 | 0.95 |
+
+What holds in both blocks, and is therefore a statement about the filter and not about a draw of noise: the fused heading is better than
+the wheels' on every seed; the raw odometry's NEES is over 100 against an expected 3; the fused filter's is
+below 3, conservative, on every seed; and the mean NIS of the wheel-and-gyro update is about 1, under its
+expected 2 (the 1-degree-of-freedom speed update has a mean near 0.02 against an expected 1, the conservative wheel noise at
+work). What does not: the position of the fused filter varies a lot from seed to seed, 0.108 to 0.317 m
+recorded and 0.122 to 0.455 m on the page's draws, because the filter has no absolute position measurement, so
+its position error is the random walk of whatever slip and calibration error a draw contains. Do not
+read an average into those columns. The repository's own documents say the same: position is not promised
+to improve (`docs/STATE_ESTIMATION.md` §4.1).
+
+One more number needs no random stream at all, so it is the same on both sides. With noise-free sensors over 60 s the raw
+position RMSE is 1.8·10⁻⁹ m, the fused heading RMSE 2.7·10⁻⁸ rad, and the fused position RMSE 5.7 mm. The last is not
+noise: wheel odometry reports the average speed over its last interval, so a step in the commanded speed is seen one wheel sample
+late, and the filter lags it by that much (`docs/STATE_ESTIMATION.md` §6).
+
+### What the repository says does not work
+
+A chapter that only shows the wins is half a chapter. The limits recorded in `docs/STATE_ESTIMATION.md`, §6, are these.
+There is no absolute measurement, so position drifts with slip and heading with the random walk of the bias; absolute corrections
+exist in the library (`update_position`, `update_heading`) and are what the localization of Part 3 uses. The filter is planar, with
+the gyro assumed aligned with the base. A late sample is rejected and not re-ordered, and the node reports
+`DEGRADED` for two seconds after one. And the fused covariance is conservative on purpose, which is
+a choice, not a theorem.
+
+## Exercises
+
+<Exercises>
+
+<Exercise level="F" difficulty={2} title="The −Δt in F">
+
+Starting from $\omega = \omega_m - \hat b - \delta b$, show that a bias error $\delta b$ moves the heading error by $-\delta b\,\Delta t$ per step
+and nothing else in $F$'s last column. Why is the entry for $\delta v$ in the *position* row and not in the heading row?
+
+<details>
+<summary>Solution</summary>
+
+The true twist is $(v\Delta t, 0, \omega\Delta t)$ with $\omega = \omega_m - b$ and $b = \hat b + \delta b$, so $\delta\tau_\theta = -\delta b\,\Delta t$ and the other
+components of $\delta\tau$ do not depend on $\delta b$. A speed error $\delta v$ changes only the translation of the twist along its first axis, $\delta v\,\Delta t$, which is
+the body-$x$ position error; heading does not depend on speed in this model.
+
+</details>
+
+</Exercise>
+
+<Exercise level="F" difficulty={3} title="The reset Jacobian to first order">
+
+Derive $G = I - \tfrac12\mathrm{ad}(\hat\delta)$ for the pose block, starting from $\exp(\delta\xi^{+}) = \exp(-\hat\delta)\exp(\delta\xi)$. What
+does omitting $G$ assume about the size of $\hat\delta$?
+
+<details>
+<summary>Solution</summary>
+
+Use BCH, $\log(e^{X}e^{Y}) = X + Y + \tfrac12[X, Y] + \dots$, with $X = -\hat\delta$, $Y = \delta\xi$. Since $[\hat\delta, \hat\delta] = 0$, the bracket
+can be taken with the residual $\delta\xi - \hat\delta$, giving $\delta\xi^{+} \approx (I - \tfrac12\mathrm{ad}(\hat\delta))(\delta\xi - \hat\delta)$. Dropping $G$ assumes $\|\mathrm{ad}(\hat\delta)\|\ll 1$:
+a correction so small that the second-order term is below the covariance's own accuracy.
+
+</details>
+
+</Exercise>
+
+<Exercise level="C" difficulty={1} title="A gyro with no bias">
+
+<Predict
+  id="ch02-q-nobias"
+  question="In the gyro widget, set the bias to 0. Which heading usually has the smallest error over the drive?"
+  options={[
+    { label: 'The fused one, because it uses two sensors', because: 'More sensors do not make an estimate better when one of them is already perfect: the filter still has a bias to estimate and spends its covariance on it.' },
+    { label: 'The gyro integrated alone', correct: true, because: 'Without a bias the only error left in the gyro is its white noise, which integrates to a small random walk; the wheels carry a systematic radius error and the fused filter carries a little of both. It is usual, not universal: re-roll a few times.' },
+    { label: 'The wheels alone, because they never drift', because: 'The wheels drift systematically: a wheel that is 0.2 % larger turns the robot a little on every metre it drives.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Perfect wheels">
+
+<Predict
+  id="ch02-q-perfect-wheels"
+  question="In the trust widget, set the right wheel radius error to 0 (the other imperfections stay). Compare the fused heading error with the wheels' alone."
+  options={[
+    { label: 'The fused heading is better, as before', because: 'It was better because the gyro corrected a systematic wheel error; with no such error the wheels are already good and there is nothing for the gyro to correct.' },
+    { label: 'The fused heading is worse than the wheels alone', correct: true, because: 'The wheels now carry only slip noise, which averages out; the fused filter adds the gyro bias and its drift to the estimate, and its wheel noise is deliberately wide.' },
+    { label: 'They are identical, because both are consistent', because: 'Consistency says nothing about size: a consistent estimate can be much less accurate than another consistent one.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Forty and sixty milliseconds">
+
+<Predict
+  id="ch02-q-delay"
+  question="In the late-wheel widget, compare a constant wheel delay of 40 ms with one of 60 ms. What differs?"
+  options={[
+    { label: 'Sixty milliseconds is 50 % worse than 40', because: 'The relationship is not proportional: it is a rule with a threshold, and one side of it is a different regime.' },
+    { label: 'At 40 ms every wheel sample is applied late; at 60 ms none is accepted', correct: true, because: 'The window is 50 ms and the lag is measured against the filter clock, so 40 ms is inside it and 60 ms outside; outside, the sample is rejected and the filter never sees the speed.' },
+    { label: 'Nothing: both are far longer than a control period', because: 'Both are, and it does not matter; what matters is the filter timing window.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="P" difficulty={2} title="Test the test">
+
+In `crates/robotics_filters/src/consistency.rs`, add a test that errors drawn from $\mathcal N(0, P)$ pass the interval and errors drawn from
+$\mathcal N(0, P/4)$ (so that $P$ overstates the error) are reported *conservative*, the mirror of the existing over-confident case in
+`samples_from_the_model_are_consistent`. Which comparison on `ConsistencyReport` do you use, and why is there no method for it yet?
+
+<details>
+<summary>Solution</summary>
+
+Draw the samples with `Gaussian::sample`, accumulate with `ConsistencyStats::push`, take `report(0.01)`, and assert `report.mean < report.lower`. The report has
+`is_overconfident` (mean above the upper bound) because that is the unsafe direction; "conservative" is the other tail, and the test can state it directly.
+
+</details>
+
+</Exercise>
+
+</Exercises>
+
+## References
+
+<References>
+  <Reference authors="Solà, J." year={2017}
+    title="Quaternion kinematics for the error-state Kalman filter"
+    venue="arXiv:1711.02508" url="https://arxiv.org/abs/1711.02508"
+    note="The nominal-state and error-state split, injection and reset that this chapter's SE(2) filter adapts; the module docs cite it." />
+  <Reference authors="Kalman, R. E." year={1960}
+    title="A New Approach to Linear Filtering and Prediction Problems"
+    venue="Transactions of the ASME, Journal of Basic Engineering 82(1), 35–45" doi="10.1115/1.3662552"
+    note="The source of the epigraph: the covariance of the estimation error, which this chapter asks to be tested." />
+  <Reference authors="Bar-Shalom, Y., Li, X. R. and Kirubarajan, T." year={2001}
+    title="Estimation with Applications to Tracking and Navigation: Theory, Algorithms and Software"
+    venue="Wiley" doi="10.1002/0471221279"
+    note="The NEES and NIS consistency tests and their χ² acceptance intervals, which the repository's consistency module implements." />
+  <Reference authors="Barfoot, T. D." year={2017}
+    title="State Estimation for Robotics"
+    venue="Cambridge University Press" doi="10.1017/9781316671528"
+    note="Perturbations and Kalman filtering on matrix Lie groups, the framework of this chapter's SE(2) error state." />
+  <Reference authors="Li, M. and Mourikis, A. I." year={2013}
+    title="High-precision, consistent EKF-based visual-inertial odometry"
+    venue="The International Journal of Robotics Research 32(6), 690–711" doi="10.1177/0278364913481251"
+    note="Shows that a standard EKF can be inconsistent through a mismatch between what it believes is observable and what is, which is why consistency is measured and not assumed." />
+  <Reference authors="Borenstein, J. and Feng, L." year={1996}
+    title="Gyrodometry: A New Method for Combining Data from Gyros and Odometry in Mobile Robots"
+    venue="Proceedings of the IEEE International Conference on Robotics and Automation (ICRA), 423–428" doi="10.1109/ROBOT.1996.503813"
+    note="The classical wheel-plus-gyro fusion for a ground robot: trust the gyro for heading except where the odometry says the gyro is disturbed." />
+  <Reference authors="Brossard, M., Barrau, A. and Bonnabel, S." year={2020}
+    title="AI-IMU Dead-Reckoning"
+    venue="IEEE Transactions on Intelligent Vehicles 5(4), 585–595" doi="10.1109/TIV.2020.2980758"
+    note="Learns the process-noise covariances of an inertial dead-reckoner with pseudo-measurements from the vehicle's motion constraints: the tuning problem this chapter's fixed noise densities leave open." />
+  <Reference authors="Hartley, R., Ghaffari, M., Eustice, R. M. and Grizzle, J. W." year={2020}
+    title="Contact-aided invariant extended Kalman filtering for robot state estimation"
+    venue="The International Journal of Robotics Research 39(4), 402–430" doi="10.1177/0278364919894385"
+    note="The main alternative to an error-state filter on a group: an invariant EKF whose error dynamics do not depend on the estimate." />
+  <Reference authors="Yu, X., Teng, S., Chakhachiro, T., Tong, W., Li, T., Lin, T.-Y., Koehler, S., Ahumada, M., Walls, J. M. and Ghaffari, M." year={2023}
+    title="Fully Proprioceptive Slip-Velocity-Aware State Estimation for Mobile Robots via Invariant Kalman Filtering and Disturbance Observer"
+    venue="arXiv:2209.15140 (v2, October 2023)" url="https://arxiv.org/abs/2209.15140"
+    note="A recent IMU-and-wheel filter on a ground robot that estimates slip explicitly, the thing this chapter's filter only absorbs into a diffusion term." />
+</References>

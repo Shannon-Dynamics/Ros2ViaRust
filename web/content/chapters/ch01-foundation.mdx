@@ -1,0 +1,655 @@
+---
+title: 'Foundation: Poses, Odometry and the First Filters'
+description: A robot that integrates its own wheels, why the step it takes must be exact, and the two ways to hold what it does not know about where it is.
+chapter: 1
+phase: 1
+phaseTitle: Foundation
+difficulty: Foundational
+readingTime: 60 min
+quote: "Probabilistic robotics is a new and growing area in robotics, concerned with perception and control in the face of uncertainty."
+quoteAuthor: MIT Press
+quoteSource: catalog description of Probabilistic Robotics by Thrun, Burgard and Fox (2005)
+---
+
+import { ExactArc } from '@/components/ch/ch01/exact-arc';
+import { NoisyArc } from '@/components/ch/ch01/noisy-arc';
+import { Hallway } from '@/components/ch/ch01/hallway';
+import { KalmanStep } from '@/components/ch/ch01/kalman-step';
+
+<Overview
+  goals={[
+    'write a planar pose, compose two poses and apply a velocity for one step without choosing a step length',
+    'turn the arc lengths of two wheels into a pose change, and say what is wrong with the Euler step',
+    'explain why a noisy motion is a distribution with a shape, not a point with a radius',
+    'run a histogram filter and a Kalman filter by hand on one worked example each',
+    'find each of these in the repository: the file, the function and the test that pins it',
+  ]}
+  prerequisites={[
+    'matrices and the exponential of a number; the idea of a probability density',
+    'no ROS knowledge: this chapter is about the Rust underneath the nodes',
+  ]}
+>
+
+A TurtleBot3 has two wheel encoders and no idea where it is. Every pose it will ever use is one
+it computed: the wheels turned by so much, so the robot must have moved by so much. That
+sentence hides three problems, and this chapter takes them in order.
+
+The first is arithmetic. A pose in a plane is a position and a heading, and "moved by so much" is
+a motion applied *in the robot's own frame*. Add the two the obvious way and the answer is
+wrong in a way that does not go away when you shrink the time step. The second is noise: wheels
+slip and encoders count in whole ticks, so the same command does not always land in the same
+place, and what the robot knows after a move is a spread of places. The third is what to do with
+a spread. It can be held as a histogram that assumes nothing, or as two numbers that assume a
+great deal, and the chapter ends with one worked example of each.
+
+</Overview>
+
+## The problem
+
+Drive the robot on a circle: forward at $v = 1$ m/s while turning at $\omega = 0.5$ rad/s. Its
+path is a circle of radius $v/\omega = 2$ m, and it takes $2\pi/\omega \approx 12.57$ s to come round. The
+robot's odometry has to track that path by adding up small motions, one per control step.
+The question is how far from the true position it ends up after 12 s, as a function of how long a step
+it takes.
+
+Here is the experiment, run on the repository's own Rust. The orange poses are what the robot's
+odometry computes, the dark ones are what the textbook update `x += v cos θ Δt` computes, and
+the dashed circle is the truth.
+
+<ExactArc />
+
+The orange error is below $10^{-12}$ m at every step length you can set. The dark one is not. At
+$\Delta t = 1.5$ s (8 steps) the Euler end point is 0.2134 m from the truth, at $\Delta t = 3$ s
+(4 steps) it is 0.4374 m, and halving the step from 1 s to 0.5 s halves the error, from 0.1416 m to
+0.0706 m. Euler is not wrong by a random walk or by a drift that gets worse with time; as you
+saw, every one of its poses sits on one circle, just not the right one. The rest of this
+chapter exists to say *why*, and why the exact version is the one the robot runs.
+
+Wheels bring a second problem. The same command given twice does not give the same pose, and
+that is not a flaw of one robot. It is what the next widget shows.
+
+<NoisyArc />
+
+After one command the possible poses are a cloud. After several they are a curved band. Whatever the
+robot does next, it does with a *distribution* over where it is, and a pose-with-a-radius is not
+a good summary of that distribution. The last two widgets of the chapter hold such a
+distribution in the two ways filters usually do.
+
+## Building intuition
+
+Before any algebra, three things to take from the widgets.
+
+**A step is a rotation and a translation at once.** Moving forward while turning does not move
+the robot along its old heading and then rotate it; the heading changes *during* the step, so
+the direction of travel changes during it too. The exact step is the arc of a circle, and
+that is what the orange poses follow. The Euler step goes straight along the *old* heading
+and only then turns, so each step is a straight segment in the direction the robot *was* facing, never the direction it was turning through, and its corners cannot land on the circle.
+
+**The error of the cheap step is systematic.** Euler's poses are a regular polygon whose corners
+lie on a bigger circle that is shifted sideways. Nothing about it is random, so nothing averages out.
+
+**Noise is not isotropic.** In the second widget, an error in heading early on rotates every
+later step, so the error in position is stretched along the arc. A filter that wants to say how
+sure it is has to know that, which is why the next chapters work with a covariance in the pose's
+own tangent space rather than with a radius.
+
+## The mathematics
+
+### A pose, and how poses combine
+
+A planar pose is $x = (x, y, \theta)$ with $\theta \in (-\pi, \pi]$. It is also a rigid motion: the
+one that takes the origin to $(x, y)$ and rotates by $\theta$. Written as a matrix, it is
+
+$$
+T = \begin{pmatrix} \cos\theta & -\sin\theta & x \\ \sin\theta & \cos\theta & y \\ 0 & 0 & 1 \end{pmatrix}.
+$$
+
+Poses form a group, $\SEtwo$. The product $x_1 x_2$ applies $x_2$ *in the body frame* of $x_1$,
+and the inverse $x^{-1}$ undoes $x$. In the repository, that product is `Se2::compose`, the
+inverse is `Se2::inverse`, and `Se2::between(a, b)` is $a^{-1}b$: where $b$ is as seen from $a$.
+
+### The exponential map: one exact step
+
+A *twist* $\tau = (v_x, v_y, \omega)$ is a velocity in the body frame, translation first. If the robot holds it
+for one unit of time, it moves along the arc the next formula gives, where $a$ and $b$ are two
+functions of $\omega$:
+
+$$
+\exp(\tau) = \Bigl(a\,v_x - b\,v_y,\; b\,v_x + a\,v_y,\; \omega\Bigr),
+\qquad a = \frac{\sin\omega}{\omega},\quad b = \frac{1-\cos\omega}{\omega}.
+$$
+
+<Derivation title="Where a and b come from" result="the translation is the integral of the rotating velocity">
+
+Hold the twist for one unit of time. At time $s \in [0,1]$ the heading is $\omega s$, so the
+robot is moving in the world frame with velocity $R(\omega s)\,(v_x, v_y)^{\T}$, where $R$ is the
+rotation matrix. The position after one unit of time is the integral of that:
+
+$$
+\int_0^1 \begin{pmatrix} \cos\omega s & -\sin\omega s \\ \sin\omega s & \cos\omega s \end{pmatrix} ds
+\begin{pmatrix} v_x \\ v_y \end{pmatrix}
+= \begin{pmatrix} \dfrac{\sin\omega}{\omega} & -\dfrac{1-\cos\omega}{\omega} \\[2mm] \dfrac{1-\cos\omega}{\omega} & \dfrac{\sin\omega}{\omega} \end{pmatrix}
+\begin{pmatrix} v_x \\ v_y \end{pmatrix}
+= \begin{pmatrix} a & -b \\ b & a \end{pmatrix}\begin{pmatrix} v_x \\ v_y \end{pmatrix}.
+$$
+
+As $\omega \to 0$ the matrix tends to the identity, $a \to 1$ and $b \to 0$, which is straight-line
+motion. The repository switches to the series $a \approx 1 - \omega^2/6$, $b \approx \omega/2 - \omega^3/24$
+below $|\omega| = 10^{-8}$, because $\sin\omega/\omega$ loses all its digits there.
+
+</Derivation>
+
+A **worked example**: $\exp\bigl((1, 0, \pi/2)\bigr)$ is a quarter circle of radius $2/\pi$, so the robot ends at
+$(2/\pi,\, 2/\pi)$, heading $\pi/2$. The formula gives $a = 2/\pi$ and $b = 2/\pi$, so $(a\cdot 1,\, b\cdot 1) = (2/\pi, 2/\pi)$.
+The repository pins it as `se2::tests::worked_example_quarter_arc`, and the book's build checks it against the compiled module.
+
+Two names the rest of the book uses. The step $x \bplus \delta = x\,\exp(\delta)$ applies a body-frame twist to a pose,
+and $y \bminus x = \log(x^{-1}y)$ is its inverse: the twist that carries $x$ to $y$. One step of a constant velocity
+for time $\Delta t$ is therefore
+
+$$
+x_{t} = x_{t-1} \bplus (v\,\Delta t,\; 0,\; \omega\,\Delta t),
+$$
+
+and it is exact for a robot that really does hold a constant $(v, \omega)$ over the step. That
+last condition is the only approximation the step makes, and it does not depend on $\Delta t$.
+
+### Why the Euler step fails, exactly
+
+The Euler step moves along the old heading, then turns: $p \leftarrow p + v\,\Delta t\,(\cos\theta, \sin\theta)$, $\theta \leftarrow \theta + \omega\Delta t$.
+It is *not* code the robot runs; the repository has it only as the strawman the first widget measures.
+Write $\varphi = \omega\,\Delta t$ and positions as complex numbers. Each step adds $v\Delta t\,e^{ik\varphi}$, so after $N$ steps
+
+$$
+p_N = v\,\Delta t\,\frac{1 - e^{iN\varphi}}{1 - e^{i\varphi}} .
+$$
+
+<Derivation title="All the Euler poses lie on one circle" result="radius r (φ/2) / sin(φ/2), centre shifted from the true centre">
+
+Let $c = v\Delta t/(1 - e^{i\varphi})$. Then $p_N - c = -c\,e^{iN\varphi}$, so $|p_N - c| = |c|$ for every $N$:
+all the poses lie on a circle of radius $|c|$. Since $|1 - e^{i\varphi}| = 2\sin(\varphi/2)$,
+
+$$
+|c| = \frac{v\,\Delta t}{2\sin(\varphi/2)} = \frac{v}{\omega}\cdot\frac{\varphi/2}{\sin(\varphi/2)} .
+$$
+
+The true radius is $v/\omega$, and $(\varphi/2)/\sin(\varphi/2) > 1$ for $\varphi \neq 0$, so the Euler circle is larger.
+It is centred at $\bigl(\tfrac{v\Delta t}{2},\, \tfrac{v\Delta t}{2}\cot\tfrac{\varphi}{2}\bigr)$, not at $(0, v/\omega)$. At
+$\Delta t = 1.5$ s, $\varphi = 0.75$ and the radius is 2.048 m against the true 2 m. Both circles are
+traversed at the same angular rate, so the error is bounded and periodic, and it vanishes as $\Delta t \to 0$
+only at first order, which is the proportionality you saw: the book's checks assert every one of these numbers against the closed
+form, not against the Rust.
+
+</Derivation>
+
+### From wheels to a twist
+
+The robot's wheels have radius $r$ and sit a distance $\ell$ apart. If the left wheel rolls
+an arc $\Delta s_L$ and the right wheel an arc $\Delta s_R$, the body moves forward by their mean and turns by their difference over the track:
+
+$$
+\Delta s = \frac{\Delta s_R + \Delta s_L}{2}, \qquad \Delta\theta = \frac{\Delta s_R - \Delta s_L}{\ell},
+$$
+
+and the pose changes by $\exp\bigl((\Delta s, 0, \Delta\theta)\bigr)$. A **worked example** with the book's rover Rusty
+($\ell = 0.16$ m): the left wheel rolls 0.72 m and the right 0.88 m. Then $\Delta s = 0.80$ m, $\Delta\theta = 1.0$ rad,
+and the pose is $(0.673176788,\; 0.367758155,\; 1.0)$. As a check that does not use the code: the arc has radius
+$\Delta s/\Delta\theta = 0.8$ m, so $x = 0.8\sin 1$ and $y = 0.8(1 - \cos 1)$, which is the same pair of numbers.
+Test `diff_drive::tests::worked_example_wheel_arcs` pins it.
+
+### Noise: the same command, many poses
+
+Real wheels do not do what they are told. The velocity motion model of Thrun, Burgard and Fox (Table 5.3) models
+that by perturbing the commanded speeds before taking the exact step. It draws
+
+$$
+\hat v = v + \varepsilon_{1},\quad \hat\omega = \omega + \varepsilon_{2},\quad \hat\gamma = \varepsilon_{3},
+$$
+
+with zero-mean normal $\varepsilon$ whose variances are $\alpha_1 v^2 + \alpha_2\omega^2$, $\alpha_3 v^2 + \alpha_4\omega^2$ and
+$\alpha_5 v^2 + \alpha_6\omega^2$, takes the exact arc at $(\hat v, \hat\omega)$, and then turns by a final $\hat\gamma\,\Delta t$.
+The repository's default is $\alpha = (0.02, 0.02, 0.02, 0.02, 0.005, 0.005)$. With every $\alpha = 0$ the model returns the
+exact arc: for $v = 1$, $\omega = 0.5$, $\Delta t = 1$ the end pose is
+$(2\sin 0.5,\; 2(1 - \cos 0.5),\; 0.5) = (0.958851077208,\; 0.244834876219,\; 0.5)$, which is $\exp((1, 0, 0.5))$
+(`velocity::tests::worked_example_exact_arc`). The model is a *sampler*: to know what the robot
+might do, draw many poses, as the second widget does.
+
+### Belief, and the Bayes filter
+
+The robot's knowledge of where it is, given everything it has been told and sensed, is a probability
+distribution $\bel(x_t)$ over poses. It changes in two ways. A **motion** spreads it out: given the control $u_t$,
+
+$$
+\belbar(x_t) = \int p(x_t \mid u_t, x_{t-1})\,\bel(x_{t-1})\,dx_{t-1}.
+$$
+
+A **sensor reading** $z_t$ narrows it by Bayes' rule, where $\eta$ is whatever number makes the result sum to one:
+
+$$
+\bel(x_t) = \eta\, p(z_t \mid x_t)\,\belbar(x_t).
+$$
+
+The number $1/\eta$ is the *evidence*: how likely the reading was before it was seen. A very small
+evidence says the filter was surprised, and the repository's `correct` returns it so that the
+caller can notice. Both formulas need a representation of $\bel$. The first one is a histogram.
+
+**A worked example.** A 4 m corridor of four 1 m cells, robot position unknown, so the belief is $(0.25, 0.25, 0.25, 0.25)$.
+A sensor reports a likelihood of 0.2 in cells 0 and 2 and 0.8 in cells 1 and 3. Multiplying gives $(0.05, 0.2, 0.05, 0.2)$,
+which sums to $0.5$, the evidence, and dividing by it gives $\bel = (0.1, 0.4, 0.1, 0.4)$. The test is
+`histogram::tests::worked_example_four_cells`. Notice that *two* cells have the highest belief, and
+that the belief still puts 20 per cent on the other two.
+
+### The Gaussian belief and the Kalman filter
+
+A histogram over a corridor is 100 numbers. A histogram over $(x, y, \theta)$ at the same resolution is
+$100^3 = 10^6$. The alternative is to assume the belief is a Gaussian $\mathcal N(\mu, \Sigma)$ and carry only $\mu$ and $\Sigma$.
+If the motion and the measurement are linear and the noises Gaussian, that assumption is not an approximation: both
+steps of the Bayes filter map a Gaussian to a Gaussian, and the Kalman filter is their closed form. In one dimension, with
+Thrun's naming ($R$ is motion noise, $Q$ is measurement noise), the prediction is
+
+$$
+\htmlClass{term-prediction}{\bar\mu = \mu + u}, \qquad \htmlClass{term-prediction}{\bar\Sigma = \Sigma + R},
+$$
+
+and the correction multiplies the predicted Gaussian by the measurement's likelihood $\mathcal N(z; x, Q)$. Two Gaussians multiply to a Gaussian,
+and the result is
+
+$$
+K = \frac{\bar\Sigma}{\bar\Sigma + Q}, \qquad
+\htmlClass{term-posterior}{\mu = \bar\mu + K\,(z - \bar\mu)}, \qquad
+\htmlClass{term-posterior}{\Sigma = (1 - K)\,\bar\Sigma}.
+$$
+
+<Derivation title="The correction is a product of two Gaussians" result="precisions add; the mean is the precision-weighted average">
+
+Up to a constant, $\mathcal N(x; \bar\mu, \bar\Sigma)\,\mathcal N(z; x, Q) \propto \exp\!\bigl(-\tfrac12[(x-\bar\mu)^2/\bar\Sigma + (z-x)^2/Q]\bigr)$.
+Collect the terms in $x$: the exponent is $-\tfrac12\bigl[(1/\bar\Sigma + 1/Q)\,x^2 - 2(\bar\mu/\bar\Sigma + z/Q)\,x\bigr] + \text{const}$, which is a Gaussian
+with precision $1/\Sigma = 1/\bar\Sigma + 1/Q$ and mean $\mu = \Sigma\,(\bar\mu/\bar\Sigma + z/Q)$. Writing $K = \bar\Sigma/(\bar\Sigma + Q)$,
+
+$$
+\Sigma = \frac{\bar\Sigma Q}{\bar\Sigma + Q} = (1 - K)\bar\Sigma, \qquad \mu = \bar\mu + K(z - \bar\mu).
+$$
+
+The mean sits at the *precision-weighted* average of the two, so it is halfway between them only if their variances are equal.
+Check with the repository's pinned example: $\mathcal N(5, 4)\cdot\mathcal N(6.5, 1)$ has $K = 4/5$, $\mu = 5 + 0.8\cdot 1.5 = 6.2$,
+$\Sigma = 0.2\cdot 4 = 0.8$, which is $\mathcal N(6.2, 0.8)$.
+
+</Derivation>
+
+The gain $K$ is the whole story. When the measurement is precise ($Q \ll \bar\Sigma$), $K \to 1$ and the posterior follows
+the measurement. When it is noisy ($Q \gg \bar\Sigma$), $K \to 0$ and the posterior ignores it. Nothing in the filter
+splits the difference half and half unless $\bar\Sigma = Q$. The repository computes $\Sigma$ not as $(1-K)\bar\Sigma$ but in the *Joseph form*,
+
+$$
+\Sigma = (I - KC)\,\bar\Sigma\,(I - KC)^{\T} + K Q K^{\T},
+$$
+
+which is algebraically the same and stays symmetric and positive-definite when rounding errors accumulate.
+
+**A worked example** (`kalman::tests::worked_example_1d_cart`): a cart believed to be at $\mathcal N(0, 1)$ is commanded to move $u = 1$
+with $R = 0.25$ and then measured at $z = 1.7$ with $Q = 0.5$. The prediction is $\mathcal N(1, 1.25)$; the innovation variance
+is $S = \bar\Sigma + Q = 1.75$; the gain is $K = 1.25/1.75 = 5/7$; the posterior is $\mathcal N(1.5,\, 2.5/7)$. The posterior mean is 71 per cent of the way
+from the prediction (1) to the measurement (1.7), not 50. Run the filter for a second step ($u = 1$, $z = 2.1$) and it gives $\mu = 2.280645161290323$, $\Sigma = 0.2741935483870968$.
+
+## The algorithm
+
+Two tables in the style of Thrun's, with the symbols of this book, as the repository implements them.
+
+<Algorithm name="BayesFilter(bel, u, z)">
+
+1. predict: $\belbar(x_t) = \int p(x_t \mid u_t, x_{t-1})\,\bel(x_{t-1})\,dx_{t-1}$
+2. correct: $\bel(x_t) = \eta\,p(z_t \mid x_t)\,\belbar(x_t)$, with $\eta^{-1} = \int p(z_t \mid x_t)\,\belbar(x_t)\,dx_t$
+3. return $\bel(x_t)$ and the evidence $\eta^{-1}$
+
+</Algorithm>
+
+<Algorithm name="KalmanFilter(μ, Σ, u, z)">
+
+1. $\bar\mu = A\mu + Bu$, $\quad\bar\Sigma = A\Sigma A^{\T} + R$
+2. $S = C\bar\Sigma C^{\T} + Q$, $\quad K = \bar\Sigma C^{\T} S^{-1}$
+3. $\mu = \bar\mu + K(z - C\bar\mu)$
+4. $\Sigma = (I - KC)\,\bar\Sigma\,(I - KC)^{\T} + KQK^{\T}$
+5. return $\mu$, $\Sigma$, and the evidence $\mathcal N(z;\, C\bar\mu,\, S)$
+
+</Algorithm>
+
+## Implementation in Rust
+
+All of this is in three crates that do not know ROS exists: `robotics_core`, `robotics_models` and
+`robotics_filters`. Every listing below is an excerpt of the file named in its title; the book's build
+fails if a line of one is not in that file, in that order.
+
+### The pose and its exponential
+
+```rust title="crates/robotics_core/src/se2.rs"
+/// A planar pose: translation `(x, y)` in metres and heading `θ` in radians, `θ ∈ (−π, π]`.
+///
+/// The struct is `Copy`; composing poses does not allocate.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Se2 {
+    x: f64,
+    y: f64,
+    theta: f64,
+}
+// …
+    pub fn exp(tau: &Tangent2) -> Self {
+        let (vx, vy, w) = (tau[0], tau[1], tau[2]);
+        let (a, b) = if w.abs() < SMALL_ANGLE {
+            (1.0 - w * w / 6.0, w / 2.0 - w * w * w / 24.0)
+        } else {
+            let s = (0.5 * w).sin();
+            (w.sin() / w, 2.0 * s * s / w)
+        };
+        Self::new(a * vx - b * vy, b * vx + a * vy, w)
+    }
+// …
+    pub fn compose(&self, other: &Se2) -> Se2 {
+        let (s, c) = self.theta.sin_cos();
+        Se2::new(
+            self.x + c * other.x - s * other.y,
+            self.y + s * other.x + c * other.y,
+            self.theta + other.theta,
+        )
+    }
+// …
+impl Manifold<3> for Se2 {
+    #[inline]
+    fn boxplus(&self, delta: &SVector<f64, 3>) -> Self {
+        self.compose(&Se2::exp(delta))
+    }
+    #[inline]
+    fn boxminus(&self, base: &Self) -> SVector<f64, 3> {
+        base.between(self).log()
+    }
+}
+```
+
+`Se2::new` normalizes the heading, so the angle is always in $(-\pi, \pi]$. `exp` is the formula above, with
+the series for small $\omega$; `boxplus` is $x \bplus \delta$ and `boxminus` is $y \bminus x$. The trait `Manifold`
+is what every filter of later chapters is generic over.
+
+### Wheels to a pose
+
+```rust title="crates/robotics_models/src/diff_drive.rs"
+    pub fn wheel_arcs_to_tangent(&self, ds_left: f64, ds_right: f64) -> Tangent2 {
+        Tangent2::new(
+            0.5 * (ds_right + ds_left),
+            0.0,
+            (ds_right - ds_left) / self.wheel_separation,
+        )
+    }
+// …
+    fn apply(&mut self, delta: Tangent2, dt: f64) -> OdometryStep {
+        let step_pose = Se2::exp(&delta);
+        // Compound the covariance: the old uncertainty is carried through the new step
+        // (Ad of the inverse increment) and the fresh step noise is added.
+        let ad_inv = step_pose.inverse().adjoint();
+        self.cov = ad_inv * self.cov * ad_inv.transpose() + self.noise.step_covariance(&delta);
+        self.pose = self.pose.boxplus(&delta);
+```
+
+`WheelOdometry::apply` is the odometry step: it advances the pose by $\bplus\,\Delta$ and, in the same breath, carries the old
+covariance through the new step with the adjoint $\Ad$ of the inverse increment and adds the step's own noise. A pose
+uncertainty expressed in the body frame has to be rotated into the next body frame, and the adjoint is how. The ROS
+node `wheel_odometry_node` reads `joint_states`, calls this, and publishes `/odom`.
+
+One limit belongs here, because the repository states it: the covariance this produces is a simple per-step noise model,
+and measured against simulated wheel slip it is over-confident, which `docs/SOURCE_MAPPING.md` (deviation 4)
+records and keeps as the raw-odometry baseline. A later chapter measures how over-confident; this one only asks
+you not to trust the number as a calibrated probability.
+
+### The noisy step
+
+```rust title="crates/robotics_models/src/motion/velocity.rs"
+    /// Table 5.3: `v̂ = v + N(0, α₁v² + α₂ω²)`, `ω̂ = ω + N(0, α₃v² + α₄ω²)`,
+    /// `γ̂ = N(0, α₅v² + α₆ω²)`.
+    fn sample<R: Rng + ?Sized>(&self, x_prev: &Se2, u: &VelocityCmd, rng: &mut R) -> Se2 {
+        let a = &self.alphas.0;
+        let (v2, w2) = (u.v * u.v, u.omega * u.omega);
+        let v_hat = u.v + sample_normal(a[0] * v2 + a[1] * w2, rng);
+        let w_hat = u.omega + sample_normal(a[2] * v2 + a[3] * w2, rng);
+        let g_hat = sample_normal(a[4] * v2 + a[5] * w2, rng);
+        Self::integrate(x_prev, v_hat, w_hat, g_hat, u.dt)
+    }
+```
+
+The generator `rng` is passed in. The repository has no entry point that reads the operating system's entropy,
+so a run is a function of its seed, and every stochastic widget in this book shows its seed and lets you re-roll it.
+
+### The filters
+
+```rust title="crates/robotics_filters/src/bayes.rs"
+pub trait BayesFilter {
+    /// The belief representation (a grid, a Gaussian, a particle set, …).
+    type Belief;
+    /// The control input type.
+    type Control;
+    /// The measurement type.
+    type Measurement;
+// …
+    fn predict(&mut self, u: &Self::Control) -> Result<(), FilterError>;
+// …
+    fn correct(&mut self, z: &Self::Measurement) -> Result<f64, FilterError>;
+// …
+}
+```
+
+Both methods return a `Result`, which the 2005 book's trait does not (`docs/SOURCE_MAPPING.md`, deviation 2): a
+production node must be able to refuse a control or a measurement that is not finite. `correct` returns the evidence.
+
+```rust title="crates/robotics_filters/src/histogram.rs"
+    fn correct(&mut self, likelihood: &Self::Measurement) -> Result<f64, FilterError> {
+        for i in 0..self.cells.len() {
+            let l = likelihood(self.center(i));
+            if !l.is_finite() || l < 0.0 {
+                return Err(FilterError::NonFinite("likelihood"));
+            }
+            self.cells[i] *= l;
+        }
+        self.normalize()
+    }
+```
+
+That is Bayes' rule on a grid: multiply each cell by the likelihood at its centre, then `normalize`, which returns the sum
+it divided by, the evidence. If every cell gets zero likelihood it returns `ZeroLikelihood` instead of a belief that
+is not a distribution.
+
+```rust title="crates/robotics_filters/src/kalman.rs"
+    fn predict(&mut self, u: &SVector<f64, U>) -> Result<(), FilterError> {
+        if u.iter().any(|v| !v.is_finite()) {
+            return Err(FilterError::NonFinite("control"));
+        }
+        let mean = self.a * self.belief.mean() + self.b * u;
+        let cov = self.a * self.belief.cov() * self.a.transpose() + self.r;
+        self.belief = Gaussian::new(mean, cov)?;
+        Ok(())
+    }
+
+    fn correct(&mut self, z: &SVector<f64, M>) -> Result<f64, FilterError> {
+// …
+        let innovation = z - self.c * mu;
+        let s = self.c * sigma * self.c.transpose() + self.q;
+        let chol = Cholesky::new(s).ok_or(FilterError::SingularInnovation)?;
+        let gain = sigma * self.c.transpose() * chol.inverse();
+        let mean = mu + gain * innovation;
+        let ikc = SMatrix::<f64, N, N>::identity() - gain * self.c;
+        let cov = ikc * sigma * ikc.transpose() + gain * self.q * gain.transpose();
+        self.belief = Gaussian::new(mean, cov)?;
+// …
+}
+```
+
+The generic `KalmanFilter<N, U, M>` is Table 3.1 in a few dozen lines. Notice that the covariance update is the Joseph form,
+and that `Gaussian::new` refuses a covariance that is not positive-definite, so a numerical failure becomes an error at the line that caused it.
+
+### The worked examples, run
+
+The two examples of the chapter, reproduced by the book's build on the module the widgets use. Each number below is asserted
+by `npm run check`.
+
+```text
+wheel arcs (Rusty, ℓ = 0.16):  Δs_L = 0.72, Δs_R = 0.88
+    Δs = 0.80  Δθ = 1.0  pose = (0.673176788, 0.367758155, 1.0)
+
+1-D cart, A = B = C = 1, R = 0.25, Q = 0.5, prior N(0, 1)
+step 1  u = 1  predict  μ̄ = 1.0        Σ̄ = 1.25
+        z = 1.7 correct S = 1.75       K = 5/7        μ = 1.5               Σ = 2.5/7
+step 2  u = 1  predict  μ̄ = 2.5        Σ̄ = 4.25/7
+        z = 2.1 correct S = 7.75/7     K = 4.25/7.75  μ = 2.280645161290323 Σ = 0.2741935483870968
+```
+
+## Putting it together
+
+The widget below is the cart of the example, with the gain as the thing to watch.
+
+<KalmanStep />
+
+Now the hallway. A robot that does not know where it starts walks a 10 m corridor with three identical doors and asks a
+door detector, right 90 per cent of the time, after every 0.5 m. A `HistogramFilter1D` of 100 cells tracks it.
+
+<Hallway />
+
+After the first "door" reading from the uniform belief, the belief has three equal bumps, each holding 22 per cent of
+the mass; the sensor cannot tell the doors apart, and that is a statement about the sensor, not a failure of the filter. Only later readings, with
+motion in between them, tell the doors apart. The filter's most probable cell is a poor answer to "where is the robot" whenever the belief has more
+than one bump, and a mean is no better: the mean of two bumps sits between them, where the robot is not. A belief is not a point.
+
+Here is the problem of the chapter, restated as numbers.
+
+- **The step.** The exact step ends within $10^{-12}$ m of the true pose at every step length, and the Euler step is 0.2134 m off at $\Delta t = 1.5$ s.
+- **The noise.** The same command gives a cloud, and the cloud bends along the arc.
+- **The belief.** A histogram assumes nothing and costs a cell per resolution element; with three coordinates it costs a million. A Kalman filter costs two numbers per dimension and is exact only when the world is linear and Gaussian, which a pose is not: it lives on a curved space, and the next chapters' filters work on its tangent space for exactly that reason.
+
+What this chapter does *not* show, and the repository says it does not: the odometry covariance of Part 1 is not calibrated, the
+histogram filter is one-dimensional, and the Kalman filter in the widget is the scalar case. The first is measured in a later chapter, and the other two are
+the reason a later chapter exists.
+
+## Exercises
+
+<Exercises>
+
+<Exercise level="F" difficulty={2} title="One circle, which radius">
+
+Show that the Euler poses of the first widget lie on a single circle and find its radius in terms of $v$, $\omega$ and $\Delta t$.
+Which direction is its centre shifted from the true centre $(0, v/\omega)$?
+
+<details>
+<summary>Solution</summary>
+
+With $\varphi = \omega\Delta t$, $p_N = v\Delta t\,(1 - e^{iN\varphi})/(1 - e^{i\varphi})$ is a geometric sum. Put $c = v\Delta t/(1 - e^{i\varphi})$: then
+$p_N - c = -c\,e^{iN\varphi}$ and $|p_N - c| = |c|$, a constant. Since $|1 - e^{i\varphi}| = 2\sin(\varphi/2)$ the radius is $v\Delta t/(2\sin(\varphi/2))$.
+The centre is $c = \bigl(\tfrac{v\Delta t}{2}, \tfrac{v\Delta t}{2}\cot\tfrac{\varphi}{2}\bigr)$, which has a positive $x$ component: shifted to the right in the widget.
+
+</details>
+
+</Exercise>
+
+<Exercise level="C" difficulty={1} title="A very noisy sensor">
+
+<Predict
+  id="ch01-q-large"
+  question="In the last widget, drag Q to its largest value. Where does the posterior end up?"
+  options={[
+    { label: 'Halfway between the prediction and the reading', because: 'That would need the two variances to be equal; the gain is the ratio of them, and here the reading is far less certain than the prediction.' },
+    { label: 'On the prediction, almost unchanged', correct: true, because: 'K = Σ̄/(Σ̄ + Q) tends to 0 as Q grows, so the correction term K(z − μ̄) vanishes.' },
+    { label: 'On the reading, because it is the newest information', because: 'Newer does not mean better: the filter weighs a reading by how precise it is, and a huge Q says it is not.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Which door?">
+
+<Predict
+  id="ch01-q-doors"
+  question="Start the hallway widget with a uniform belief and a detector that says door. How many bumps does the belief have, and how tall are they?"
+  options={[
+    { label: 'One, at the nearest door', because: 'The belief has no way to know which door is nearest; it is uniform before the reading.' },
+    { label: 'Three, equal, each about 22 per cent of the mass', correct: true, because: 'The doors have the same width and the sensor the same response at each, so the three bumps are equal: 5.4/24.4 of the mass each.' },
+    { label: 'Three, with the first door tallest', because: 'Nothing in the likelihood prefers one door; only later readings with motion between them can.' },
+  ]}
+>
+
+You can see this at the first step of the widget when the first reading is "door", and the book's check computes it from the
+filter directly: three windows of six cells each hold 5.4/24.4 of the mass.
+
+</Predict>
+
+</Exercise>
+
+<Exercise level="F" difficulty={2} title="The gain from scratch">
+
+Derive $K = \bar\Sigma/(\bar\Sigma + Q)$ and $\Sigma = (1 - K)\bar\Sigma$ by multiplying the two Gaussians of the scalar correction, and evaluate them
+for $\bar\Sigma = 1.25$, $Q = 0.5$.
+
+<details>
+<summary>Solution</summary>
+
+Add the precisions: $1/\Sigma = 1/\bar\Sigma + 1/Q$, so $\Sigma = \bar\Sigma Q/(\bar\Sigma + Q)$. The mean is $\Sigma(\bar\mu/\bar\Sigma + z/Q) = \bar\mu + K(z - \bar\mu)$ with
+$K = \Sigma/Q = \bar\Sigma/(\bar\Sigma + Q)$. For the numbers given, $K = 1.25/1.75 = 5/7$ and $\Sigma = (2/7)(1.25) = 2.5/7$.
+
+</details>
+
+</Exercise>
+
+<Exercise level="P" difficulty={1} title="Wheels to a pose, in your own test">
+
+In `crates/robotics_models/src/diff_drive.rs`, write a test that turns the wheel arcs $(0.52, 0.68)$ into a pose with `wheel_arcs_to_tangent` and `Se2::exp`, and
+check the result against the closed form $x = (\Delta s/\Delta\theta)\sin\Delta\theta$, $y = (\Delta s/\Delta\theta)(1 - \cos\Delta\theta)$ rather than against another call of the same code.
+
+<details>
+<summary>Solution sketch</summary>
+
+$\Delta s = 0.60$, $\Delta\theta = 0.16/0.16 = 1.0$, so the expected pose is $(0.6\sin 1,\ 0.6(1 - \cos 1),\ 1)$. Compare with `assert_relative_eq!` at $10^{-12}$.
+`worked_example_wheel_arcs` in the same file is the template.
+
+</details>
+
+</Exercise>
+
+<Exercise level="P" difficulty={2} title="A corridor that wraps">
+
+Add a test to `crates/robotics_filters/src/histogram.rs` that a wrapped `HistogramFilter1D` returns a one-cell belief to its starting cell after
+`predict(&1.0)` has been called once per cell of the corridor.
+
+<details>
+<summary>Solution sketch</summary>
+
+Use `HistogramFilter1D::uniform(4, 4.0, true)`, `correct` with a likelihood that is 1 in one cell and 0 elsewhere, then call `predict(&1.0)` four times and assert the belief is back
+on the same cell. `exact_shift_moves_mass` shows the pattern for a single step.
+
+</details>
+
+</Exercise>
+
+</Exercises>
+
+## References
+
+<References>
+  <Reference authors="Thrun, S., Burgard, W. and Fox, D." year={2005}
+    title="Probabilistic Robotics"
+    venue="MIT Press, Intelligent Robotics and Autonomous Agents series"
+    url="https://jmvidal.cse.sc.edu/lib/thrun05a.html"
+    note="The motion model, Bayes filter and Kalman filter tables this chapter follows; the epigraph is the publisher's description of this book." />
+  <Reference authors="Solà, J., Deray, J. and Atchuthan, D." year={2018}
+    title="A micro Lie theory for state estimation in robotics"
+    venue="arXiv:1812.01537" url="https://arxiv.org/abs/1812.01537"
+    note="Why the exponential map, the right perturbation and the adjoint in this chapter are written the way they are." />
+  <Reference authors="Kalman, R. E." year={1960}
+    title="A new approach to linear filtering and prediction problems"
+    venue="Journal of Basic Engineering 82(1), 35–45" doi="10.1115/1.3662552"
+    note="The original filter; the scalar case of this chapter is its simplest instance." />
+  <Reference authors="Barfoot, T. D." year={2017}
+    title="State Estimation for Robotics"
+    venue="Cambridge University Press" doi="10.1017/9781316671528"
+    note="A textbook treatment of poses as Lie group elements and of the Kalman filter on them, the path the next chapters take." />
+  <Reference authors="Borenstein, J. and Feng, L." year={1996}
+    title="Measurement and correction of systematic odometry errors in mobile robots"
+    venue="IEEE Transactions on Robotics and Automation 12(6), 869–880" doi="10.1109/70.544770"
+    note="Why wheel odometry is wrong in ways that do not average out, which is the reason to keep a distribution rather than a point." />
+  <Reference authors="Macenski, S., Foote, T., Gerkey, B., Lalancette, C. and Woodall, W." year={2022}
+    title="Robot Operating System 2: Design, architecture, and uses in the wild"
+    venue="Science Robotics 7(66)" doi="10.1126/scirobotics.abm6074"
+    note="The middleware the repository's nodes run on; this chapter's crates deliberately do not depend on it." />
+</References>

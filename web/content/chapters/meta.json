@@ -1,0 +1,14 @@
+{
+  "title": "Chapters",
+  "root": true,
+  "pages": [
+    "index",
+    "---Part 1 · Foundation---",
+    "ch01-foundation",
+    "---Part 2 · State estimation, sensor models, simulation---",
+    "ch02-state-estimation",
+    "ch03-sensor-models",
+    "---Part 4 · Mapping---",
+    "ch04-mapping"
+  ]
+}

@@ -1,0 +1,80 @@
+---
+title: How to read this book
+description: What a chapter contains, what runs where in the page, and how the numbers are kept honest.
+---
+
+*ROS via Rust* teaches robotics by starting from a problem a robot actually has. One robot
+carries the whole book: a **TurtleBot3 Burger**, a differential-drive base with wheel encoders,
+an IMU and a 360° lidar. The repository this book belongs to builds the software that robot
+needs, in Rust, one part at a time. Each chapter picks the problem a part solved, states it
+as a number a run can produce, derives the theory the problem needs and nothing more, and then
+shows the Rust that solves it.
+
+## Three passes over every chapter
+
+Each chapter makes the same three passes, in this order, and you can read it any of the three
+ways.
+
+- **Foundation** is the mathematics: definitions, results, derivations. Long algebra sits
+  in collapsed blocks. The text states the result before the proof, so you can skip a proof
+  and keep the thread.
+- **Conceptual** is the widgets. Each one makes a single idea visible and names, in its
+  header, the misconception it exists to kill. Drag the first slider first: it is the one
+  the caption is about.
+- **Practical** is the code. Every listing is a literal excerpt of a file in the repository,
+  with its path as the title, so you can open the file and read the rest.
+
+## The widgets run the repository's Rust
+
+Nothing on these pages is a JavaScript re-implementation of an algorithm. The pure crates of
+the repository (`robotics_core`, `robotics_models`, `robotics_filters`, `robotics_sim`,
+`robotics_mapping`) are compiled to WebAssembly, and every widget calls that module. A widget's numbers are the
+robot's numbers: the same exact arc, the same Joseph-form update, the same ray caster. The
+page only holds the sliders and draws what comes back.
+
+Every stochastic widget is seeded and shows its seed. **Re-roll** steps to another reproducible
+run; re-roll 0 is the one the text describes. If something looks odd, the seed is how someone
+else sees exactly what you saw.
+
+## The color code
+
+The same five colors mean the same five things in every figure, equation and widget, and
+the book never uses them for decoration:
+<span className="role-prior">prior</span>,{' '}
+<span className="role-prediction">prediction</span>,{' '}
+<span className="role-measurement">measurement</span>,{' '}
+<span className="role-posterior">posterior</span>, and ground truth, which is always a
+gray dashed line. Symbols are fixed book-wide on the [notation page](/notation).
+
+## How the numbers are kept honest
+
+A number in a chapter is one of three things: a result a widget computes in front of you; a
+result of the repository's own recorded runs, quoted with the file it comes from; or a
+worked example pinned by a Rust test. The last two are asserted by the book's build:
+`npm run check` evaluates the compiled module against closed-form results and against the
+numbers the chapters quote, and fails the deployment if any disagree.
+
+One caution applies to every seeded simulation. The repository's recorded runs are native, and the
+random generator behind a seed is a different one in WebAssembly (it is 32-bit), so a seed names
+different noise on the page than on the robot. A chapter says which kind of number it quotes:
+*recorded* numbers are native and are asserted by `cargo test` in `crates/robotics_wasm`; the numbers a
+widget shows are the page's own draw, and the build pins those too. Where the repository's
+own documentation records a limitation, the chapter says so.
+
+## What is here, and what is not yet
+
+This book is written incrementally, one chapter at a time. A part gets chapters only after it
+has closed in the repository: its code finished, its numbers measured, its documentation
+written and committed. A published part is listed on the home page with its chapters; a part
+that is finished in the repository but not yet written up here is listed as planned and is not
+linked.
+
+Today four chapters are written:
+
+1. [Foundation: Poses, Odometry and the First Filters](/chapters/ch01-foundation) (Part 1)
+2. [State Estimation: Fusing Wheels and a Gyro](/chapters/ch02-state-estimation) (Part 2)
+3. [Sensor Models and the Simulator](/chapters/ch03-sensor-models) (Part 2)
+4. [Mapping: Occupancy Grids from Known Poses](/chapters/ch04-mapping) (Part 4)
+
+Part 3 (localization) is closed in the repository and not yet written up here; Parts 5 to 9 (SLAM, planning, control, exploration and the complete autonomy stack) are planned. None of them has a chapter, not even a draft, because a chapter written while its experiments are
+still running would quote numbers that are not final.

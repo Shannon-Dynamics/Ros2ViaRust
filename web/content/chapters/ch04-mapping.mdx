@@ -1,0 +1,610 @@
+---
+title: "Mapping: Occupancy Grids from Known Poses"
+description: "How a robot that knows where it is writes down what its lidar saw: a log-odds occupancy grid, the rays that fill it, how it is judged against the true room, and the half-degree of beam bearing that made the first maps wrong."
+chapter: 4
+phase: 4
+phaseTitle: Mapping
+difficulty: Intermediate
+readingTime: 75 min
+quote: "The final map shows regions probably occupied, probably unoccupied, and unknown areas."
+quoteAuthor: H. P. Moravec and A. Elfes
+quoteSource: High Resolution Maps from Wide Angle Sonar (1985), abstract
+---
+
+import { ReplayMap } from '@/components/ch/ch04/replay-map';
+import { TwoTracers } from '@/components/ch/ch04/two-tracers';
+import { BeamAngle } from '@/components/ch/ch04/beam-angle';
+import { Dashboard, StatTile } from '@/components/viz';
+
+<Overview
+  goals={[
+    'say why a scan is not a map, and what a lidar beam says and what it leaves unsaid',
+    'derive the log-odds update of an occupancy grid, say what the clamp is for, and compute by hand how many hits make a cell occupied',
+    'say which cells a beam crosses by two different rules, and what difference the rule makes',
+    'read a map-accuracy report: seven checks against the true room, what each can and cannot catch',
+    'explain how a bearing error of half a degree, invisible at normal incidence, put false obstacles outside the walls of some routes and not others, and how it was found',
+  ]}
+  prerequisites={[
+    'Chapter 1 (poses in SE(2), the idea of a belief) and Chapter 3 (the lidar model and ray casting)',
+    'Log-odds are derived here; Bayes’ rule is assumed',
+  ]}
+>
+
+Until now the TurtleBot3 has been a point that knows where it is, or tries to. The room around it was a list of four pillar positions, which is enough to say where the
+robot is and nothing about the space between the pillars. A planner has to know which places are free, which are occupied, and which nobody has looked at yet, and a lidar gives
+it none of that: it gives 360 distances, in its own frame, from one place, at one instant.
+
+This chapter turns scans into a map, for the easiest version of the problem: the robot is *told* where it is. That is called mapping with known poses, and it isolates the
+mapper from the localizer so that when the map is wrong, the mapper is what is wrong. It is a short algorithm, one addition per cell, and the chapter spends as much time on how it was found to be wrong as on the algorithm.
+
+</Overview>
+
+## The problem
+
+The robot drives around a 6 m × 6 m room with four pillars, in the Webots simulator, and at every instant it has a pose $x_t = (x, y, \theta)$ of its base in the map frame (here
+the simulator's own ground truth, turned into the transform the mapper reads by a small node that exists only in simulation) and the 360 ranges of its LDS-01 lidar: one revolution every 0.2 s, a range limit of 3.5 m, a noise of
+about 15 mm. It must keep, scan after scan, the belief
+
+$$
+\bel(m) \;=\; p(m \mid z_{1:t},\, x_{1:t}) \;\approx\; \prod_i p(m_i \mid z_{1:t},\, x_{1:t}),
+$$
+
+where $m_i$ is the state of cell $i$ of a grid laid over the room, free or occupied. The product is an *assumption*: two cells of one wall are not independent, and the map ignores that. It is what makes the update cheap
+enough to run on every scan. Here is the answer running. These are 504 real scans from the Webots lidar, in the order the robot took them, going into the repository's mapper.
+
+<ReplayMap />
+
+Three things stand between a scan and what you just watched, and they are why a scan is not a map.
+
+1. **A scan describes the sensor, not the world.** The ranges are in the lidar's frame. To say anything about the room they have to be carried through the pose the robot had at the instant of the scan, so a pose error is a map error, one for one. (That is why this chapter gives the robot its pose: the effect of a *wrong* pose is a different problem, and a larger one.)
+2. **A beam says two things, and not equally strongly.** A beam that returns at range $r$ says the space between the sensor and $r$ was empty, and that something was at $r$. It says *nothing* about what is behind. Cells behind the hit are *unknown*, not free, and a map that cannot tell the two apart is one a planner will drive into.
+3. **Evidence has to accumulate.** One scan is noisy, the next from another place disagrees a little, and a moving thing leaves a hit in a cell that a later beam then passes through. The map keeps a belief per cell and revises it. It does not overwrite.
+
+### What "right" means
+
+A map has no success rate. With the poses given, the grid is a deterministic function of the scan stream; the only randomness is the lidar's noise, a fraction of one 5 cm cell, which averages out. So the question
+is not "how often does it work" but "how good is *this* map", and the repository answers it against the one thing it knows exactly: the room. The inner faces are at ±3.0 m and the pillars are four cylinders of radius 0.15 m, so the true *surfaces* are known
+analytically, and the map is graded against them by seven checks whose limits were written into a script **before the first run**:
+
+| check | what it counts | limit |
+|---|---|---|
+| surface error, 95th percentile | distance from each occupied cell's centre to the nearest true surface | at most 1 cell (5 cm) |
+| surface error, maximum | the same, the worst cell | at most 1.5 cells |
+| false-occupied cells | occupied cells farther than a cell from every true surface: phantom obstacles | at most 2 % |
+| completeness | true surface samples that have an occupied cell within a cell | at least 0.95 |
+| false-free samples | surface samples the map calls *free*, the dangerous direction | at most 5 % |
+| coverage | cells in the lidar's reach that the map has decided | at least 0.90 |
+| observable fraction | the part of the true surfaces that was in line of sight, so the map is never charged for what it could not see | at least 0.50 |
+
+Two of those words need care. A surface sample counts as *observable* only if some pose of the run saw it within 60° of its normal (the limb of a pillar, seen edge-on, is in the line of sight and is not something a mapper can be asked for),
+and a sample counts as *found* if an occupied cell is within a cell of any cell that touches it. Both are decisions, made late and recorded as such; this chapter returns to them, because they changed the result.
+
+## Building intuition
+
+### A beam writes two kinds of evidence
+
+Take one beam. Every cell it crosses before its end is evidence for *free* ($l_\text{free}$, a small push down). The cell that contains its end is evidence for *occupied* ($l_\text{occ}$, a larger push up), and the
+cells behind the end are not touched, which is how unknown stays unknown. A beam that returns nothing within range ($+\infty$ in this lidar, and in the recorded run it means exactly "farther than 3.5 m") clears the cells it
+crossed, up to 10 cm short of the limit, and marks nothing occupied. Which cells did it cross? There are two reasonable answers, and the robot used the less careful one.
+
+<TwoTracers />
+
+Neither answer is wrong. *Bresenham* joins the centre of the sensor's cell to the centre of the end cell with the fewest cells, and *the supercover* lists every cell the continuous segment spends any length in. Bresenham is cheap and conventional; the supercover
+never skips a cell the beam passes through, which matters for a thin wall hit at a grazing angle, where a skipped cell is a gap in the free evidence. They agree along an axis and nowhere else to speak of: on 2000 random beams over the 5 cm grid, both start and end in the same cell, the supercover visits cells Bresenham skips on
+more than 90 % of them, and Bresenham visits cells the segment never touches on more than 40 %. The project swept both, and found that it did not matter much *here*: at the clamp it froze, either passes every check on every route it tried. Below that clamp the wall-lobes route fails a check with either one.
+It is a decision, and the decision is in the repository, which is why it is a widget and not a footnote.
+
+### The evidence adds up, and a clamp lets it change its mind
+
+Back in the first widget, click a cell on a wall. Its log-odds stays near zero while beams pass through it and fall, rises by the same step at every hit, and stops at 5. That stop is the clamp, and it is there so that a cell can change its mind: a wall that is removed has to be
+forgotten, and with no clamp a cell seen occupied a thousand times needs a thousand misses to flip. The price is the opposite one, and this chapter does not hide it: the larger the clamp, the slower the forgetting, and a static room cannot price that.
+
+Now drag the first widget's slider to one hit. Cells appear *outside* the walls, ringed, and they did in the real runs too. Where the wall's face lies on a line between two cells, a single return that lands 1 or 2 cm past it falls in the cell on the far side,
+and no later beam ever crosses that cell to clear it, because the wall is in the way. With one hit that cell is called occupied, and the map has phantom obstacles. Four hits, not one, is the first thing the real runs changed, and the second of three things that went wrong before the map was right.
+
+### The first maps were wrong, three ways
+
+The first test of the mapper was a harness run in the simulator, on a half-metre triangle, and it failed badly: cells called occupied far from any surface. Nothing in the algorithm above was wrong. The lidar's *time stamp* was.
+
+**The stamp lags the measurement.** The Webots lidar publishes a scan with a header time that is later than the instant its beams were measured. Measured against the simulator's ground truth, over 53 scans taken while the robot turned in place, the stamp lags by 0.061 s on average and by up to 0.164 s. At the robot's 0.18 m/s that is up to 3 cm of
+pose error along the heading, and the pose the mapper looked up at the stamp was the wrong one. The mapper cannot undo it, because the measurement instant is only known to lie in a window; what it can do is bound the damage. It integrates each scan at the pose 0.06 s before the stamp,
+it skips a scan if the sensor moved more than 5 cm or turned more than 0.015 rad across the window, and it skips a scan from where the last one was taken (a lidar that returns a "flying pixel" at a depth edge would otherwise reinforce it every time). The cost is real: each run skipped between 16 and 27 per cent of the scans it saw, essentially all of them in the turns, and the map is built from the straight legs.
+
+**One hit is not enough.** The first development run on a 51 m route had 13.2 % false-occupied cells and a maximum surface error of 9.5 cells. Raising the occupied threshold from probability 0.65 to 0.95, four hits, brought the third run to 2.6 %, still over the 2 % the check allows. One check of seven failed.
+
+**Then the held-out routes.** The parameters were frozen at that point and three evaluation routes were driven, routes that had played no part in choosing anything. Each of them failed different checks:
+
+| route | what failed |
+|---|---|
+| cross | completeness 0.926, against 0.95 |
+| wall lobes | completeness 0.907, and false-free samples 6.2 %, against 5 % |
+| diamond, slow turns | 95th-percentile surface error 1.5 cells, false-occupied cells 7.9 %, completeness 0.886 |
+
+No single bug explained them. The investigation that followed, a read-only analysis of the four runs on disk with no new simulator run, falsified both of its starting hypotheses (that the missed surface was simply seen too few times, and that the false cells came from the robot's turning rate) and found three
+separate mechanisms. One of them is the subject of the next section, because it is the best example in this book of an error that is invisible until it is not.
+
+## A half degree, and why it showed on some routes and not others
+
+The diamond route's false-occupied cells did not depend on how fast the robot turned. They depended on *which beams* produced them: 85 % of the beams that marked them were beams 0 to 14. And the false cells appeared on the diamond route (the robot drives at 45° to the walls) and not on the cross and wall-lobes routes (it drives along the axes), which is what you would see if the error of those beams grew with the angle at which they meet a wall.
+
+A table of the error of each beam, fitted *without* the run it was then asked to predict, did predict it. This is the fraction of wall hits more than 4.5 cm past the wall's face:
+
+| held-out route | beams 0–14 observed | predicted | other beams observed | predicted |
+|---|---|---|---|---|
+| development 3 (the long route) | 2.34 % | 3.54 % | 0.14 % | 0.39 % |
+| cross | 0.00 % | 0.40 % | 0.13 % | 0.34 % |
+| wall lobes | 0.00 % | 0.57 % | 0.09 % | 0.28 % |
+| diamond, slow turns | 25.71 % | 24.28 % | 0.25 % | 0.37 % |
+
+The model that predicts it has no velocity, no route and no turn rate in it. Where does the error come from? Webots renders a 360° lidar as a cylindrical projection, and it places output column $j$ of $N$ at the centre of its bin, $\tfrac{\text{fov}}{2} - (j+\tfrac12)\tfrac{\text{fov}}{N}$.
+The driver, `webots_ros2_driver`, publishes the scan's bearings as $\tfrac{\text{fov}}{2} - j\,\tfrac{\text{fov}}{N-1}$: the grid of $N$ points that include both ends of the field of view. These are different grids. The published one spreads 360 beams over the span of 359 intervals, and the real one over 360. The difference is
+
+$$
+\varepsilon_j \;=\; j\Bigl(\tfrac{\text{fov}}{N-1} - \tfrac{\text{fov}}{N}\Bigr) - \tfrac{\text{fov}}{2N},
+$$
+
+which for the 360-beam, $2\pi$ sensor is −8.727 mrad at beam 0, −0.024 mrad at beam 179 and +8.727 mrad at beam 359. That is half a degree at the two ends of the index range, and it is nothing in the middle. Beams 0 and 359 look the same way, straight behind the robot, according to the published grid, and the real
+sensor measured them 17 mrad apart. Move the sliders of the next widget. It builds a wall with the repository's simulator, takes 360 ranges at the *true* bearings, and reads them back twice with the mapper's own code.
+
+<BeamAngle />
+
+<Derivation title="Why the error scales with the angle, and which quantity is which" result="range residual r·tan(i)·ε, hit offset r·sin(i)·ε">
+
+A wall at perpendicular distance $d$ is hit by a beam at incidence $i$ (the angle between the beam and the wall's normal) at range $r = d/\cos i$. Read that beam at a bearing wrong by $\varepsilon$ and two things happen.
+
+*The range it should have had.* A beam at the published bearing would meet the wall at $r' = d/\cos(i \pm \varepsilon)$, so the measured range differs from the range the mapper expects by
+
+$$
+r - r' \;\approx\; r\,\tan i\;\varepsilon .
+$$
+
+This is the *residual*, the quantity the investigation fitted, and it has a $\tan i$ in it: it vanishes at normal incidence and grows without bound as the beam grazes the wall.
+
+*Where the hit lands.* The mapper puts the hit at $r(\cos\theta_\text{pub}, \sin\theta_\text{pub})$, and its distance from the wall along the normal is $r\cos(i \mp \varepsilon) - d$, which to first order is
+
+$$
+\pm\, r\,\sin i\;\varepsilon ,
+$$
+
+because $r\cos i = d$. This is the *offset* of the mapped hit from the face, what makes a cell, and it differs from the residual by a factor of $\cos i$. At 70° and a metre, beam 0 reads 2.855 m, its range is 6.84 cm off, and its hit lands 2.34 cm from the face: more than a cell of range error, about half a cell of position.
+
+The sign of $\varepsilon$ is opposite at the two ends of the scan, so beam 0 and beam 359 miss the wall on opposite sides. On one side the hit goes beyond the face, where no beam ever clears the cell: a phantom obstacle. On the other it goes inside the room and the metric cannot see it.
+
+</Derivation>
+
+Three consequences are worth saying in plain words. First, half a degree is not small *to a map*: it is invisible to a beam that meets the wall squarely, and larger than a cell of range at 70°. Second, it is a property of the sensor and driver, not of any route, which is why no route-level fix (slowing the turns, changing the gate) could have found it. Third, a wall at the angle a robot drives along a diamond is exactly the situation that exposes it.
+
+The fix is a correction in the *mapper's input*, applied to each scan just before integration, and it leaves the official driver untouched. It was verified without a new simulator run, by replaying the four recorded streams: with the published bearings the replay reproduces each saved grid byte for byte, and with the corrected ones the false-occupied cells go from 18 to 4 on the long route and from 57 to 0 on the diamond route.
+
+It is *not the whole error*. The fit on real data has about twice the correction's value at the two ends, 14 to 23 mrad at beams 0 to 9 and about 17 mrad at beams 350 to 359, and the rest is unexplained: the part of Webots that renders the lidar was not read. After the correction about −9 and +10 mrad remain at the two ends. In no run does that produce a false-occupied cell, but a route that studied a long oblique wall with those beams might. The widget above shows only the part the correction removes, and its caption says so.
+
+### The other two mechanisms, briefly
+
+The same analysis found that completeness was being lost for two reasons that had nothing to do with beams. On well-viewed pillars the occupied threshold sat only 1.3 free updates below the library's clamp, so the grazing views that pass a pillar's rim late in a run, each marking the cell free, eroded cells that near-normal views had built. The cure was a trade: a Bresenham traversal and a higher clamp, 5.0 rather than the library's 3.476.
+And the *metric* had two properties that changed what a miss meant: observability ignored the angle (the limb of a pillar counted), and a wall on a lattice line was judged on whichever cell a rounding rule picked, so one displaced wall counted as found on two sides and missed on the other two. Both were changed, by decision, before any run that is graded below.
+
+## The mathematics
+
+### From Bayes' rule to an addition
+
+For one cell, with prior probability one half, Bayes' rule in odds form says that a measurement multiplies the odds of occupancy by a likelihood ratio. Taking logs turns the product into a sum, and the log-odds
+$l = \ln\frac{p}{1-p}$ of the cell becomes the running state:
+
+$$
+l_t \;=\; l_{t-1} \;+\; \ln\frac{p(m \mid z_t, x_t)}{1 - p(m \mid z_t, x_t)} \;-\; l_0, \qquad l_0 = \ln\frac{0.5}{0.5} = 0 .
+$$
+
+The update is a constant *added to a number*. It cannot overflow into probability 0 or 1, it is exact, and it is the same constant for every cell the same measurement touches, which is what makes the whole scan one pass.
+The inverse sensor model, the term in the middle, is hand-crafted and has no beam width: it takes two values.
+
+$$
+\begin{aligned}
+\htmlClass{term-measurement}{l_\text{occ}} &= \ln\tfrac{0.7}{0.3} = 0.847 && \text{the cell that contains the beam's end,}\\
+\htmlClass{term-measurement}{l_\text{free}} &= \ln\tfrac{0.4}{0.6} = -0.405 && \text{every cell the beam crossed first.}
+\end{aligned}
+$$
+
+A hit is a stronger statement than a pass-through, because a beam can be blocked by something nearer than what the cell holds; that is why 0.7 is farther from one half than 0.4. The log-odds is then *clamped* to $[l_\text{min}, l_\text{max}]$, with $l_\text{min} = \ln\frac{0.12}{0.88}$ and, in the runs graded below, $l_\text{max} = 5.0$ (probability 0.9933).
+The grid is read out against two thresholds: *occupied* at probability 0.95, $\ln 19 = 2.944$, and *free* at probability 0.35, $-0.619$. Everything between is unknown.
+
+### How many hits
+
+A cell nobody has seen is at 0. Each hit adds 0.847:
+
+```text
+hits   log-odds   called
+1      0.847      unknown
+2      1.695      unknown
+3      2.542      unknown
+4      3.389      occupied   (threshold 2.944)
+```
+
+So four hits occupy an unknown cell, and three do not. That is the number the first widget's slider changes, and it is why a single return in the row just outside a wall is not a wall. The clamp's cost is the same arithmetic run backwards: from a saturated cell at 5.0 it takes
+six misses ($-0.405$ each) to drop below 2.944 and stop being called occupied, and fourteen to be called free. The library's default clamp, at probability 0.97, takes two and eleven. The robot ran with the larger clamp: more stable, slower to forget.
+
+### One update per cell per scan
+
+A scan is 360 beams, and the cells near the sensor lie on dozens of them. Adding $l_\text{free}$ once per beam would saturate those cells on the first scan, and would count twice a direction the Webots scan samples twice (its last beam points where its first does).
+So the integrator first collects the set of cells the scan found free and the set it found occupied, and only then updates each cell *once*: $l_\text{occ}$ if any beam ended in it, otherwise $l_\text{free}$. Table 9.1 of *Probabilistic Robotics* does the same. A consequence worth a sentence: the result does not depend on the order of the beams, not approximately but bit for bit, since each cell receives exactly one addition.
+
+### Entropy, and why it is never alone
+
+Each cell is a Bernoulli variable, and its entropy in bits is $H(p) = -p\log_2 p - (1-p)\log_2(1-p)$. An unobserved cell is one bit, the maximum, so an empty grid of 140 × 140 cells has 19 600 bits, and a map that has learned lowers it: after the run in the widget, 12 131 bits, with 15 098 of the 19 600 cells decided.
+That is a measure of progress and not of quality. A map that is confidently wrong has *low* entropy, which is why the repository reports it next to the accuracy of the same run and never alone.
+
+### What a planner will read: the distance field
+
+A planner needs one more thing a grid does not say: how far each cell is from the nearest obstacle, to keep clear of it, and, for a cell inside an obstacle, how deep. The crate computes a signed Euclidean distance field over the occupied cells by calling the exact distance transform that the likelihood field of Chapter 3 already uses, once on the occupied mask and once on its complement.
+The sign is positive in free space, and the zero level is put at the cell *faces*, not at the centres, with $d - r/2$ outside and $-(d - r/2)$ inside, $r$ the cell size; otherwise every distance would be biased by half a cell on both sides. Unknown cells count as free space; a planner that must not plan through the unknown combines the field with the three-state map.
+
+## The algorithm
+
+<Algorithm name="IntegrateScan(grid, x_t, z_t)">
+
+1. $z_t \leftarrow \text{BeamLayout}(z_t)$: correct the bearings of the Webots lidar
+2. $F \leftarrow \emptyset,\ O \leftarrow \emptyset$ (cells found free, cells found occupied)
+3. for each beam $k$ with range $r_k$ and bearing $\theta_t + \varphi_k$:
+4. $\quad$ if $r_k$ is valid and below $r_\text{max}$: trace the cells from the sensor to the end; add all but the last to $F$ and the last to $O$
+5. $\quad$ else if $r_k$ is $+\infty$ or beyond range: trace up to $r_\text{max}$ less 10 cm, add all of them to $F$ (nothing to $O$)
+6. $\quad$ else: drop the beam ($\text{NaN}$, non-positive, or below $r_\text{min}$)
+7. for each cell $c \in F \cup O$: $\ l_c \leftarrow \text{clamp}\bigl(l_c + (l_\text{occ}\ \text{if}\ c \in O\ \text{else}\ l_\text{free}),\ l_\text{min},\ l_\text{max}\bigr)$
+8. return the grid
+
+</Algorithm>
+
+<Algorithm name="BeamLayout.PixelCentres(z)">
+
+1. $s \leftarrow (N-1)\,\Delta\varphi$: the signed span from the first bearing to the last
+2. refuse the scan unless $\varphi_\text{min} + s/2 = 0$ within $10^{-4}$ rad (the correction is derived for a full field of view centred on the sensor's axis)
+3. $\Delta\varphi' \leftarrow s/N$
+4. $\varphi'_\text{min} \leftarrow \varphi_\text{min} + \Delta\varphi'/2$
+5. return the scan with $\varphi'_\text{min}$ and $\Delta\varphi'$
+
+</Algorithm>
+
+## Implementation in Rust
+
+Everything above is `robotics_mapping`, a crate with no ROS in it. The model and the thresholds, and the one place the clamp is applied:
+
+```rust title="crates/robotics_mapping/src/occupancy.rs"
+pub struct OccupancyParams {
+    pub l_occ: f32,
+    pub l_free: f32,
+    pub l_min: f32,
+    pub l_max: f32,
+    pub occupied_threshold: f32,
+    pub free_threshold: f32,
+}
+
+fn logit(p: f64) -> f32 {
+    (p / (1.0 - p)).ln() as f32
+}
+// …
+impl Default for OccupancyParams {
+    fn default() -> Self {
+        Self::from_probabilities(0.7, 0.4, 0.12, 0.97, 0.95, 0.35)
+    }
+}
+// …
+    pub fn classify(&self, l: f32) -> CellState {
+        if l >= self.params.occupied_threshold {
+            CellState::Occupied
+        } else if l <= self.params.free_threshold {
+            CellState::Free
+        } else {
+            CellState::Unknown
+        }
+    }
+// …
+    pub(crate) fn add_at(&mut self, index: usize, delta: f32) {
+        let l = &mut self.log_odds[index];
+        *l = (*l + delta).clamp(self.params.l_min, self.params.l_max);
+    }
+```
+
+The scan integrator collects first and updates once, which is the order-independence of the last section as code. The `marks` array holds, per cell, what the scan found; the second loop applies one addition each.
+
+```rust title="crates/robotics_mapping/src/integrate.rs"
+        for (i, &raw) in scan.ranges.iter().enumerate() {
+            let z = raw as f64;
+            let theta = sensor.theta() + scan.bearing(i);
+            let dir = Vector2::new(theta.cos(), theta.sin());
+            if z.is_nan() || z <= 0.0 || (z.is_finite() && z < scan.range_min) {
+                report.invalid += 1;
+            } else if z.is_finite() && z < scan.range_max {
+                report.hits += 1;
+                let end = origin + dir * z;
+                if !self.trace(&g, &origin, origin_cell, &end, true) {
+                    report.hits_outside_grid += 1;
+                }
+            } else {
+// …
+        let (l_occ, l_free) = (grid.params().l_occ, grid.params().l_free);
+        for k in 0..self.touched.len() {
+            let index = self.touched[k];
+            if self.marks[index] == OCCUPIED {
+                grid.add_at(index, l_occ);
+                report.cells_occupied += 1;
+            } else {
+                grid.add_at(index, l_free);
+                report.cells_free += 1;
+            }
+            self.marks[index] = 0;
+        }
+```
+
+Bresenham, the traversal the robot ran, is an iterator over cell indices. It does not look at the beam, only at the two cells:
+
+```rust title="crates/robotics_mapping/src/raycast.rs"
+impl Iterator for Bresenham {
+    type Item = (i32, i32);
+
+    fn next(&mut self) -> Option<(i32, i32)> {
+        if self.done {
+            return None;
+        }
+        let out = (self.x as i32, self.y as i32);
+        if self.x == self.x1 && self.y == self.y1 {
+            self.done = true;
+            return Some(out);
+        }
+        let e2 = 2 * self.err;
+        if e2 >= self.dy {
+            self.err += self.dy;
+            self.x += self.sx;
+        }
+        if e2 <= self.dx {
+            self.err += self.dx;
+            self.y += self.sy;
+        }
+        Some(out)
+    }
+}
+```
+
+The correction of the beam bearings is six lines. Everything before them is a refusal, so that it cannot be applied to a scan it was not derived for:
+
+```rust title="crates/robotics_mapping/src/layout.rs"
+                let n = n as f64;
+                let span = (n - 1.0) * scan.angle_increment;
+                if (scan.angle_min + 0.5 * span).abs() > SYMMETRY_TOLERANCE {
+                    return Err(MappingError::MalformedScan(
+                        "pixel_centres layout needs bearings symmetric about the sensor's x axis",
+                    ));
+                }
+                let mut out = scan.clone();
+                out.angle_increment = span / n;
+                out.angle_min = scan.angle_min + 0.5 * out.angle_increment;
+                Ok(Cow::Owned(out))
+```
+
+And the distance field, with its half-cell:
+
+```rust title="crates/robotics_mapping/src/esdf.rs"
+    let half = g.resolution / 2.0;
+    let mut values = Vec::with_capacity(g.cells());
+    for j in 0..g.height {
+        for i in 0..g.width {
+            let signed = if occupied[j * g.width + i] {
+                -(inside.cell(i, j).expect("in range") - half)
+            } else {
+                outside.cell(i, j).expect("in range") - half
+            };
+            values.push(signed.clamp(-truncation, truncation) as f32);
+        }
+    }
+```
+
+### What the page runs
+
+The widgets do not contain a mapper. The first one holds a recording and a few lines that build the model the robot ran, and then calls the integrator once per scan, which is the sentence the following code is:
+
+```rust title="crates/robotics_wasm/src/ch04.rs"
+fn frozen_params(p_occupied: f64) -> OccupancyParams {
+    OccupancyParams::from_probabilities(0.7, 0.4, 0.12, 0.99330715, p_occupied, 0.35)
+}
+// …
+    fn integrate_into(
+        grid: &mut OccupancyGrid,
+        integrator: &mut ScanIntegrator,
+        rec: &Recorded,
+    ) -> Result<(), String> {
+        let scan = BeamLayout::PixelCentres.apply(&rec.scan).map_err(err)?;
+        integrator
+            .integrate(grid, &rec.sensor, &scan)
+            .map_err(err)?;
+        Ok(())
+    }
+```
+
+A claim should be checkable, and this one is. Replaying all 504 recorded scans through that function, compiled to WebAssembly, writes exactly the grid file the robot's node saved at the end of the run, 169 953 characters, byte for byte. Nothing on this page is random: unlike the chapters on simulated noise, no seed is involved, so the
+page's map and the robot's map are the same object. The build asserts it, and so does `cargo test` natively.
+
+## Putting it together
+
+The problem of the opening, as numbers the runs produced. They are the repository's own, read out of the verdict files the verdict script wrote (nothing in a verdict is typed by hand), and each is asserted by the build against the file it comes from. The runs are in the repository's `evidence/` directory,
+one directory each, named `2026-10-11-development-4-route-long` and `2026-10-11-evaluation-4-oblique`, `-5-pillar-arcs` and `-6-perimeter`.
+
+### M1: is the map accurate?
+
+Development run 4 is the long route with everything frozen: Bresenham, a clamp of 5.0, the corrected bearings, and the two rules of the evaluator. The other three are routes written for this round, to stress what had broken round one (45° approaches to every wall, arcs round the pillars, the perimeter with detours), on **one** mapper binary and with no tuning on any of them.
+
+| check | limit | development 4 | oblique | pillar arcs | perimeter |
+|---|---|---|---|---|---|
+| surface error, 95th percentile (cells) | ≤ 1.0 | 0.50 | 0.50 | 0.50 | 0.50 |
+| surface error, maximum (cells) | ≤ 1.5 | 1.50 | 1.50 | 0.88 | 0.88 |
+| false-occupied cells | ≤ 2 % | 0.21 % | 0.11 % | 0.00 % | 0.00 % |
+| completeness | ≥ 0.95 | 0.984 | 0.982 | 0.976 | 0.963 |
+| false-free samples | ≤ 5 % | 1.38 % | 2.34 % | 2.80 % | 3.31 % |
+| coverage | ≥ 0.90 | 0.998 | 0.995 | 0.995 | 0.994 |
+| observable fraction | ≥ 0.50 | 0.941 | 0.967 | 0.976 | 0.979 |
+
+All seven checks pass on each of the four. The mean surface error of the three evaluation routes spans 0.0011 cells. The four runs integrated 1308, 504, 482 and 572 scans and skipped for motion 313, 126, 178 and 106, which is 16 to 27 per cent of the scans each saw: the turns, as before.
+
+### M2 and M4: deterministic, and cheap
+
+The replay of each run's recorded scans equals the grid the node saved, byte for byte, on all four: that is claim M2, and the first widget is the same claim on this page. The cost of one update, from a scan arriving to the grid being updated, in milliseconds, over every scan of the run, on a *debug* build (the default of the ROS build, not a release one):
+
+| ms per scan | development 4 | oblique | pillar arcs | perimeter |
+|---|---|---|---|---|
+| median | 0.97 | 0.91 | 0.92 | 0.85 |
+| 95th percentile | 1.16 | 1.19 | 1.20 | 1.14 |
+| 99th percentile | 1.30 | 1.35 | 1.31 | 1.28 |
+
+The limit the repository set is 100 ms, against 0.2 s between scans, and the 99th percentile is under 1.4 ms.
+
+### The dashboard
+
+<Dashboard>
+  <StatTile label="accuracy (M1)" value="7 of 7" hint="checks passed, on each of 4 runs" role="posterior" />
+  <StatTile label="determinism (M2)" value="byte for byte" hint="replay equals the saved grid, 4 of 4" role="posterior" />
+  <StatTile label="update cost (M4)" value="1.28 to 1.35 ms" hint="99th percentile, debug build; limit 100 ms" role="posterior" />
+  <StatTile label="against rclpy and Nav2 costmap" value="pending" hint="not run; no row, no placeholder" />
+</Dashboard>
+
+The comparison that is **pending** is the one a reader will want: the same mapper against a direct Python port of the same update, and against the obstacle layer of Nav2's costmap, which is a different algorithm with a comparable output.
+Neither has been run. This chapter has no row for them and no estimate, and the repository's benchmark file for this part does not exist yet either. The only yardstick used here is the room's own geometry.
+
+### What this does not show
+
+The numbers above are real, and a reader should hold them at their size.
+
+* **The parameters were chosen on four runs that the analysis had already used up**: the development run and the three round-one routes. The three new routes had no part in the choice, which is what makes them a test, and the mapper passed it; three routes in one room are three rows, not a rate.
+* **The metric is not the one round one failed.** Between the rounds the evaluator's two rules changed, on the project owner's decision. Graded by the old evaluator, the frozen parameters would still have missed completeness on the cross route (0.9456, against 0.95), so part of what separates round two from round one is the metric, not the mapper.
+* **The largest surface error sits exactly on its limit, 1.5 cells**, on the development run and on the oblique run. It passes; it has no room.
+* **It is the mapper that is shown correct, not mapping.** With the true pose the only errors left are lidar noise and the discretization. The effect of an *estimated* pose, which is the part that matters on a real robot, is invisible here by construction and has not been measured.
+* **One easy world, one simulated sensor.** Four walls and four pillars, no clutter, no corridors; a Webots lidar whose bearings, as this chapter found, differ from what its driver says. About 9 mrad at one end of the scan and 10 mrad at the other, even after the correction, is unexplained.
+* **About 300 cells outside the walls are marked free** (look at the first widget: the pale patches beyond the walls). They were cleared by beams that returned *nothing* along a path that crosses a wall, which the simulated lidar does now and then; why it does has not been examined. No check counts them, since a false-free sample is one *on* a true surface.
+* **The clamp is a trade.** Larger means slower forgetting; a room that never changes cannot price that.
+
+## Exercises
+
+<Exercises>
+
+<Exercise level="F" difficulty={2} title="From odds to an addition">
+
+Starting from Bayes' rule for one cell and a sequence of measurements that are independent given the cell's state, derive $l_t = l_{t-1} + \ln\frac{p(m \mid z_t)}{1-p(m \mid z_t)} - l_0$, and say what $l_0$ is and why it is zero in this chapter.
+
+<details>
+<summary>Solution</summary>
+
+In odds form, $\frac{p(m \mid z_{1:t})}{p(\neg m \mid z_{1:t})} = \frac{p(z_t \mid m)}{p(z_t \mid \neg m)}\cdot\frac{p(m \mid z_{1:t-1})}{p(\neg m \mid z_{1:t-1})}$. The likelihood ratio is, by Bayes' rule again, $\frac{p(m \mid z_t)}{p(\neg m \mid z_t)}\cdot\frac{p(\neg m)}{p(m)}$, the posterior odds from the measurement alone divided by the prior odds. Taking logs, the product becomes a sum, and the last factor is $-l_0$ with $l_0 = \ln\frac{p(m)}{1-p(m)}$. With a prior of one half, $l_0 = 0$.
+
+</details>
+
+</Exercise>
+
+<Exercise level="F" difficulty={3} title="The offset is not the residual">
+
+A wall is at perpendicular distance $d$ and a beam meets it at incidence $i$. The beam's published bearing is wrong by $\varepsilon$. Show that the range residual is $r\tan i\,\varepsilon$ and the hit's distance from the wall's face is $r\sin i\,\varepsilon$, with $r = d/\cos i$, to first order in $\varepsilon$, and explain the factor between them.
+
+<details>
+<summary>Solution</summary>
+
+The range the mapper expects at the published bearing is $d/\cos(i+\varepsilon)$, and the measured one is $d/\cos i$; the difference is $d\,\frac{\sin i}{\cos^2 i}\,\varepsilon = r\tan i\,\varepsilon$. The hit is placed along the *published* bearing at the *measured* range, so its component along the wall's normal is $r\cos(i+\varepsilon) = d\,\frac{\cos(i+\varepsilon)}{\cos i} \approx d - r\sin i\,\varepsilon$, a distance of $r\sin i\,\varepsilon$ from the face. The residual is measured along the beam and the offset along the normal, and the angle between the two directions is $i$, so offset $=$ residual $\times\cos i$.
+
+</details>
+
+</Exercise>
+
+<Exercise level="C" difficulty={1} title="Four hits">
+
+<Predict
+  id="ch04-q-four"
+  question="At the occupied threshold of 0.95, with no free evidence at all, how many hits take an unknown cell to occupied?"
+  options={[
+    { label: 'One: a hit is a hit', because: 'One hit adds 0.847 to a threshold of 2.944. The robot ran with one hit at first and had 13 % phantom cells.' },
+    { label: 'Four', correct: true, because: 'Three hits give 2.542, which is below 2.944; four give 3.389. Move the first widget’s slider to see the same thing as a map.' },
+    { label: 'Twenty, since 0.95 is a high probability', because: 'The threshold is in log-odds terms, 2.944, and each hit adds 0.847; the number of hits is the ratio, rounded up, not the probability scaled.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Where the phantoms stand">
+
+<Predict
+  id="ch04-q-phantoms"
+  question="Before you lower the first widget to one hit: where do the false cells appear?"
+  options={[
+    { label: 'Scattered through the middle of the room, where the noise is', because: 'Noise there is crossed by many beams on the way past; a cell that is wrongly marked once is cleared by the next beams that cross it.' },
+    { label: 'In the row of cells just outside the walls', correct: true, because: 'A return that lands past the face falls in the next cell, and no later beam crosses that cell because the wall is in the way, so nothing clears it.' },
+    { label: 'Only inside the pillars', because: 'The pillars are small, and a beam that grazes one can leave a few cells, but the walls are where most of the returns land.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Which side of the wall">
+
+<Predict
+  id="ch04-q-sides"
+  question="In the beam-angle widget, set the incidence to 60° and look at beams 0 and 359. Which statement is true?"
+  options={[
+    { label: 'Both put their hit beyond the wall', because: 'The two beams have bearing errors of opposite sign, so their hits are displaced in opposite directions.' },
+    { label: 'They miss on opposite sides, and only one of them makes a cell outside the wall', correct: true, because: 'One hit lands inside the room, where the metric sees nothing; the other lands beyond the face, in a cell no later beam clears.' },
+    { label: 'Neither misses: the wall is straight', because: 'A straight wall does not remove the error; it removes nothing, since the beam’s bearing is what is wrong and the wall is where it was.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="P" difficulty={2} title="A smaller clamp">
+
+In `crates/robotics_wasm/src/ch04.rs`, `frozen_params` builds the model with an upper clamp of probability 0.99330715. Change it to the library's default, 0.97, rebuild, and look at the first widget at four hits. What changes about the pillar cells, and how many misses does it now take to stop calling a saturated cell occupied? Read `OccupancyParams::default` in `crates/robotics_mapping/src/occupancy.rs` to check your answer.
+
+<details>
+<summary>Solution</summary>
+
+The clamp drops from 5.0 to 3.476, so a saturated cell sits 1.3 free updates above the occupied threshold of 2.944 instead of 5.07 of them: it takes two misses to stop being occupied, not six. The map forgets faster, and the pillar cells, which are built by a few well-placed views and then crossed by grazing beams that mark them free, are eroded late in the run. That is the failure the higher clamp was frozen to fix. The price is the other direction: a wall that really is removed would take longer to clear with 5.0.
+
+</details>
+
+</Exercise>
+
+</Exercises>
+
+## References
+
+<References>
+  <Reference authors="Moravec, H. P. and Elfes, A." year={1985}
+    title="High resolution maps from wide angle sonar"
+    venue="Proceedings of the IEEE International Conference on Robotics and Automation, pp. 116–121"
+    url="https://www.ri.cmu.edu/publications/high-resolution-maps-from-wide-angle-sonar"
+    note="Where the occupancy grid starts: a map of regions probably occupied, probably empty, and unknown, which is the three-state read-out of this chapter, and the source of its epigraph." />
+  <Reference authors="Elfes, A." year={1989}
+    title="Using occupancy grids for mobile robot perception and navigation"
+    venue="Computer, 22(6), 46–57"
+    url="https://doi.org/10.1109/2.30720"
+    note="The probabilistic formulation that the log-odds update implements, with the argument for a grid as a representation a planner can use." />
+  <Reference authors="Thrun, S., Burgard, W. and Fox, D." year={2005}
+    title="Probabilistic Robotics"
+    venue="MIT Press"
+    url="https://mitpress.mit.edu/9780262201629/probabilistic-robotics/"
+    note="Chapter 9 and its Table 9.1, the update every cell of the perceptual field receives once per scan, which the crate follows." />
+  <Reference authors="Thrun, S." year={2003}
+    title="Learning occupancy grid maps with forward sensor models"
+    venue="Autonomous Robots, 15(2), 111–127"
+    url="https://www.cs.cmu.edu/~thrun/movies/papers/thrun.occ-journal.html"
+    note="Why the product-of-cells assumption is an assumption: a method that keeps the dependence between neighbouring cells, which this chapter does not." />
+  <Reference authors="Hornung, A., Wurm, K. M., Bennewitz, M., Stachniss, C. and Burgard, W." year={2013}
+    title="OctoMap: an efficient probabilistic 3D mapping framework based on octrees"
+    venue="Autonomous Robots, 34(3), 189–206"
+    url="https://doi.org/10.1007/s10514-012-9321-0"
+    note="The source of the crate's hit and miss weights and its lower clamp, and of the argument that a clamp is what lets a cell change its mind." />
+  <Reference authors="Amanatides, J. and Woo, A." year={1987}
+    title="A fast voxel traversal algorithm for ray tracing"
+    venue="Eurographics 1987, Technical Papers"
+    url="https://doi.org/10.2312/egtp.19871000"
+    note="The supercover traversal: every cell the continuous segment crosses, which is the alternative to Bresenham this chapter's third widget compares." />
+  <Reference authors="Bresenham, J. E." year={1965}
+    title="Algorithm for computer control of a digital plotter"
+    venue="IBM Systems Journal, 4(1), 25–30"
+    url="https://doi.org/10.1147/sj.41.0025"
+    note="The integer line that the robot's mapper walks along each beam." />
+  <Reference authors="Millane, A., Oleynikova, H., Wirbel, E., Steiner, R., Ramasamy, V., Tingdahl, D. and Siegwart, R." year={2024}
+    title="nvblox: GPU-accelerated incremental signed distance field mapping"
+    venue="IEEE International Conference on Robotics and Automation (ICRA 2024); arXiv:2311.00626"
+    url="https://arxiv.org/abs/2311.00626"
+    note="Where the signed distance field this chapter ends on goes next: computed incrementally and on a GPU, for planners that need distance to obstacles at a robot's update rate." />
+</References>

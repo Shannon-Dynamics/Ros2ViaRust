@@ -1,0 +1,641 @@
+---
+title: Sensor Models and the Simulator
+description: How a simulated lidar produces a scan you can replay from a seed, what a range reading means as a probability, how the beam model and the likelihood field score a pose, and why a scan's likelihood has to be tempered.
+chapter: 3
+phase: 2
+phaseTitle: State estimation, sensor models, simulation
+difficulty: Intermediate
+readingTime: 70 min
+quote: "To navigate reliably in indoor environments, a mobile robot must know where it is."
+quoteAuthor: F. Dellaert, D. Fox, W. Burgard and S. Thrun
+quoteSource: Monte Carlo Localization for Mobile Robots (1999), abstract
+---
+
+import { ArenaScan } from '@/components/ch/ch03/arena-scan';
+import { Replay } from '@/components/ch/ch03/replay';
+import { BeamDensity } from '@/components/ch/ch03/beam-density';
+import { EmFit } from '@/components/ch/ch03/em-fit';
+import { FieldVsBeam } from '@/components/ch/ch03/field-vs-beam';
+import { Tempering } from '@/components/ch/ch03/tempering';
+import { Landmark } from '@/components/ch/ch03/landmark';
+
+<Overview
+  goals={[
+    'say how the simulated lidar turns a map and a pose into 360 readings, and why a seed replays them bit for bit',
+    'write the beam model, say what each of its four terms is for, and fit its parameters by expectation–maximization',
+    'build a likelihood field from a distance transform, and say what it costs and what it throws away',
+    'explain why a whole scan multiplied beam by beam is over-confident, and measure it and the cure (tempering)',
+    'subtract two angles correctly in a range–bearing model, and find each of these in the repository',
+  ]}
+  prerequisites={[
+    'Chapter 1 (poses, the ⊞ step, the idea of a likelihood) and the note on seeds in Chapter 2',
+    'Gaussians and mixtures; no ROS knowledge: this chapter is about the crates underneath the simulator node',
+  ]}
+>
+
+Chapter 2 ended with a pose that drifts, and a promise that a second kind of evidence would correct it. The
+evidence is a lidar: 360 distances, ten times a second. A distance means nothing to a probabilistic filter until a
+model says how probable it is, and the whole of localization, in Part 3, will lean on one function: the probability
+of a scan if the robot were at a given pose in a given map.
+
+That function has two ends and this chapter builds both. At one end is a *simulator* that produces scans a reader can
+replay from a seed, so that every later number can be reproduced. At the other are the *sensor models* that
+score a scan, and three questions about them: what does a single reading mean, what is a cheap way to score a
+hundred poses a scan, and how sure is a score entitled to be?
+
+</Overview>
+
+## The problem
+
+A lidar sweeps a beam a degree at a time and reports how far it went. Rusty, the repository's simulator, does the same
+thing on a map made of line segments: a 13 m × 13 m arena, 21 segments in all, with box obstacles and a
+wall stub. Each beam is cast exactly against the segments, Gaussian noise of 2 cm is added, one beam in a hundred returns
+nothing, and anything beyond 8 m is nothing. Drag the robot around.
+
+<ArenaScan />
+
+Green dots are what the robot would read. Two kinds of beam read nothing, and they look the same in the data: a wall that
+is farther than 8 m away, and a dropout. From the start pose of the widget 57 of the 360 beams reach no wall within range, and a handful
+more are lost; the reading alone cannot tell which is which, a map can. (From the middle of the arena, with noise and dropout off, 53
+beams still reach nothing, because the corners are more than 8 m away.) That is the first lesson of a sensor model: *a missing return is a
+piece of evidence, and an ambiguous one.*
+
+The second lesson is about what the question is. A localizer will hold many guesses of the pose and ask, of each, how probable it is that
+the lidar would have read *this*. The guess that makes the scan likely wins. So a sensor model is a function `p(z | x, m)` of the scan `z`, the pose `x`
+and the map `m`, and the rest of the chapter is two ways of writing it, and the problem each has.
+
+<Callout type="warn" title="Same Rust, different noise, again">
+
+The note at the start of Chapter 2 applies here without change. The simulator's random streams come from `robotics_core::seeded_rng`, and a seed
+names different noise on this page (a 32-bit WebAssembly module) than on the robot. The scan of the widget above is this page's own draw; the same
+scan, `ch03_lidar_scan(1, 2, 0.4, 0.02, 0.01, seed 7)`, has the fingerprint `8a526fd3ad0062b1` where the repository
+runs natively and `f7e036522696593c` here, and the build pins both. What is deterministic and has no random stream (the ray cast, the beam density,
+the worked EM example, the distance transform, the landmark model) is the same on both and is checked against closed forms and the repository's own numbers.
+
+</Callout>
+
+## Building intuition: a simulator you can replay
+
+### The forward model
+
+Write the sensor's pose as $T_{\text{sensor}} = x \circ T_{\text{base→laser}}$, the robot's pose composed with the mount, 5 cm ahead of the base.
+Beam $k$ points at the bearing $\varphi_k = -\pi + k\cdot 1^\circ$. Its ideal range $z^*_k$ is where the ray first meets a wall. For the ray $o + t d$ and
+a segment $a + s e$, solve the two-by-two system with cross products, $t = (a - o)\times e \,/\, (d \times e)$ and $s = (a - o)\times d \,/\, (d \times e)$, and accept the hit when
+$t \ge 0$ and $s$ lies on the segment (with a tolerance so that a ray through a shared corner cannot leak). The first hit is the smallest $t$, if it is within 8 m. The measurement is then
+
+$$
+z_k = z^*_k + \sigma\, n_k,\qquad n_k \sim \mathcal N(0, 1),
+$$
+
+unless the beam is dropped, which happens with a fixed probability and also when there is no wall at all.
+
+A worked example, with no random stream in it, so that it is the same on the page and on the robot: from the origin, facing +x, with no noise, beam 180 (straight ahead) reads
+7.45 m, because the east wall is at 7.5 m and the sensor is 5 cm ahead of the base; beam 0 (straight behind) reads 5.55 m; beam 90 reads 4.0 m; beam 270 reads nothing, because the
+wall it points at is 9 m away. The repository pins them by hand in `tests/lidar_regression.rs`, and this book's build checks them against the compiled module.
+
+```rust title="crates/robotics_sim/src/world.rs"
+    /// First intersection of the ray `origin + t·(cos angle, sin angle)`, `t ≥ 0`, with
+    /// any segment, if it lies within `max_range`. Rays parallel to a segment do not hit
+    /// it (a grazing ray along a wall is a measure-zero event for a real sensor too).
+    pub fn raycast(&self, origin: &Vector2<f64>, angle: f64, max_range: f64) -> Option<f64> {
+        let d = Vector2::new(angle.cos(), angle.sin());
+        let mut best = f64::INFINITY;
+        for seg in &self.segments {
+            let e = seg.b - seg.a;
+            let denom = cross(&d, &e);
+            if denom.abs() < 1e-15 {
+                continue;
+            }
+            let ao = seg.a - origin;
+            let t = cross(&ao, &e) / denom;
+            let s = cross(&ao, &d) / denom;
+            if t >= 0.0 && (-PARAM_EPS..=1.0 + PARAM_EPS).contains(&s) && t < best {
+                best = t;
+            }
+        }
+        (best <= max_range).then_some(best)
+    }
+```
+
+```rust title="crates/robotics_sim/src/lidar.rs"
+    pub fn scan(&mut self, world: &World, body: &Se2, stamp: Timestamp) -> LaserScan {
+        let ideal = self.ideal_ranges(world, body);
+        let c = &self.cfg;
+        let mut ranges = Vec::with_capacity(c.beams);
+// …
+        for z_star in ideal {
+            let u: f64 = self.rng.random::<f64>();
+            let n: f64 = self.rng.sample(StandardNormal);
+            let dropped = u < c.dropout_probability;
+            let z = match (dropped, z_star) {
+                (false, Some(z)) => Some(z + c.range_sigma * n),
+                _ => None,
+            };
+            let r = match (c.no_return, z) {
+                (NoReturnPolicy::Infinity, None) => f64::INFINITY,
+                (NoReturnPolicy::Infinity, Some(z)) if z > c.range_max => f64::INFINITY,
+                (NoReturnPolicy::Infinity, Some(z)) if z < c.range_min => f64::NEG_INFINITY,
+                (NoReturnPolicy::Infinity, Some(z)) => z,
+                (NoReturnPolicy::MaxRange, None) => c.range_max,
+                (NoReturnPolicy::MaxRange, Some(z)) => z.clamp(0.0, c.range_max),
+            };
+            ranges.push(r as f32);
+        }
+// …
+    }
+```
+
+Two things in the second listing carry the next idea. Every beam draws a uniform number *and* a normal one whether or not it uses them. And the encoding of
+"nothing" is a choice: in the default, REP 117 (`+inf` for no return or beyond range, `−inf` for closer than 0.12 m); in the book's convention, the sensor's limit, 8 m. The toggle in the
+widget switches between them, and the beam model below scores both identically, because it treats a non-finite reading as a max-range one.
+
+### Replay
+
+The simulator promises a thing a reader can test. It has one random generator for each noise source, wheel slip, gyro white noise, gyro bias drift and the lidar, each derived from the master seed.
+Because every beam draws its two numbers regardless, changing the dropout probability does not reshuffle the noise of the beams that survive. Because the generators are separate, taking the lidar away
+cannot change a bit of the others.
+
+<Replay />
+
+Read the table by columns. B repeats A and agrees everywhere. C, with no lidar, agrees with A in the encoders, the gyro and the true pose, and has no scans. D takes the next seed, and everything that has noise in it
+changes, except the encoders. That is not an accident: the simulator advances the wheel angle by the commanded rate, and slip and the radius error act on how far the robot *travels*, not on how far the
+wheel *turned*. An encoder cannot see them. This is the whole of the wheel-odometry problem of Chapter 2, in one column of identical fingerprints.
+
+## The mathematics
+
+### The beam model
+
+Given the distance $z^*$ the beam should have travelled, a range reading is one of four things, and the beam model gives each its density:
+
+$$
+p(z \mid z^*) = z_{\text{hit}}\, p_{\text{hit}} + z_{\text{short}}\, p_{\text{short}} + z_{\text{max}}\, p_{\text{max}} + z_{\text{rand}}\, p_{\text{rand}}.
+$$
+
+The *hit* is the wall with noise, a Gaussian around $z^*$ cut to $[0, z_{\max}]$: $p_{\text{hit}} = \mathcal N(z; z^*, \sigma_{\text{hit}}^2)/\eta$, with $\eta$ the Gaussian's mass on that interval. The *short* reading is
+something unexpected between the sensor and the wall, a person or a chair, whose distance falls off exponentially and which is cut off at $z^*$: $p_{\text{short}} = \lambda e^{-\lambda z}/(1 - e^{-\lambda z^*})$ on $[0, z^*]$.
+The *max* reading is a point mass at the sensor's limit, and the *random* reading is a flat floor, $1/z_{\max}$. The weights are the book's defaults, 0.74, 0.10, 0.06 and 0.10, and $\sigma_{\text{hit}}=0.12$ m, $\lambda = 1$ per metre.
+
+<BeamDensity />
+
+A score for a whole scan multiplies the beams, $\sum_k \ln p(z_k \mid z^*_k)$, with $z^*_k$ found by ray casting the map from the hypothesised pose. The density integrates to one, as a density must, and the build checks it at three expected ranges.
+
+```rust title="crates/robotics_models/src/sensor/beam.rs"
+    /// Component densities for measured `z` and expected `z_star`.
+    pub fn components(&self, z: f64, z_star: f64) -> BeamComponents {
+        let p = &self.p;
+        let zmax = p.max_range;
+        let hit = if (0.0..=zmax).contains(&z) {
+            let mass =
+                normal_cdf((zmax - z_star) / p.sigma_hit) - normal_cdf(-z_star / p.sigma_hit);
+            if mass > 1e-12 {
+                normal_pdf(z - z_star, p.sigma_hit) / mass
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+        let short = if z_star > 0.0 && (0.0..=z_star).contains(&z) {
+            p.lambda_short * (-p.lambda_short * z).exp() / (1.0 - (-p.lambda_short * z_star).exp())
+        } else {
+            0.0
+        };
+        let max = if z >= zmax - 1e-9 { 1.0 } else { 0.0 };
+// …
+    /// Mixture likelihood `p(z | z*)`.
+    pub fn likelihood(&self, z: f64, z_star: f64) -> f64 {
+        let c = self.components(z, z_star);
+        let p = &self.p;
+        p.z_hit * c.hit + p.z_short * c.short + p.z_max * c.max + p.z_rand * c.rand
+    }
+```
+
+### Learning the parameters
+
+Six numbers sit in that model, and the book's rule is that nobody should guess them. Given readings $z_i$ with their expected ranges $z^*_i$, expectation–maximization finds them. The *E-step* shares each reading among the four components in proportion to how well each explains it, $e_{i,c} = z_c\,p_c(z_i)\big/\sum_{c'} z_{c'}\,p_{c'}(z_i)$. The *M-step* re-estimates each parameter from its share:
+
+$$
+z_c = \frac1n\sum_i e_{i,c},\qquad
+\sigma_{\text{hit}}^2 = \frac{\sum_i e_{i,\text{hit}}\,(z_i - z^*_i)^2}{\sum_i e_{i,\text{hit}}},\qquad
+\lambda_{\text{short}} = \frac{\sum_i e_{i,\text{short}}}{\sum_i e_{i,\text{short}}\, z_i}.
+$$
+
+A worked example the repository pins in `beam::tests::worked_example_ch10_em_iteration`, with five readings of a wall at 5 m:
+
+```text
+readings 4.5, 5, 3, 7, 10 at z* = 5, z_max = 10, uniform weights ¼, σ_hit = 1, λ = ½
+after one EM step:
+  z_hit   = 0.394282      z_short = 0.127210
+  z_max   = 0.2           z_rand  = 0.278508
+  σ_hit   = 1.093905      λ_short = 0.283737   (0.2837390 in full precision)
+  mean log-likelihood per reading, before the step: −2.275038
+```
+
+<EmFit />
+
+The weights land within 0.02 of the truth, $\sigma_{\text{hit}}$ within 2 mm, and the log-likelihood climbs within a few iterations; two things are not clean, because the repository implements the book's update as printed.
+$\lambda_{\text{short}}$ settles above its true value, because the update ignores that $p_{\text{short}}$ is cut off at $z^*$; and for the same reason the M-step is not an exact maximization, so the trace can dip by about $10^{-4}$ nats per beam near the end (`docs/SOURCE_MAPPING.md`, deviation 8). The page's readings are drawn from the model itself, by code that is
+marked in `robotics_wasm` as not being crate code (the crate has the density and the fit, not a sampler), so the demonstration is that the fitting code finds a known answer, not that a real lidar obeys the model.
+
+```rust title="crates/robotics_models/src/sensor/beam.rs"
+    /// One EM iteration of `learn_intrinsic_parameters` (Thrun Table 6.2) over readings
+    /// `z` paired with their ray-cast expectations `z_star` (cached outside the loop).
+    ///
+    /// E-step: responsibilities `e_{i,c} = z_c p_c(z_i) / Σ_c' z_c' p_c'(z_i)`.
+    /// M-step: `z_c = mean_i e_{i,c}`,
+    /// `σ_hit² = Σ e_{i,hit}(z_i − z_i*)² / Σ e_{i,hit}`,
+    /// `λ_short = Σ e_{i,short} / Σ e_{i,short} z_i`.
+    ///
+    /// Readings no component can explain are skipped (and counted); a component with no
+    /// responsibility keeps its shape parameter; `σ_hit ≥ 1 mm` and
+    /// `λ_short ∈ [1e-3, 50]` keep the next model valid. Non-finite readings are treated
+    /// as max-range returns, as everywhere else in this model. `λ_short` inherits the
+    /// truncation bias the book documents (Chapter 10, EM derivation, step 6).
+    pub fn em_step(&self, z: &[f64], z_star: &[f64]) -> Result<EmStep, ModelError> {
+// …
+        for (&zi, &si) in z.iter().zip(z_star) {
+            let zi = if zi.is_finite() { zi } else { p.max_range };
+            let c = self.components(zi, si);
+            let w = [
+                p.z_hit * c.hit,
+                p.z_short * c.short,
+                p.z_max * c.max,
+                p.z_rand * c.rand,
+            ];
+            let total: f64 = w.iter().sum();
+            if total <= 0.0 || !total.is_finite() {
+                continue;
+            }
+            used += 1;
+            s_hit += w[0] / total;
+            s_short += w[1] / total;
+            s_max += w[2] / total;
+            s_rand += w[3] / total;
+            sq_hit += w[0] / total * (zi - si).powi(2);
+            z_short_sum += w[1] / total * zi;
+            ll += total.ln();
+// …
+        let n = used as f64;
+        let params = BeamModelParams {
+            z_hit: s_hit / n,
+            z_short: s_short / n,
+            z_max: s_max / n,
+            z_rand: s_rand / n,
+            sigma_hit: if s_hit > 1e-9 {
+                (sq_hit / s_hit).sqrt().max(1e-3)
+            } else {
+                p.sigma_hit
+            },
+            lambda_short: if z_short_sum > 1e-9 {
+                (s_short / z_short_sum).clamp(1e-3, 50.0)
+            } else {
+                p.lambda_short
+            },
+            max_range: p.max_range,
+        };
+```
+
+### The likelihood field
+
+The beam model needs a ray cast against the map for every beam of every hypothesis. A cheaper score drops each measured end point into the map and asks one question of it: how far is the nearest wall? Precompute the answer once for every cell of a grid, with the exact Euclidean distance transform (Felzenszwalb and Huttenlocher, in linear time), and the score of a beam is a lookup,
+
+$$
+q = \sum_{k}\ln\bigl(z_{\text{hit}}\,\mathcal N(d_k;\,0,\,\sigma_{\text{hit}}^2) + z_{\text{rand}}/z_{\max}\bigr),
+$$
+
+with $d_k$ the distance from the $k$-th end point to the nearest wall, and defaults $z_{\text{hit}}=0.9$, $z_{\text{rand}}=0.1$, $\sigma_{\text{hit}}=0.2$ m. Max-range beams are skipped, since they have no end point. This is not a model of how scans are generated; it is a smooth, cheap score that a particle filter can use, and the repository says so in its docs.
+
+```rust title="crates/robotics_models/src/sensor/likelihood_field.rs"
+    /// Log-likelihood of `scan` from robot pose `pose`, with the sensor mounted at
+    /// `sensor_offset` in the body frame, using every `stride`-th valid beam.
+    pub fn log_likelihood<F: DistanceField>(
+        &self,
+        scan: &LaserScan,
+        pose: &Se2,
+        sensor_offset: &Se2,
+        field: &F,
+        stride: usize,
+    ) -> f64 {
+        let sensor = pose.compose(sensor_offset);
+        let p = &self.p;
+        let max = p.max_range.min(scan.range_max);
+        scan.valid_beams_strided(stride)
+            .filter(|(_, r)| *r < max - 1e-9)
+            .map(|(b, r)| {
+                let end = sensor.act(&Vector2::new(r * b.cos(), r * b.sin()));
+                let d = field.distance(&end);
+                (p.z_hit * normal_pdf(d, p.sigma_hit) + p.z_rand / p.max_range)
+                    .max(1e-300)
+                    .ln()
+            })
+            .sum()
+    }
+```
+
+The picture below is the field of the arena, brightest next to a wall, with a scan on it. The distance map is rasterized by the page's own wiring (the repository has no rasterizer yet; it is marked in `robotics_wasm` as not being crate code), which draws each wall as a one-cell-thick outline on a 5 cm grid. Remember that: it will matter.
+
+<FieldVsBeam />
+
+Both models peak at the truth. The beam model's peak is sharper (on every pose and seed the build tries, within 1 cm of the truth along x and y, and within 0.01 rad in heading), the likelihood field's is within 3 cm and about twice as wide (never under 1.7 times on the poses and seeds the build tries). In
+exchange the field is smooth, so a search or a particle filter can use it; and it costs a table lookup per beam instead of a ray cast against 21 segments, 7 560 segment tests per 360-beam scan.
+
+### Too sure of itself
+
+A scan has about 300 usable beams, and both models multiply them as if each were independent evidence. They are not independent: a 5 cm map cell biases every beam that meets it the same way, and a person walking through the scan blocks twenty adjacent beams. The product then overstates the information by roughly the ratio of the number of beams to the number of *independent* ones, and the posterior is narrower than the scan can justify.
+
+The remedy is to raise the likelihood to a power, $p(z\mid x)^{\beta}$ with $0<\beta\le 1$. In log space it is a multiplication, so the surface flattens without its peak moving, and no data are thrown away (subsampling beams would move the peak; inflating $\sigma_{\text{hit}}$ would change which beams count as outliers). The repository adds the rule that sets $\beta$ from a target: the largest $\beta$ whose weights keep the effective sample size above a given fraction.
+
+```rust title="crates/robotics_models/src/sensor/tempering.rs"
+    /// `β · ln p`. `−∞` (zero likelihood) stays `−∞`; any finite value stays finite.
+    #[inline]
+    pub fn apply_log(&self, log_likelihood: f64) -> f64 {
+        self.beta * log_likelihood
+// …
+        let ess_ratio = |beta: f64| -> f64 {
+            let lw: Vec<f64> = log_prior
+                .iter()
+                .zip(log_likelihoods)
+                .map(|(p, l)| p + beta * l)
+                .collect();
+            let max = lw.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+            if max == f64::NEG_INFINITY {
+                return 0.0;
+            }
+            let (s, s2) = lw.iter().fold((0.0, 0.0), |(s, s2), l| {
+                let w = (l - max).exp();
+                (s + w, s2 + w * w)
+            });
+            s * s / s2 / n
+// …
+        if ess_ratio(1.0) >= target_ratio {
+            return Ok(Self::NONE);
+        }
+        if ess_ratio(min.beta) < target_ratio {
+            return Ok(min);
+        }
+        let (mut lo, mut hi) = (min.beta, 1.0);
+        for _ in 0..50 {
+            let mid = 0.5 * (lo + hi);
+            if ess_ratio(mid) >= target_ratio {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        Self::new(lo)
+    }
+```
+
+How over-confident, and does tempering cure it? The widget measures it. It simulates 64 scans, 8 poses with 8 noise seeds each, scores each along x, and asks of the posterior over that line: how large is the error of its mean against the true pose, how large is the standard deviation it claims, and what is the root-mean-square of their ratio. A calibrated posterior has a ratio of 1.
+
+<Tempering />
+
+With the likelihood field and $\beta = 1$ the posterior's mean is about 2.4 cm from the truth, rms, while it claims a standard deviation of about 1.7 cm: the ratio is about 1.4, over-confident. Tempering to $\beta = 0.5$ brings it to about 0.9 and $\beta = 0.3$ below 1, and the posterior's mean does not move. With the beam model the ratio is already 0.4 to 0.55, and its error 0.3 cm: calibrated, even conservative. That says something specific about *where* the over-confidence comes from. In this simulator the beams' noise is independent and there is no person to walk through the scan, so the multiplication alone is not the cause; the cause is the rasterized map, whose 5 cm cells bias every beam of the likelihood field in the same way. The beam model casts rays against the exact segments and has no such error. The repository's reason for tempering, correlated beams from unmodeled obstacles, is the real-world version of the same thing, and is described here, not measured, because Rusty has no obstacle that moves.
+
+### A different sensor: a landmark
+
+A feature detector that reports an identified landmark gives a range $r$ and a bearing $\varphi$ in the sensor frame. With $p$ the landmark's position in the sensor frame, the prediction is $\hat r = \lVert p \rVert$, $\hat\varphi = \operatorname{atan2}(p_y, p_x)$, and
+
+$$
+p(r, \varphi \mid x, m_j) = \mathcal N(r - \hat r;\, 0, \sigma_r^2)\;\mathcal N\bigl(\operatorname{wrap}(\varphi - \hat\varphi);\, 0, \sigma_\varphi^2\bigr).
+$$
+
+Everything depends on the word *wrap*. A bearing is an angle, and the difference of two angles near $\pm\pi$ is not their subtraction: a reading of $-3.10$ rad against a prediction of $+3.10$ is $-6.20$ apart as numbers and $2\pi - 6.20 \approx 0.083$ rad apart as angles.
+
+<Landmark />
+
+The Jacobian of the prediction with respect to a right (body-frame) perturbation of the pose is what an EKF on SE(2) needs, and it is short:
+
+<Derivation title="The landmark Jacobian" result="∂ĥ/∂δ = [[p_x/r, p_y/r], [−p_y/r², p_x/r²]] · Rᵀ · [[−1, 0, p_by], [0, −1, −p_bx]]">
+
+Let $p_b$ be the landmark in the robot's body frame and $p = R_s^{\T}(p_b - t_s)$ the landmark in the sensor frame, with $(R_s, t_s)$ the mount. A right perturbation
+$x \bplus \delta = x\exp(\delta)$, $\delta = (v_x, v_y, \omega)$, changes the body-frame point to $\exp(-\delta)\,p_b \approx p_b - (v + \omega\times p_b)$, so
+$\partial p_b/\partial\delta = \begin{pmatrix} -1 & 0 & p_{b,y} \\ 0 & -1 & -p_{b,x}\end{pmatrix}$, and $\partial p/\partial\delta = R_s^{\T}$ times that. The range and
+bearing of $p$ have the Jacobian $\begin{pmatrix} p_x/r & p_y/r \\ -p_y/r^2 & p_x/r^2\end{pmatrix}$ by the chain rule. The product is the $2\times 3$ matrix, and the repository's test
+and this book's check compare it with a central difference of the prediction.
+
+</Derivation>
+
+```rust title="crates/robotics_models/src/sensor/landmark.rs"
+    /// Residual `z ⊟ ẑ = (r − r̂, wrap(φ − φ̂))`.
+    pub fn residual(z: &RangeBearing, predicted: &RangeBearing) -> Vector2<f64> {
+        Vector2::new(
+            z.range - predicted.range,
+            angle_diff(z.bearing, predicted.bearing),
+        )
+    }
+// …
+    /// Jacobian `∂ĥ/∂δ` of the prediction with respect to a right (body-frame)
+    /// perturbation of the pose, `x ⊞ δ = x·exp(δ)`, `δ = (v_x, v_y, ω)` — the `H` an EKF
+    /// on SE(2) needs.
+    pub fn jacobian(
+        &self,
+        pose: &Se2,
+        landmark: &Vector2<f64>,
+    ) -> Result<SMatrix<f64, 2, 3>, ModelError> {
+// …
+        let p = self.in_sensor(pose, landmark)?;
+        let pb = pose.act_inverse(landmark);
+        // exp(−δ) p_b ≈ p_b − (v + ω × p_b)  ⇒  ∂p_b/∂δ = [[−1, 0, p_by], [0, −1, −p_bx]]
+        let dpb = SMatrix::<f64, 2, 3>::new(-1.0, 0.0, pb.y, 0.0, -1.0, -pb.x);
+        let rt = self.sensor.rotation().inverse().into_inner();
+        let dp = rt * dpb;
+        let r2 = p.norm_squared();
+        let r = r2.sqrt();
+        let dh = Matrix2::new(p.x / r, p.y / r, -p.y / r2, p.x / r2);
+        Ok(dh * dp)
+    }
+// …
+    /// `ln p(z | x, m_j)` (Table 6.4 in log space).
+    pub fn log_likelihood(
+        &self,
+        pose: &Se2,
+        landmark: &Vector2<f64>,
+        z: &RangeBearing,
+    ) -> Result<f64, ModelError> {
+        if !(z.range.is_finite() && z.bearing.is_finite()) {
+            return Err(ModelError::InvalidData("measurement must be finite"));
+        }
+        let e = Self::residual(z, &self.predict(pose, landmark)?);
+        let (sr, sb) = (self.sigma_range, self.sigma_bearing);
+        Ok(-0.5 * ((e.x / sr).powi(2) + (e.y / sb).powi(2)) - (sr * sb).ln() - (TAU).ln())
+    }
+```
+
+The model needs the landmark's identity: *which* landmark a detection belongs to is the data-association problem of Part 3, and a detection without one is an error here, not a guess.
+
+## The algorithm
+
+<Algorithm name="BeamModelScan(z, x, m)">
+
+1. $o \leftarrow x \circ T_{\text{base→laser}}$
+2. for each beam $k$: $z^*_k \leftarrow \text{raycast}(m,\ o,\ o_\theta + \varphi_k,\ z_{\max})$, or $z_{\max}$ if there is no hit
+3. a non-finite $z_k$ is read as $z_{\max}$
+4. return $\sum_k \ln p(z_k \mid z^*_k)$, each term floored at $10^{-300}$
+
+</Algorithm>
+
+<Algorithm name="LikelihoodFieldScan(z, x, DistanceGrid)">
+
+1. $o \leftarrow x \circ T_{\text{base→laser}}$
+2. for each usable beam with $z_k < z_{\max}$: end point $q_k = o\,(z_k\cos\varphi_k,\ z_k\sin\varphi_k)$
+3. $d_k \leftarrow \text{DistanceGrid.distance}(q_k)$
+4. return $\sum_k \ln\bigl(z_{\text{hit}}\mathcal N(d_k; 0, \sigma^2) + z_{\text{rand}}/z_{\max}\bigr)$
+
+</Algorithm>
+
+## Putting it together
+
+The problem of the opening, as numbers a run produced. All of them are this page's own draws; the comparison between rows is what holds on both targets, and the build asserts it.
+
+| | beam model | likelihood field |
+|---|---|---|
+| peak of the score along x, y, from the true pose | within 1 cm | within 3 cm |
+| width of the peak (within 10 nats of it), field over beam | | about 2 times wider (never under 1.7) |
+| work per hypothesised pose | 360 ray casts, 7 560 segment tests | one distance lookup per usable beam |
+| rms error of the posterior mean, over 64 scans | about 0.3 cm | about 2.4 cm |
+| rms of error / claimed σ at β = 1 (1 is calibrated) | 0.4 to 0.55 | about 1.4 |
+| the same, tempered to β = 0.5 | below 1 | about 0.9 |
+
+And the simulator, in the properties that make every other number in the book reproducible: a seed replays a scan and a whole run bit for bit; removing the lidar changes no other stream; the encoders do not depend on the seed at all.
+
+### What the repository says does not work
+
+The limits recorded in `docs/SIMULATION.md` and `docs/SOURCE_MAPPING.md` are these. Rusty is not a collision model: the robot is never stopped by a wall, and its arena is 21 static segments, so there is no
+moving obstacle to correlate the beams, which is why the over-confidence measured here comes from the map and not from people. Ray casting is analytic over every segment, with no spatial index, which is cheaper than
+maintaining one for 21 segments and is revisited when maps get large. The EM follows the book's table including its untruncated M-steps. The landmark model needs the landmark's identity. And
+the likelihood field is a score, not a probability of anything: its units are a log density per beam end point, and two numbers from different scans are comparable only
+because they count the same beams.
+
+## Exercises
+
+<Exercises>
+
+<Exercise level="F" difficulty={2} title="Why the normalizer">
+
+Show that $p_{\text{hit}}$ integrates to 1 on $[0, z_{\max}]$ and say what would be wrong with the mixture if the normalizer $\eta$ were left out.
+
+<details>
+<summary>Solution</summary>
+
+$\eta = \Phi\bigl((z_{\max}-z^*)/\sigma\bigr) - \Phi(-z^*/\sigma)$ is the Gaussian's mass on $[0, z_{\max}]$, so dividing by it makes the cut-off density integrate to 1. Without it
+the hit component would lose the mass of the Gaussian's tails outside the interval: little at the middle of the range, and visible near $z^*\approx 0$ or $z^*\approx z_{\max}$, where the mixture would integrate to less than 1 and a scan taken
+close to a wall would be systematically under-scored.
+
+</details>
+
+</Exercise>
+
+<Exercise level="F" difficulty={2} title="The heading column of the Jacobian">
+
+For a sensor at the robot's origin, derive the third column of the landmark Jacobian, the derivative of $(\hat r, \hat\varphi)$ with respect to a heading perturbation $\omega$.
+
+<details>
+<summary>Solution</summary>
+
+With the sensor at the origin $p = p_b$, and $\partial p_b/\partial\omega = (p_{b,y}, -p_{b,x})^{\T}$. The range is unchanged to first order, because $p_b\cdot(p_{b,y}, -p_{b,x}) = 0$, and the bearing changes
+by $\bigl(-p_y\,p_y - p_x\,p_x\bigr)/r^2 = -1$: turning the robot by $\omega$ turns every bearing by $-\omega$. The column is $(0, -1)^{\T}$.
+
+</details>
+
+</Exercise>
+
+<Exercise level="C" difficulty={1} title="Nothing in range">
+
+<Predict
+  id="ch03-q-nothing"
+  question="In the first widget, set the noise and the dropout to 0 and drag the robot to the middle of the arena. Do any beams still read infinity?"
+  options={[
+    { label: 'No: with no dropout every beam hits a wall', because: 'A beam hits a wall only if the wall is within 8 m; the arena is 13 m across.' },
+    { label: 'Yes: those whose wall is more than 8 m away', correct: true, because: 'From the middle, the corners are about 9 m away, so the beams that point into them have no return within range.' },
+    { label: 'Yes: those the noise knocks out of range', because: 'The noise is set to 0, so it cannot move a reading anywhere.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Which peak is wider">
+
+<Predict
+  id="ch03-q-width"
+  question="In the scoring widget, slide the hypothesis along x. Which model's peak is wider, the beam model's or the likelihood field's?"
+  options={[
+    { label: 'The beam model: it is the more detailed one', because: 'Detail makes a score sharper, not wider: a ray cast compares ranges to the millimetre, and a hypothesis a centimetre off changes every one of them.' },
+    { label: 'The likelihood field, by more than a factor of two', correct: true, because: 'The field scores each end point by its distance to the nearest wall, a smooth function, and its σ_hit is 0.2 m against the beam model\'s 0.12 m; the build asserts about twice as wide, and never under 1.7 times, on every pose and seed it tries.' },
+    { label: 'They are the same, since both peak at the truth', because: 'The same place does not mean the same width: the width is how fast the score falls off, which is what a search or a particle filter relies on.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Does the beam model need tempering">
+
+<Predict
+  id="ch03-q-beam-temper"
+  question="In the tempering widget, switch to the beam model at β = 1. Is its posterior over-confident?"
+  options={[
+    { label: 'Yes, more than the field: it multiplies more beams', because: 'The number of beams is not the cause; the cause is an error shared by the beams, and the beam model casts rays against the exact map.' },
+    { label: 'No: its error is a fraction of the σ it claims', correct: true, because: 'Its rms error is about 0.3 cm against a claimed σ of 0.7 cm, a ratio under 1, because no discretization biases its beams together.' },
+    { label: 'It cannot be told, since the true pose is not known', because: 'It is known: the scans are simulated from a pose, and the true pose is offset 0 of every posterior.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="P" difficulty={2} title="A room you can score by hand">
+
+In `crates/robotics_models/src/sensor/likelihood_field.rs`, add a test that builds a `DistanceGrid` for a 1 m × 1 m room (the occupancy of its four walls), takes the scan of
+a point sensor at the room's centre, and checks that `log_likelihood` at the centre is higher than at a pose 10 cm off. Which parameter of the model decides how much higher?
+
+<details>
+<summary>Solution</summary>
+
+Build the mask with the four walls as occupied cells, call `DistanceGrid::from_occupancy`, produce a `LaserScan` whose end points are the walls from the centre, and compare
+`LikelihoodFieldModel::log_likelihood` at the two poses. $\sigma_{\text{hit}}$ decides: the score falls as $-d^2/2\sigma^2$ in the exponent, so a narrower $\sigma_{\text{hit}}$ penalizes a 10 cm shift more.
+
+</details>
+
+</Exercise>
+
+</Exercises>
+
+## References
+
+<References>
+  <Reference authors="Thrun, S., Burgard, W. and Fox, D." year={2005}
+    title="Probabilistic Robotics"
+    venue="MIT Press, Intelligent Robotics and Autonomous Agents series" url="https://mitpress.mit.edu/9780262201629/probabilistic-robotics/"
+    note="Chapter 6: the beam model, its parameter learning by EM (Section 6.3.2), the likelihood field (Section 6.4) and the landmark model (Section 6.6); the tables this chapter follows." />
+  <Reference authors="Dellaert, F., Fox, D., Burgard, W. and Thrun, S." year={1999}
+    title="Monte Carlo Localization for Mobile Robots"
+    venue="Proceedings of the IEEE International Conference on Robotics and Automation (ICRA), vol. 2, 1322–1328" doi="10.1109/ROBOT.1999.772544"
+    note="The consumer of these models: particle-filter localization, the subject of Part 3, and the source of the epigraph." />
+  <Reference authors="Felzenszwalb, P. F. and Huttenlocher, D. P." year={2012}
+    title="Distance Transforms of Sampled Functions"
+    venue="Theory of Computing 8(19), 415–428" doi="10.4086/toc.2012.v008a019"
+    note="The linear-time exact Euclidean distance transform the likelihood field is built on; the repository implements it and checks it against brute force." />
+  <Reference authors="Dempster, A. P., Laird, N. M. and Rubin, D. B." year={1977}
+    title="Maximum Likelihood from Incomplete Data via the EM Algorithm"
+    venue="Journal of the Royal Statistical Society, Series B 39(1), 1–38" doi="10.1111/j.2517-6161.1977.tb01600.x"
+    note="The algorithm behind the learning of the beam model's six parameters." />
+  <Reference authors="Bissiri, P. G., Holmes, C. C. and Walker, S. G." year={2016}
+    title="A General Framework for Updating Belief Distributions"
+    venue="Journal of the Royal Statistical Society, Series B 78(5), 1103–1130" doi="10.1111/rssb.12158"
+    note="The generalized-Bayes reading of a weighted update, with a weight on the loss called a temperature: the justification of raising a likelihood to a power β." />
+  <Reference authors="Macenski, S., Martin, F., White, R. and Ginés Clavero, J." year={2020}
+    title="The Marathon 2: A Navigation System"
+    venue="IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2718–2725" doi="10.1109/IROS45743.2020.9341207"
+    note="Nav2, the navigation stack this repository benchmarks against; its AMCL localizer offers the beam and likelihood-field models of this chapter, with the likelihood field as its default." />
+  <Reference authors="Chen, X., Läbe, T., Nardi, L., Behley, J. and Stachniss, C." year={2020}
+    title="Learning an Overlap-based Observation Model for 3D LiDAR Localization"
+    venue="IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 4602–4608" doi="10.1109/IROS45743.2020.9340769"
+    note="A learned observation model inside Monte Carlo localization, set against the hand-built beam end-point model: the direction a sensor model takes when its parameters are learned from data." />
+  <Reference authors="Chen, R., Yin, H., Jiao, Y., Dissanayake, G., Wang, Y. and Xiong, R." year={2021}
+    title="Deep Samplable Observation Model for Global Localization and Kidnapping"
+    venue="IEEE Robotics and Automation Letters 6(2), 2296–2303" doi="10.1109/LRA.2021.3061339"
+    note="A learned model of a 2-D laser scan trained only on simulated observations, which makes the quality of a lidar simulator a research question." />
+  <Reference authors="Kuang, H., Pan, Y., Zhong, X., Wiesmann, L., Behley, J. and Stachniss, C." year={2025}
+    title="Improving Indoor Localization Accuracy by Using an Efficient Implicit Neural Map Representation"
+    venue="IEEE International Conference on Robotics and Automation (ICRA), 8027–8033" doi="10.1109/ICRA55743.2025.11128666"
+    note="Replaces the distance transform of a likelihood field with a learned distance network inside Monte Carlo localization: the same idea as this chapter's field, with a different map." />
+</References>

@@ -1,0 +1,187 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'katex/dist/katex.min.css';
+
+@source '../node_modules/fumadocs-ui/dist/**/*.js';
+
+@theme {
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-prose: var(--font-source-serif), Georgia, 'Times New Roman', serif;
+  --font-ui: var(--font-plex-sans), system-ui, sans-serif;
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-sans: var(--font-ui);
+
+  /* Estimation colors are reserved for data; chrome uses instrument teal. */
+  --color-prior: #3b82f6;
+  --color-prediction: #f97316;
+  --color-measurement: #22c55e;
+  --color-posterior: #a855f7;
+  --color-truth: #6b7280;
+  --color-instrument: #0d9488;
+}
+
+:root {
+  --pr-prior: #3b82f6;
+  --pr-prediction: #ea580c;
+  --pr-measurement: #16a34a;
+  --pr-posterior: #9333ea;
+  --pr-truth: #6b7280;
+
+  --pr-grid: rgb(15 23 42 / 0.07);
+  --pr-canvas-bg: #fcfcfd;
+  --pr-canvas-ink: #0f172a;
+  --pr-wall: #334155;
+  --pr-free: #ffffff;
+  --pr-occupied: #0f172a;
+  --pr-unknown: #cbd5e1;
+
+  --color-fd-primary: #0d9488;
+  --color-fd-ring: #0d9488;
+
+  /* Compatibility aliases for the existing ROS role and canvas API. */
+  --belief-prior: var(--pr-prior);
+  --belief-prediction: var(--pr-prediction);
+  --belief-measurement: var(--pr-measurement);
+  --belief-posterior: var(--pr-posterior);
+  --belief-truth: var(--pr-truth);
+  --ink: var(--pr-canvas-ink);
+  --ink-muted: var(--pr-truth);
+  --grid: var(--pr-grid);
+  --surface: var(--pr-free);
+  --surface-raised: var(--pr-canvas-bg);
+  --accent: var(--color-instrument);
+}
+
+.dark {
+  --pr-prior: #60a5fa;
+  --pr-prediction: #fb923c;
+  --pr-measurement: #4ade80;
+  --pr-posterior: #c084fc;
+  --pr-truth: #94a3b8;
+
+  --pr-grid: rgb(226 232 240 / 0.09);
+  --pr-canvas-bg: #0d1117;
+  --pr-canvas-ink: #e2e8f0;
+  --pr-wall: #94a3b8;
+  --pr-free: #1e293b;
+  --pr-occupied: #f1f5f9;
+  --pr-unknown: #475569;
+
+  --color-fd-primary: #2dd4bf;
+  --color-fd-ring: #2dd4bf;
+  --color-instrument: #2dd4bf;
+
+  --ink: var(--pr-canvas-ink);
+  --ink-muted: var(--pr-truth);
+  --grid: var(--pr-grid);
+  --surface: var(--pr-free);
+  --surface-raised: var(--pr-canvas-bg);
+  --accent: var(--color-instrument);
+}
+
+body {
+  background: var(--color-fd-background);
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-prose: var(--font-source-serif), Georgia, 'Times New Roman', serif;
+  --font-ui: var(--font-plex-sans), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  font-family: var(--font-ui);
+}
+
+:is(h1, h2, h3, .font-display) {
+  font-family: var(--font-display);
+}
+
+:is(code, kbd, samp, pre, .font-mono) {
+  font-family: var(--font-mono);
+}
+
+/* Equation terms tinted with \htmlClass{term-<role>}{...}. */
+.katex .term-prior { color: var(--pr-prior); }
+.katex .term-prediction { color: var(--pr-prediction); }
+.katex .term-measurement { color: var(--pr-measurement); }
+.katex .term-posterior { color: var(--pr-posterior); }
+.katex .term-truth { color: var(--pr-truth); }
+
+/* Role text in prose: <RoleTag role="prior">…</RoleTag> */
+.role-prior { color: var(--pr-prior); }
+.role-prediction { color: var(--pr-prediction); }
+.role-measurement { color: var(--pr-measurement); }
+.role-posterior { color: var(--pr-posterior); }
+.role-truth { color: var(--pr-truth); }
+
+/* Match the reference's 40rem reading measure inside a 54rem chapter shell. */
+.pr-chapter-shell {
+  --pr-measure: 40rem;
+  width: 100%;
+  max-width: 54rem;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+#nd-page {
+  --pr-measure: 40rem;
+  width: 100%;
+  max-width: 54rem;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.chapter-prose {
+  width: 100%;
+  min-width: 0;
+  max-width: var(--pr-measure, 40rem);
+  margin-inline: auto;
+  font-family: var(--font-prose);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.chapter-prose :is(h1, h2, h3, h4, table, pre, figure, .not-serif) {
+  font-family: var(--font-ui);
+}
+
+.chapter-prose :is(pre, code, kbd, samp) {
+  font-family: var(--font-mono);
+}
+
+.chapter-prose :is(h1, h2, h3) {
+  font-family: var(--font-display);
+}
+
+.chapter-prose h2 { margin-top: 2.75rem; }
+
+/* Figures, tables and code can use the full chapter shell width. */
+.chapter-prose :is(figure, table, pre) {
+  position: relative;
+  left: 50%;
+  width: min(54rem, calc(100vw - var(--fd-sidebar-width, 0px) - var(--fd-toc-width, 0px)));
+  max-width: 54rem;
+  transform: translateX(-50%);
+}
+
+.chapter-prose table { display: block; overflow-x: auto; }
+.chapter-prose pre { overflow-x: auto; }
+.chapter-prose .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
+
+@media (max-width: 767px) {
+  .chapter-prose :is(figure, table, pre) { width: min(54rem, calc(100vw - 2rem)); }
+}
+
+/* Widgets must never force the page to scroll sideways on a phone. */
+.widget-frame canvas { max-width: 100%; height: auto; display: block; }
+
+.eyebrow {
+  color: var(--color-fd-primary);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}

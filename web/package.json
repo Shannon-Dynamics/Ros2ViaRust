@@ -1,0 +1,51 @@
+{
+  "name": "ros-via-rust-webbook",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "wasm": "node scripts/build-wasm.mjs",
+    "dev": "npm run wasm && next dev",
+    "build": "npm run wasm && next build",
+    "start": "next start",
+    "postinstall": "fumadocs-mdx",
+    "typecheck": "tsc --noEmit",
+    "check": "node scripts/run-checks.mjs",
+    "check:book": "node scripts/check-book.mjs",
+    "verify": "npm run check && npm run check:book && npm run build",
+    "preview": "node scripts/preview.mjs",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "@nivo/core": "0.99.0",
+    "@nivo/line": "0.99.0",
+    "fumadocs-core": "16.14.3",
+    "fumadocs-mdx": "15.2.3",
+    "fumadocs-ui": "16.14.3",
+    "katex": "0.18.4",
+    "next": "16.3.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "rehype-katex": "7.0.1",
+    "remark-math": "6.0.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "esbuild": "^0.28.2",
+    "playwright": "1.64.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "katex": "0.18.4",
+    "mdast-util-to-markdown": "2.1.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}
