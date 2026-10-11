@@ -38,9 +38,14 @@ LAPS=${LAPS:-1}
 # route_long.yaml was driven at. route_eval_diamond.yaml is meant to be driven slower.
 DRIVE_ANGULAR=${DRIVE_ANGULAR:-}
 NO_RETURN=${NO_RETURN:-clear_to_max_range}
-TRACER=${TRACER:-supercover}
+# Frozen on 2026-10-11 (docs/phase-4-mapping/implementation.md 5.4): Bresenham traversal, upper clamp probability 0.99330715 (l_max 5.0),
+# the Webots pixel-centre beam layout. The earlier runs used supercover, 0.97 and published; each run records what it used.
+TRACER=${TRACER:-bresenham}
+P_MAX=${P_MAX:-0.99330715}
 CLEAR_MARGIN=${CLEAR_MARGIN:-0.10}
 SCAN_TIME_OFFSET=${SCAN_TIME_OFFSET:--0.06}
+# Bearings of the beams (robotics_mapping::layout): published, or pixel_centres for the Webots lidar.
+BEAM_LAYOUT=${BEAM_LAYOUT:-pixel_centres}
 OUT="$EVIDENCE_ROOT/phase-4-mapping/$NAME"
 mkdir -p "$OUT"
 OUT=$(cd "$OUT" && pwd)
@@ -99,7 +104,7 @@ fi
 log "starting the world, the adapter, the mapper and the evaluator"
 ros2 launch robotics_bringup phase4_mapping.launch.py gui:=false mode:=realtime \
     owner:=ground_truth evaluate:=true capture:=true output_dir:="$OUT" tau_cells:="$TAU_CELLS" \
-    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" scan_time_offset:="$SCAN_TIME_OFFSET" > "$OUT/launch.log" 2>&1 &
+    no_return:="$NO_RETURN" tracer:="$TRACER" clear_margin:="$CLEAR_MARGIN" scan_time_offset:="$SCAN_TIME_OFFSET" beam_layout:="$BEAM_LAYOUT" p_max:="$P_MAX" > "$OUT/launch.log" 2>&1 &
 LAUNCH_PID=$!
 
 wait_for() {  # wait_for <seconds> <description> <command...>
@@ -130,6 +135,7 @@ sleep 8
 ros2 node list > "$OUT/node_list.txt" 2>&1
 ros2 topic list -t > "$OUT/topic_list.txt" 2>&1
 ros2 node info /mapping_node > "$OUT/mapping_node_info.txt" 2>&1
+ros2 param get /mapping_node scan_beam_layout > "$OUT/mapper_beam_layout.txt" 2>&1
 ros2 topic info /tf -v > "$OUT/tf_publishers.txt" 2>&1
 OWNERS=""
 grep -qx "/ground_truth_tf_adapter" "$OUT/node_list.txt" && OWNERS="ground_truth_tf_adapter"
@@ -187,7 +193,7 @@ if [ -s "$OUT/integrated-scans.csv" ] && [ -s "$OUT/final-grid.txt" ]; then
     log "replaying the recorded scans (claim M2)"
     ( cd "$REPO" && cargo run -q --release -p robotics_mapping --example replay_scans -- \
         "$OUT/integrated-scans.csv" "$OUT/final-grid.txt" "$OUT/replay-grid.txt" \
-        "$NO_RETURN" "$TRACER" "$CLEAR_MARGIN" ) > "$OUT/replay.log" 2>&1
+        "$NO_RETURN" "$TRACER" "$CLEAR_MARGIN" "$BEAM_LAYOUT" ) > "$OUT/replay.log" 2>&1
     REPLAY_SCANS=$(grep -o 'replayed [0-9]*' "$OUT/replay.log" | grep -o '[0-9]*' || echo none)
 fi
 
@@ -205,12 +211,13 @@ hdr() { sed -n "s/^$2 //p" "$1" 2>/dev/null | head -1; }
     echo "mapper_l_max: $(hdr "$OUT/final-grid.txt" l_max)"
     echo "evaluator_occupied_threshold: $(hdr "$OUT/final-map-states.txt" occupied_threshold)"
     echo "grid_resolution_m: $(hdr "$OUT/final-grid.txt" resolution)"
+    echo "mapper_beam_layout: $(sed -n 's/^String value is: //p' "$OUT/mapper_beam_layout.txt" | head -1)"
     echo "owner_of_map_odom: $OWNER"
     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
     echo "route_driver_exit_code: $ROUTE_RC"
     echo "route_driver_angular_rad_s: $(sed -n 's/^Double value is: //p' "$OUT/route_driver_angular.txt" | head -1)"
     echo "replay_scans: $REPLAY_SCANS"
-    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN scan_time_offset=$SCAN_TIME_OFFSET tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
+    echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN scan_time_offset=$SCAN_TIME_OFFSET beam_layout=$BEAM_LAYOUT p_max=$P_MAX tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
     grep -E '^(source_git_commit|source_git_dirty|mapping_node_executable_sha256|route_sha256|world_sha256):' "$OUT/environment.txt"
 } > "$OUT/summary.yaml"
 

@@ -380,6 +380,22 @@ mod tests {
     }
 
     proptest! {
+        /// The Bresenham line between two cell indices has `max(|dx|, |dy|) + 1` cells, both ends
+        /// included, and every step moves to a neighbouring cell (8-connected, never repeating).
+        #[test]
+        fn bresenham_has_chebyshev_length_both_ends_and_unit_steps(
+            ax in -50i32..50, ay in -50i32..50, bx in -50i32..50, by in -50i32..50,
+        ) {
+            let cells: Vec<(i32, i32)> = Bresenham::new((ax, ay), (bx, by)).collect();
+            let cheb = (bx - ax).abs().max((by - ay).abs()) as usize;
+            prop_assert_eq!(cells.len(), cheb + 1);
+            prop_assert_eq!(cells[0], (ax, ay));
+            prop_assert_eq!(*cells.last().unwrap(), (bx, by));
+            for w in cells.windows(2) {
+                prop_assert!((w[1].0 - w[0].0).abs() <= 1 && (w[1].1 - w[0].1).abs() <= 1 && w[1] != w[0]);
+            }
+        }
+
         /// M3: the traversal visits exactly the cells the segment crosses, in order, each once,
         /// with 4-connected steps (random segments do not pass through lattice corners).
         #[test]

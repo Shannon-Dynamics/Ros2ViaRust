@@ -61,9 +61,11 @@ ARGS = {
     'capture': ('false', 'mapper writes latency, trace, replay record and final grid to output_dir'),
     'tau_cells': ('1.0', 'evaluation tolerance in cells; scripts/phase4_verdict.py checks it'),
     'no_return': ('clear_to_max_range', 'mapper policy for beams with no return'),
-    'tracer': ('supercover', 'mapper ray traversal: supercover | bresenham'),
+    'tracer': ('bresenham', 'mapper ray traversal: supercover | bresenham; frozen at bresenham on 2026-10-11 (docs/phase-4-mapping/implementation.md 5.4)'),
+    'p_max': ('0.99330715', 'mapper: upper clamp probability, model.p_max (l_max = 5.0 exactly); frozen on 2026-10-11, the library default is 0.97 (docs/phase-4-mapping/implementation.md 5.4)'),
     'scan_time_offset': ('-0.06', 'mapper: seconds added to a scan stamp to get its measurement instant; -0.06 is the Webots lidar (docs/phase-4-mapping/implementation.md 5.2 item 2)'),
     'clear_margin': ('0.10', 'mapper: a no-return beam clears up to range_max less this (m)'),
+    'beam_layout': ('pixel_centres', 'mapper: bearings of the beams, published | pixel_centres; this launch file is for the Webots lidar, whose cylindrical-projection layout pixel_centres is (robotics_mapping::layout); the mapper node itself defaults to published'),
 }
 
 
@@ -119,7 +121,9 @@ def setup(context):
         'model.no_return': lc['no_return'],
         'model.tracer': lc['tracer'],
         'model.clear_margin_m': float(lc['clear_margin']),
+        'model.p_max': float(lc['p_max']),
         'scan_time_offset_s': float(lc['scan_time_offset']),
+        'scan_beam_layout': lc['beam_layout'],
     }
     if truthy('capture'):
         mapper_params.update({
