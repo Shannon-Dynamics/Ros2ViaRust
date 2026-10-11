@@ -1,0 +1,13 @@
+[INFO] [1791679035.337338562] [route_driver]: route "cross-head-on" from sim/webots/config/route_eval_cross.yaml: 5 waypoint(s) x 1 lap(s)
+[INFO] [1791679035.341430519] [route_driver]: route_driver up: ground_truth/pose -> cmd_vel at 20 Hz, 17 parameters
+[INFO] [1791679049.691556734] [route_driver]: waypoint 1/5 of lap 1 reached at (2.494, -0.000)
+[WARN] [1791679061.494937569] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[INFO] [1791679083.864392709] [route_driver]: waypoint 2/5 of lap 1 reached at (-2.490, 0.000)
+[WARN] [1791679095.620731394] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[INFO] [1791679103.578247040] [route_driver]: waypoint 3/5 of lap 1 reached at (-0.059, -0.000)
+[INFO] [1791679119.928197866] [route_driver]: waypoint 4/5 of lap 1 reached at (-0.001, 2.497)
+[WARN] [1791679129.476009200] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[INFO] [1791679154.139797637] [route_driver]: waypoint 5/5 of lap 1 reached at (-0.000, -2.494)
+[INFO] [1791679154.140613750] [route_driver]: route "cross-head-on" finished: 1 lap(s), 5 waypoints, 17.44 m driven, 10.97 rad turned, 5 corner(s), 0 leg timeout(s)
+[INFO] [1791679157.189778434] [route_driver]: route driver done, stopping
+[INFO] [1791679157.190389868] [route_driver]: route_driver shutting down after 17.44 m and 10.97 rad on route "cross-head-on" (5 corner(s), 0 leg timeout(s))

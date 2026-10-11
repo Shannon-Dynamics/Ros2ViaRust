@@ -1,0 +1,53 @@
+# Phase 4 evaluation route 3 of 3: a diamond inside the room, driven twice, meant to be turned slowly.
+#
+# Used by claim M1 of ../../../docs/phase-4-mapping/problem.md section 4 (see the header of
+# ./route_eval_cross.yaml for why three routes and why none may be a variant of
+# ./route_long.yaml). Written after the parameters were frozen and before any evaluation run.
+#
+# What the route is: out along +x to the east vertex of a square rotated by 45 degrees, whose
+# four vertices are on the axes at 1.7 m, and twice round it counter-clockwise (east, north, west,
+# south, east, north, west, south, east). Nine waypoints, eight turns in place (one of 135
+# degrees, seven of 90), 20.93 m.
+#
+# Why this shape, and what it stresses:
+#
+#   * TURN RATE. Run it with DRIVE_ANGULAR=0.3 (rad/s) in scripts/run_phase4_mapping.sh, which is
+#     2.7 times slower than the 0.8 rad/s of ./route_long.yaml and of the other two evaluation
+#     routes; the run records the value it used in summary.yaml. The rate is not in this file
+#     because the route reader accepts waypoints only. Corners are all 90 degrees, the same one
+#     eight times, so that the only thing that differs from the other routes at a corner is the
+#     rate. The mapper's motion gate still rejects the scans taken while turning at 0.3 rad/s
+#     (it rejects more than 0.075 rad/s, ../../../docs/phase-4-mapping/implementation.md section
+#     5.2), so what changes is the turn's start and end and the transients around it, not the
+#     scans taken inside the turn.
+#   * The walls are seen from the middle of the room, at 1.3 to 3.0 m (the distance of the hits that
+#     fell outside the wall in development run 3 had a median of 3.15 m), on edges whose
+#     headings are 45 degrees off the room's axes. This route does not go near a wall: the other
+#     two do.
+#   * Edges are 2.4 m, corners are 90 degrees, two laps over identical ground: whatever the mapper
+#     does on the second lap it does on a map the first lap already drew.
+#
+# Share of time spent turning, from the route and the rates: 45 s of 161 s, 0.28, against the
+# verdict's validity bound of 0.5 for scans skipped for motion (development run 3 on
+# ./route_long.yaml skipped 311 of 1627 scans for motion, 0.19).
+#
+# Clearance, `centre-to-leg distance - 0.15 - 0.11`, over every leg: landmark_a, landmark_c and
+# landmark_d are each 0.92 m from the nearest edge (gap 0.66 m), landmark_b is 1.20 m from it
+# (gap 0.94 m). The vertices are 1.3 m from the wall faces.
+#
+# No waypoint is shared with ./route_long.yaml or with the other two evaluation routes.
+# Coordinates are the map frame of ./landmarks.yaml, metres.
+
+route:
+  name: diamond-slow
+
+waypoints:
+  - {x: 1.700, y: 0.000}
+  - {x: 0.000, y: 1.700}
+  - {x: -1.700, y: 0.000}
+  - {x: 0.000, y: -1.700}
+  - {x: 1.700, y: 0.000}
+  - {x: 0.000, y: 1.700}
+  - {x: -1.700, y: 0.000}
+  - {x: 0.000, y: -1.700}
+  - {x: 1.700, y: 0.000}

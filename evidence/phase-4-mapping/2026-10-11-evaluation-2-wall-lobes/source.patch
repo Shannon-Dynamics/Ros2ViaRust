@@ -1,0 +1,74 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 01da610..a633099 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -16,6 +16,7 @@ members = [
+     "crates/robotics_sim",
+     "crates/robotics_localization",
+     "crates/robotics_mapping",
++    "crates/robotics_slam",
+     "ros2_ws/src/robotics_ros_bridge",
+     "ros2_ws/src/robotics_examples",
+     "ros2_ws/src/robotics_estimation",
+@@ -31,6 +32,7 @@ default-members = [
+     "crates/robotics_sim",
+     "crates/robotics_localization",
+     "crates/robotics_mapping",
++    "crates/robotics_slam",
+ ]
+ 
+ [workspace.package]
+@@ -46,6 +48,7 @@ nalgebra = { version = "0.35", default-features = true }   # fixed-size SMatrix/
+ rand = "0.10"                                               # seeded SmallRng: the determinism discipline from the book
+ rand_distr = "0.6"                                          # Normal / StandardNormal sampling (pairs with rand 0.10)
+ thiserror = "2"                                             # typed error enums instead of panics
++faer = { version = "0.24", default-features = false, features = ["std", "sparse-linalg"] }  # sparse Cholesky for the factor-graph normal equations; no rayon and no rand, so it stays deterministic
+ # --- ROS 2 (only ros2_ws packages) ---
+ rclrs = "0.8"                                               # ROS 2 client library (links against sourced rcl/rmw)
+ ros-env = "0.3"                                             # re-exports Rust message crates found in AMENT_PREFIX_PATH
+@@ -59,6 +62,7 @@ robotics_filters = { path = "crates/robotics_filters" }
+ robotics_sim = { path = "crates/robotics_sim" }
+ robotics_localization = { path = "crates/robotics_localization" }
+ robotics_mapping = { path = "crates/robotics_mapping" }
++robotics_slam = { path = "crates/robotics_slam" }
+ robotics_ros_bridge = { path = "ros2_ws/src/robotics_ros_bridge" }
+ 
+ [profile.release]
+diff --git a/scripts/run_phase4_mapping.sh b/scripts/run_phase4_mapping.sh
+index 08216d6..4b869b5 100644
+--- a/scripts/run_phase4_mapping.sh
++++ b/scripts/run_phase4_mapping.sh
+@@ -34,6 +34,9 @@ source "$SCRIPT_DIR/phase3_guards.sh"
+ source "$SCRIPT_DIR/evidence_root.sh"
+ ROUTE_FILE=${3:-$REPO/sim/webots/config/route_long.yaml}
+ LAPS=${LAPS:-1}
++# Turn-in-place rate of route_driver (rad/s). Unset: the driver's own default (0.8), which is what
++# route_long.yaml was driven at. route_eval_diamond.yaml is meant to be driven slower.
++DRIVE_ANGULAR=${DRIVE_ANGULAR:-}
+ NO_RETURN=${NO_RETURN:-clear_to_max_range}
+ TRACER=${TRACER:-supercover}
+ CLEAR_MARGIN=${CLEAR_MARGIN:-0.10}
+@@ -149,9 +152,13 @@ fi
+ log "owner of map -> odom: $OWNER; mapping_node subscribes to ground truth: $SUBSCRIBES_GT"
+ 
+ log "driving route $ROUTE_FILE ($LAPS lap(s))"
+-ros2 run robotics_localization_bridge route_driver --ros-args \
+-    -p "route_file:=$ROUTE_FILE" -p "laps:=$LAPS" > "$OUT/route_driver.log" 2>&1 &
++ROUTE_ARGS=(-p "route_file:=$ROUTE_FILE" -p "laps:=$LAPS")
++[ -n "$DRIVE_ANGULAR" ] && ROUTE_ARGS+=(-p "drive.angular:=$DRIVE_ANGULAR")
++ros2 run robotics_localization_bridge route_driver --ros-args "${ROUTE_ARGS[@]}" > "$OUT/route_driver.log" 2>&1 &
+ ROUTE_PID=$!
++# The rate the driver actually holds, read back from the running node and not from this script.
++sleep 4
++ros2 param get /route_driver drive.angular > "$OUT/route_driver_angular.txt" 2>&1
+ wait "$ROUTE_PID"
+ ROUTE_RC=$?
+ log "route_driver exited with code $ROUTE_RC"
+@@ -201,6 +208,7 @@ hdr() { sed -n "s/^$2 //p" "$1" 2>/dev/null | head -1; }
+     echo "owner_of_map_odom: $OWNER"
+     echo "mapping_node_subscribes_ground_truth: $SUBSCRIBES_GT"
+     echo "route_driver_exit_code: $ROUTE_RC"
++    echo "route_driver_angular_rad_s: $(sed -n 's/^Double value is: //p' "$OUT/route_driver_angular.txt" | head -1)"
+     echo "replay_scans: $REPLAY_SCANS"
+     echo "launch_arguments: owner=ground_truth no_return=$NO_RETURN tracer=$TRACER clear_margin=$CLEAR_MARGIN scan_time_offset=$SCAN_TIME_OFFSET tau_cells=$TAU_CELLS route=$(basename "$ROUTE_FILE") laps=$LAPS"
+     grep -E '^(source_git_commit|source_git_dirty|mapping_node_executable_sha256|route_sha256|world_sha256):' "$OUT/environment.txt"

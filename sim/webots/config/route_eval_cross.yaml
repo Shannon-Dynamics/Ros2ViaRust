@@ -1,0 +1,50 @@
+# Phase 4 evaluation route 1 of 3: head-on to every wall, along the two axes.
+#
+# Used by claim M1 of ../../../docs/phase-4-mapping/problem.md section 4, which asks for three
+# evaluation runs on routes that played no part in choosing the mapper's parameters.
+# ./route_long.yaml chose them (three development runs), so none of the three evaluation
+# routes may be a variant of it, and none is. This file was written after the parameters were
+# frozen and before any evaluation run, from the geometry of the room alone.
+#
+# What the route is: out along the +x axis to the east wall, back through the middle to the west
+# wall, to the middle, north to the north wall, and south through the middle to the south
+# wall. Five waypoints, four turns in place (three of 180 degrees, one of 90), 17.85 m.
+#
+# Why this shape, and what it stresses:
+#
+#   * Every wall is approached head-on, ending 0.45 m from its face (the lidar's minimum range
+#     is 0.12 m), and each 180 degree turn happens there, so the walls are seen close up and
+#     square on. ./route_long.yaml never came nearer than 1.2 m to any wall, so the mapper's
+#     parameters were never exercised against a near, direct wall.
+#   * After every turn the robot drives away from the wall it just faced, so that wall is
+#     straight behind it: the beams the development runs found suspicious (beams 0 to 14,
+#     recorded in ../../../docs/phase-4-mapping/implementation.md section 5.3) look at a wall
+#     for a whole leg. The route is not shaped to avoid any wall segment or heading where
+#     those cells fell, and not shaped to hit them either; it covers all four walls the same way.
+#   * Few, large turns (four, against the 21 sharp ones of ./route_long.yaml), and long straight
+#     legs (up to 5.1 m, against at most 3.4 m).
+#
+# Driver rate: the default 0.8 rad/s turn in place, like ./route_long.yaml, so that this route
+# differs from it by geometry alone. ./route_eval_diamond.yaml is the slow-turn one.
+#
+# Clearance, from `centre-to-leg distance - pillar radius 0.15 - robot footprint 0.11`, taken over
+# every leg and not only over the waypoints:
+#   landmark_a (1.8, 1.2)   centre 1.20 m from the leg y = 0   -> gap 0.94 m
+#   landmark_b (-1.4, 2.0)  centre 1.40 m from the leg x = 0   -> gap 1.14 m
+#   landmark_c (-2.0, -1.0) centre 1.00 m from the leg y = 0   -> gap 0.74 m
+#   landmark_d (0.9, -2.1)  centre 0.90 m from the leg x = 0   -> gap 0.64 m
+# Walls: the legs end at +/- 2.55 m, the wall faces are at +/- 3.0 m, so the footprint stops
+# 0.34 m from a wall.
+#
+# The only coordinate shared with ./route_long.yaml is (0, 0), which is the spawn pose.
+# Coordinates are the map frame of ./landmarks.yaml, metres.
+
+route:
+  name: cross-head-on
+
+waypoints:
+  - {x: 2.550, y: 0.000}
+  - {x: -2.550, y: 0.000}
+  - {x: 0.000, y: 0.000}
+  - {x: 0.000, y: 2.550}
+  - {x: 0.000, y: -2.550}

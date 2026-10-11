@@ -1,0 +1,20 @@
+role: evaluation
+mapper_occupied_threshold: 2.944439
+mapper_free_threshold: -0.61903924
+mapper_l_occ: 0.84729785
+mapper_l_free: -0.4054651
+mapper_l_min: -1.9924302
+mapper_l_max: 3.4760988
+evaluator_occupied_threshold: 2.944439
+grid_resolution_m: 0.05
+owner_of_map_odom: ground_truth_tf_adapter
+mapping_node_subscribes_ground_truth: false
+route_driver_exit_code: 0
+route_driver_angular_rad_s: 0.8
+replay_scans: 451
+launch_arguments: owner=ground_truth no_return=clear_to_max_range tracer=supercover clear_margin=0.10 scan_time_offset=-0.06 tau_cells=1.0 route=route_eval_cross.yaml laps=1
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+route_sha256: dcb878a7d4ac90fb30e6a372c95050114c6336fd8572a7cf78a8773cc6ef59b0
+mapping_node_executable_sha256: fc649ecafb3eaa2d0b58141b4f58b0d89e95a3a52b36e276a872268ad5334167
+source_git_commit: d89d1bd09308cf36d17e759c65f8905fd14f2a97
+source_git_dirty: true

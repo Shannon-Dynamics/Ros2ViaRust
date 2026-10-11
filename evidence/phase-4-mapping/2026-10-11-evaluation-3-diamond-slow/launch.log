@@ -1,0 +1,175 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-07-42-45-565182-LAPTOP-HJL1R3P6-11091
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 4 bringup: repo /home/genta/ros2-rust-robotics, map -> odom owner: ground_truth
+[INFO] [launch.user]: world /home/genta/ros2-rust-robotics/sim/webots/worlds/turtlebot3_localization_room.wbt
+[INFO] [webots-1]: process started with pid [11114]
+[INFO] [ros2_supervisor.py-2]: process started with pid [11115]
+[INFO] [driver_turtlebot3-3]: process started with pid [11116]
+[INFO] [robot_state_publisher-4]: process started with pid [11118]
+[INFO] [static_transform_publisher-5]: process started with pid [11120]
+[INFO] [spawner-6]: process started with pid [11121]
+[INFO] [spawner-7]: process started with pid [11122]
+[INFO] [evaluation_supervisor-8]: process started with pid [11123]
+[INFO] [ground_truth_tf_adapter-9]: process started with pid [11124]
+[INFO] [mapping_node-10]: process started with pid [11125]
+[INFO] [mapping_evaluator-11]: process started with pid [11126]
+[ground_truth_tf_adapter-9] [WARN] [1791679365.706748252] [ground_truth_tf_adapter]: ground_truth_tf_adapter up: SIMULATION ONLY. ground_truth/pose + odom -> base_link => map -> odom from ground truth; do not run it with an estimator that owns that edge
+[mapping_evaluator-11] [INFO] [1791679365.714099768] [mapping_evaluator]: mapping_evaluator up: grading map against /home/genta/ros2-rust-robotics/sim/webots/config/landmarks.yaml (4 pillars), tau 1 cells, results to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-evaluation-3-diamond-slow, 17 parameters
+[robot_state_publisher-4] [INFO] [1791679365.719161226] [robot_state_publisher]: Robot initialized
+[static_transform_publisher-5] [INFO] [1791679365.719496395] [static_transform_publisher_ffLiS11370BE8Hzd]: Spinning until stopped - publishing transform
+[static_transform_publisher-5] translation: ('0.000000', '0.000000', '0.000000')
+[static_transform_publisher-5] rotation: ('0.000000', '0.000000', '0.000000', '1.000000')
+[static_transform_publisher-5] from 'base_link' to 'base_footprint'
+[mapping_node-10] [INFO] [1791679365.721136403] [mapping_node]: mapping_node up: scan -> map / esdf / map_entropy, grid 140x140 cells of 0.05 m at (-3.5, -3.5), pose from TF only, no return: ClearToMaxRange, traversal: Supercover, 34 parameters
+[evaluation_supervisor-8] The specified robot (at /tmp/webots/genta/1234/ipc/evaluation_supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[driver_turtlebot3-3] The specified robot (at /tmp/webots/genta/1234/ipc/TurtleBot3Burger/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[spawner-7] [INFO] [1791679366.156589890] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[ros2_supervisor.py-2] The specified robot (at /tmp/webots/genta/1234/ipc/Ros2Supervisor/extern) is not in the list of robots with <extern> controllers, retrying for another 50 seconds...
+[mapping_node-10] [WARN] [1791679370.009864594] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[ground_truth_tf_adapter-9] [WARN] [1791679370.009883720] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[evaluation_supervisor-8] The Webots simulation world is not yet ready, pending until loading is done...
+[driver_turtlebot3-3] The Webots simulation world is not yet ready, pending until loading is done...
+[ros2_supervisor.py-2] The Webots simulation world is not yet ready, pending until loading is done...
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'TurtleBot3Burger'.
+[webots-1] INFO: 'Ros2Supervisor' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'Ros2Supervisor'.
+[webots-1] INFO: 'movie_recorder' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'movie_recorder'.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: Waiting for local or remote connection on port 1234 targeting robot named 'evaluation_supervisor'.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: connected.
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: connected.
+[webots-1] WARNING: DEF TURTLEBOT3 TurtleBot3Burger > DEF CASTER_JOINT BallJoint: Exporting 'BallJoint' nodes to URDF is currently not supported
+[robot_state_publisher-4] [INFO] [1791679374.921745836] [robot_state_publisher]: Robot initialized
+[driver_turtlebot3-3] [INFO] [1791679374.955563335] [controller_manager]: Using ROS clock for triggering controller manager cycles.
+[driver_turtlebot3-3] [WARN] [1791679374.955661717] [controller_manager]: The resource manager is not yet initialized, will wait for the robot description to initialize it..
+[driver_turtlebot3-3] [INFO] [1791679374.961159878] [controller_manager]: Subscribing to '/robot_description' topic for robot description.
+[driver_turtlebot3-3] [INFO] [1791679374.962802805] [controller_manager]: Received robot description from topic.
+[driver_turtlebot3-3] [INFO] [1791679374.962908544] [controller_manager]: Enforcing command limits is disabled. Command limits from URDF will be ignored.
+[driver_turtlebot3-3] [INFO] [1791679374.968013334] [controller_manager]: Initialize hardware 'WebotsControl' 
+[driver_turtlebot3-3] [WARN] [1791679374.968088352] [controller_manager.hardware_component.system.WebotsControl]: Executor is not available during hardware component initialization for 'WebotsControl'. Skipping node creation!
+[driver_turtlebot3-3] [INFO] [1791679374.968136807] [controller_manager]: Successful initialization of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791679374.968260337] [controller_manager]: Activating component 'WebotsControl'.
+[driver_turtlebot3-3] [INFO] [1791679374.968276904] [resource_manager]: 'configure' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791679374.968282628] [resource_manager]: Successful 'configure' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791679374.968288505] [resource_manager]: 'activate' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791679374.968297960] [resource_manager]: Successful 'activate' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [WARN] [1791679374.968329726] [controller_manager]: Component 'WebotsControl' does not have read or write statistics initialized, skipping registration.
+[driver_turtlebot3-3] [INFO] [1791679374.968338403] [controller_manager]: Resource Manager has been successfully initialized. Starting Controller Manager services...
+[evaluation_supervisor-8] [INFO] [1791679374.982234965] [evaluation_supervisor]: evaluation_supervisor: TURTLEBOT3, ground truth every 1 step(s) of 20 ms, frame map
+[webots-1] INFO: 'Ros2Supervisor' extern controller: connected.
+[driver_turtlebot3-3] [INFO] [1791679375.062549860] [controller_manager]: Loading controller : 'joint_state_broadcaster' of type 'joint_state_broadcaster/JointStateBroadcaster'
+[driver_turtlebot3-3] [INFO] [1791679375.062997348] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [WARN] [1791679375.069748133] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791679375.069783706] [controller_manager]: Controller 'joint_state_broadcaster' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[spawner-7] [INFO] [1791679375.094900794] [spawner_joint_state_broadcaster]: Loaded joint_state_broadcaster
+[driver_turtlebot3-3] [INFO] [1791679375.097704211] [controller_manager]: Configuring controller: 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791679375.097863503] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[driver_turtlebot3-3] [INFO] [1791679375.111274235] [controller_manager]: Activating controllers: [ joint_state_broadcaster ]
+[driver_turtlebot3-3] [INFO] [1791679375.379325828] [plugin_node_example]:   - properties: {'parameterExample': 'someValue'}
+[driver_turtlebot3-3] [INFO] [1791679375.379773364] [plugin_node_example]:   - robot name: TurtleBot3Burger
+[driver_turtlebot3-3] [INFO] [1791679375.380164982] [plugin_node_example]:   - basic timestep: 20
+[driver_turtlebot3-3] [INFO] [1791679375.380534823] [plugin_node_example]:   - is supervisor? False
+[driver_turtlebot3-3] [INFO] [1791679375.383768877] [TurtleBot3Burger]: Controller successfully connected to robot in Webots simulation.
+[mapping_evaluator-11] [INFO] [1791679375.400752915] [mapping_evaluator]: laser mount from TF: (-0.030, 0.000, 0.000)
+[driver_turtlebot3-3] [INFO] [1791679375.419379129] [controller_manager]: Successfully switched controllers!
+[spawner-7] [INFO] [1791679375.439509879] [spawner_joint_state_broadcaster]: Configured and activated joint_state_broadcaster
+[INFO] [spawner-7]: process has finished cleanly [pid 11122]
+[driver_turtlebot3-3] [INFO] [1791679375.759423852] [controller_manager]: Loading controller : 'diffdrive_controller' of type 'diff_drive_controller/DiffDriveController'
+[driver_turtlebot3-3] [INFO] [1791679375.759474519] [controller_manager]: Loading controller 'diffdrive_controller'
+[driver_turtlebot3-3] [WARN] [1791679375.761894510] [controller_manager]: The use of remapping arguments to the controller_manager node is deprecated. Please use the '--controller-ros-args' argument of the spawner to pass remapping arguments to the controller node.
+[driver_turtlebot3-3] [INFO] [1791679375.761929561] [controller_manager]: Controller 'diffdrive_controller' node arguments: --ros-args -r /diffdrive_controller/cmd_vel:=/cmd_vel -r /diffdrive_controller/odom:=/odom -p use_sim_time:=true -p set_robot_state_publisher:=true --params-file /opt/ros/jazzy/share/webots_ros2_turtlebot/resource/ros2control.yml --param use_sim_time:=true 
+[spawner-6] [INFO] [1791679375.800466600] [spawner_diffdrive_controller]: Loaded diffdrive_controller
+[driver_turtlebot3-3] [INFO] [1791679375.801936889] [controller_manager]: Configuring controller: 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791679375.826253145] [controller_manager]: Activating controllers: [ diffdrive_controller ]
+[driver_turtlebot3-3] [INFO] [1791679375.842893460] [controller_manager]: Successfully switched controllers!
+[spawner-6] [INFO] [1791679375.862851474] [spawner_diffdrive_controller]: Configured and activated diffdrive_controller
+[INFO] [spawner-6]: process has finished cleanly [pid 11121]
+[driver_turtlebot3-3] [WARN] [1791679376.393642109] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679377.414237974] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679378.433084502] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679379.454340140] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679380.477735541] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679381.499713346] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679382.515030369] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679383.536913937] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679384.557405699] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679385.582050604] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679386.597144044] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679387.622081051] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679388.641751976] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679389.281616904] [diffdrive_controller]: Received TwistStamped with zero timestamp, setting it to current time, this message will only be shown once
+[ground_truth_tf_adapter-9] [WARN] [1791679404.091414821] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[mapping_node-10] [WARN] [1791679404.091512085] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[mapping_node-10] [WARN] [1791679438.180298673] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[ground_truth_tf_adapter-9] [WARN] [1791679438.180336969] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[mapping_node-10] [WARN] [1791679472.281594965] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[ground_truth_tf_adapter-9] [WARN] [1791679472.281617921] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[ground_truth_tf_adapter-9] [WARN] [1791679506.375389686] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (5 time(s) so far)
+[mapping_node-10] [WARN] [1791679506.375390510] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (5 time(s) so far)
+[ground_truth_tf_adapter-9] [WARN] [1791679540.480136953] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (6 time(s) so far)
+[mapping_node-10] [WARN] [1791679540.480204341] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (6 time(s) so far)
+[driver_turtlebot3-3] [WARN] [1791679563.847758978] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679564.861806492] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679565.880747702] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679566.898538784] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679567.914720816] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679568.933172820] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679569.956164850] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679570.978671758] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679572.001596783] [diffdrive_controller]: Velocity command timed out. Braking.
+[ground_truth_tf_adapter-9] [WARN] [1791679574.590562725] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (7 time(s) so far)
+[mapping_node-10] [WARN] [1791679574.591381937] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (7 time(s) so far)
+[driver_turtlebot3-3] [WARN] [1791679574.885603226] [diffdrive_controller]: Velocity command timed out. Braking.
+[driver_turtlebot3-3] [WARN] [1791679575.911368627] [diffdrive_controller]: Velocity command timed out. Braking.
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[launch] shutdown: stopping webots-bin .*--port=1234
+[launch] shutdown: webots exited on SIGTERM
+[driver_turtlebot3-3] [INFO] [1791679576.891675429] [rclcpp]: signal_handler(signum=2)
+[ERROR] [evaluation_supervisor-8]: process has died [pid 11123, exit code -2, cmd '/usr/local/webots/webots-controller --robot-name=evaluation_supervisor --protocol=ipc --port=1234 /home/genta/ros2-rust-robotics/sim/webots/launch/../scripts/evaluation_supervisor.py'].
+[ERROR] [ros2_supervisor.py-2]: process has died [pid 11115, exit code -2, cmd '/opt/ros/jazzy/lib/webots_ros2_driver/ros2_supervisor.py --ros-args -r __ns:=/Ros2Supervisor -r /Ros2Supervisor/clock:=/clock'].
+[INFO] [driver_turtlebot3-3]: process has finished cleanly [pid 11116]
+[INFO] [webots-1]: process has finished cleanly [pid 11114]
+[INFO] [static_transform_publisher-5]: process has finished cleanly [pid 11120]
+[INFO] [mapping_node-10]: process has finished cleanly [pid 11125]
+[robot_state_publisher-4] [INFO] [1791679576.891733899] [rclcpp]: signal_handler(signum=2)
+[INFO] [mapping_evaluator-11]: sending signal 'SIGINT' to process[mapping_evaluator-11]
+[INFO] [ground_truth_tf_adapter-9]: sending signal 'SIGINT' to process[ground_truth_tf_adapter-9]
+[INFO] [robot_state_publisher-4]: sending signal 'SIGINT' to process[robot_state_publisher-4]
+[ground_truth_tf_adapter-9] [INFO] [1791679576.892227968] [ground_truth_tf_adapter]: ground_truth_tf_adapter shutting down
+[webots-1] INFO: <extern>: Terminating.
+[webots-1] INFO: <extern>: Terminating.
+[webots-1] INFO: <extern>: Terminating.
+[webots-1] INFO: 'evaluation_supervisor' extern controller: disconnected.
+[webots-1] INFO: 'TurtleBot3Burger' extern controller: disconnected.
+[webots-1] INFO: 'Ros2Supervisor' extern controller: disconnected.
+[webots-1] INFO: 'movie_recorder' extern controller: disconnected.
+[static_transform_publisher-5] [INFO] [1791679576.891724241] [rclcpp]: signal_handler(signum=2)
+[mapping_node-10] [INFO] [1791679576.921383874] [mapping_node]: wrote the final grid to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-evaluation-3-diamond-slow/final-grid.txt
+[mapping_node-10] [INFO] [1791679576.921460919] [mapping_node]: mapping_node shutting down: 863 scans received, 527 integrated, 207 skipped for motion, 125 skipped as stationary repeats, 4 skipped for want of a transform
+[driver_turtlebot3-3] [INFO] [1791679577.605606907] [TurtleBot3Burger]: Controller successfully disconnected from robot in Webots simulation.
+[driver_turtlebot3-3] [INFO] [1791679577.605661831] [controller_manager]: Shutdown request received....
+[driver_turtlebot3-3] [INFO] [1791679577.605707675] [controller_manager]: Shutting down all controllers in the controller manager.
+[driver_turtlebot3-3] [INFO] [1791679577.605723512] [controller_manager]: Deactivating controller 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791679577.605795155] [controller_manager]: Shutting down controller 'diffdrive_controller'
+[driver_turtlebot3-3] [INFO] [1791679577.605868353] [controller_manager]: Deactivating controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791679577.605889251] [controller_manager]: Shutting down controller 'joint_state_broadcaster'
+[driver_turtlebot3-3] [INFO] [1791679577.605998421] [resource_manager]: 'deactivate' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791679577.606013756] [resource_manager]: Successful 'deactivate' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791679577.606017727] [resource_manager]: 'shutdown' hardware 'WebotsControl' 
+[driver_turtlebot3-3] [INFO] [1791679577.606021471] [resource_manager]: Successful 'shutdown' of hardware 'WebotsControl'
+[driver_turtlebot3-3] [INFO] [1791679577.606049545] [controller_manager]: Shutting down the controller manager.
+[driver_turtlebot3-3] [ERROR] [1791679577.606342280] [controller_manager.pal_statistics]: Exception in publisher thread: context cannot be slept with because it's invalid!. Aborting!
+[driver_turtlebot3-3] [ERROR] [1791679577.606342261] [controller_manager.pal_statistics]: Exception in publisher thread: context cannot be slept with because it's invalid!. Aborting!
+[driver_turtlebot3-3] [INFO] [1791679577.637081331] [controller_manager.pal_statistics]: Async messages lost 0
+[driver_turtlebot3-3] [INFO] [1791679577.637103775] [controller_manager.pal_statistics]: publish_async_failures_ 0
+[driver_turtlebot3-3] [INFO] [1791679577.639766477] [controller_manager.pal_statistics]: Async messages lost 0
+[driver_turtlebot3-3] [INFO] [1791679577.639778874] [controller_manager.pal_statistics]: publish_async_failures_ 0
+[driver_turtlebot3-3] Warning: class_loader.ClassLoader: SEVERE WARNING!!! Attempting to unload library while objects created by this loader exist in the heap! You should delete your objects before attempting to unload the library or destroying the ClassLoader. The library will NOT be unloaded.
+[driver_turtlebot3-3]          at line 127 in ./src/class_loader.cpp
+[driver_turtlebot3-3] Warning: class_loader.ClassLoader: SEVERE WARNING!!! Attempting to unload library while objects created by this loader exist in the heap! You should delete your objects before attempting to unload the library or destroying the ClassLoader. The library will NOT be unloaded.
+[driver_turtlebot3-3]          at line 127 in ./src/class_loader.cpp
+[mapping_evaluator-11] [INFO] [1791679577.866458993] [mapping_evaluator]: wrote map-metrics.yaml, final-map-states.txt, trajectory.csv to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-evaluation-3-diamond-slow
+[robot_state_publisher-4] [INFO] [1791679577.962024648] [rclcpp]: signal_handler(signum=2)
+[launch] shutdown: stopping webots-bin .*--port=1234
+[launch] shutdown: webots exited on SIGTERM
+[INFO] [ground_truth_tf_adapter-9]: process has finished cleanly [pid 11124]
+[INFO] [robot_state_publisher-4]: process has finished cleanly [pid 11118]
+[INFO] [mapping_evaluator-11]: process has finished cleanly [pid 11126]

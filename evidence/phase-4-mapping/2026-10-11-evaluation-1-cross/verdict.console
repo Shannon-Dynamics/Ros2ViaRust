@@ -1,0 +1,50 @@
+# Written by scripts/phase4_verdict.py from the files in this directory.
+# Every tolerance lives in that script, which was committed before the first evidence run.
+run: 2026-10-11-evaluation-1-cross
+verdict_script_sha256: b391023c7094ddf28001e6fe6eac575d77878b90f0b903ddf70599daa6cbd36c
+role: evaluation
+owner_of_map_odom: ground_truth_tf_adapter
+mapper_occupied_threshold: 2.944439
+mapper_free_threshold: -0.61903924
+mapper_l_occ: 0.84729785
+valid: true
+scans_integrated: 451
+scans_lost_to_missing_transforms: 4
+scans_skipped_for_motion: 68
+scans_skipped_as_stationary_repeats: 132
+largest_displacement_m: 2.558008761036368
+M1: FAIL
+M1_checks:
+    surface_error_p95_cells: {value: 0.5000000000000071, limit: 1.0, op: '<=', pass: true}
+    surface_error_max_cells: {value: 0.8786796564403648, limit: 1.5, op: '<=', pass: true}
+    false_occupied_fraction: {value: 0.0, limit: 0.02, op: '<=', pass: true}
+    completeness: {value: 0.9258582907231556, limit: 0.95, op: '>=', pass: false}
+    false_free_fraction: {value: 0.04857560262965668, limit: 0.05, op: '<=', pass: true}
+    coverage: {value: 0.9925728699551569, limit: 0.9, op: '>=', pass: true}
+    observable_fraction: {value: 0.9848920863309353, limit: 0.5, op: '>=', pass: true}
+M1_reported_not_graded:
+    surface_error_mean_cells: 0.49777823992010983
+    surface_error_mean_m: 0.024888911996005493
+    false_occupied_cells: 0
+    false_free_samples: 133
+    samples_observable: 2738
+    samples_total: 2780
+    samples_outside_grid: 0
+    occupied_cells: 778
+    free_cells: 13921
+    unknown_cells: 4901
+    reachable_cells: 14272
+M2: PASS
+M2_final_grid_equals_replay_byte_for_byte: true
+M2_replayed_scans_equal_integrated_scans: true
+M4: PASS
+M4_checks:
+    update_latency_p99_s: {value: 0.0021343, limit: 0.1, op: '<=', pass: true}
+M4_reported_not_graded:
+    update_latency_p50_s: 0.00129
+    update_latency_p95_s: 0.0018284
+    update_latency_max_s: 0.0030440999999999997
+    scans: 451
+    scan_period_s: 0.2
+    build: debug (colcon default), not a release build
+

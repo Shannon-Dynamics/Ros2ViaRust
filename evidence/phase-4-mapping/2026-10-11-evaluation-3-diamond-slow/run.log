@@ -1,0 +1,10 @@
+[phase4 evaluation] starting the world, the adapter, the mapper and the evaluator
+[phase4 evaluation] controllers are active; letting the adapter and the mapper settle
+[phase4 evaluation] owner of map -> odom: ground_truth_tf_adapter; mapping_node subscribes to ground truth: false
+[phase4 evaluation] driving route sim/webots/config/route_eval_diamond.yaml (1 lap(s))
+[phase4 evaluation] route_driver exited with code 0
+[phase4 evaluation] route finished, letting the last scans be integrated
+[phase4 evaluation] stopping with SIGINT: the mapper writes its grid and the evaluator grades, both at shutdown
+[phase4 evaluation] replaying the recorded scans (claim M2)
+[phase4 evaluation] grading
+[phase4 evaluation] verdict written to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-evaluation-3-diamond-slow/phase4-verdict.yaml

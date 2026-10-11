@@ -1,0 +1,13 @@
+wall hits more than 4.5 cm past the wall face, by range and by beam group
+2026-10-11-development-3-route-long
+  by range: 0-1m 0/0=0.0000 1-2m 0/31170=0.0000 2-3m 158/139358=0.0011 3-3.5m 426/90142=0.0047
+  beams 0-14: 230/10325=0.0223   other beams: 354/250345=0.0014
+2026-10-11-evaluation-1-cross
+  by range: 0-1m 0/6917=0.0000 1-2m 3/19415=0.0002 2-3m 69/22139=0.0031 3-3.5m 47/50097=0.0009
+  beams 0-14: 0/3625=0.0000   other beams: 119/94943=0.0013
+2026-10-11-evaluation-2-wall-lobes
+  by range: 0-1m 0/21002=0.0000 1-2m 4/23918=0.0002 2-3m 44/34365=0.0013 3-3.5m 40/13350=0.0030
+  beams 0-14: 0/3387=0.0000   other beams: 88/89248=0.0010
+2026-10-11-evaluation-3-diamond-slow
+  by range: 0-1m 0/0=0.0000 1-2m 0/25540=0.0000 2-3m 458/52807=0.0087 3-3.5m 660/26280=0.0251
+  beams 0-14: 861/3379=0.2548   other beams: 257/101248=0.0025
