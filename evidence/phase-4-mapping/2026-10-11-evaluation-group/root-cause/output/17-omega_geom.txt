@@ -1,0 +1,5 @@
+diamond run, beams 0-14 wall hits: observed and model-predicted overshoot rate by the scan's |omega| (the model has no velocity term)
+   omega in [0,0.005):  2486 hits in 261 scans: observed  32.8%  predicted by beam-angle model  27.5%
+   omega in [0.005,0.02):   645 hits in  43 scans: observed   4.5%  predicted by beam-angle model  15.0%
+   omega in [0.02,0.08):   195 hits in  13 scans: observed   5.1%  predicted by beam-angle model  13.4%
+finite difference |dtheta|/dt between consecutive integrated scans: 517 of 526 pairs have dt <= 0.25 s; for those, median 0.0000, p95 0.0108, max 0.0302 rad/s; the 9 other pairs span 5.34 to 12.8 s (across skipped turns), where it would report up to 0.29 rad/s over time the robot was not integrated

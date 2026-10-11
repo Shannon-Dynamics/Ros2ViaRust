@@ -1,0 +1,28 @@
+/usr/lib/python3/dist-packages/scipy/stats/_stats_py.py:5445: ConstantInputWarning: An input array is constant; the correlation coefficient is not defined.
+  warnings.warn(stats.ConstantInputWarning(warn_msg))
+
+== development-3-route-long: false-occupied cells 18; scans that marked any of them occupied: 93 of 1312; beams that did: {'other': 49, 'behind(0-14)': 114}
+   |omega| (rad/s) of responsible scans: median 0.0000 p90 0.0024 max 0.0165; all integrated scans: median 0.0000 p90 0.0020 max 0.0710
+   Mann-Whitney responsible vs the rest: U=60622, p=0.112; share of responsible scans with omega<0.01: 0.98, of the rest: 0.98
+   per-scan behind-beam (0-14) wall hits, 783 scans with >=5: overshoot rate mean 0.023 (scans with any overshoot: 0.05); Spearman(omega, rate) = -0.015 (p=0.69); Spearman(omega, median signed overshoot) = +0.004 (p=0.91)
+      omega in [0,0.005):  729 scans, mean behind-beam overshoot rate 0.024
+      omega in [0.005,0.02):   53 scans, mean behind-beam overshoot rate 0.010
+      omega in [0.02,0.08):    1 scans, mean behind-beam overshoot rate 0.000
+
+== evaluation-1-cross: false-occupied cells 0; scans that marked any of them occupied: 0 of 451; beams that did: {}
+   per-scan behind-beam (0-14) wall hits, 246 scans with >=5: overshoot rate mean 0.000 (scans with any overshoot: 0.00); Spearman(omega, rate) = +nan (p=nan); Spearman(omega, median signed overshoot) = -0.095 (p=0.14)
+      omega in [0,0.005):  246 scans, mean behind-beam overshoot rate 0.000
+
+== evaluation-2-wall-lobes: false-occupied cells 0; scans that marked any of them occupied: 0 of 454; beams that did: {}
+   per-scan behind-beam (0-14) wall hits, 231 scans with >=5: overshoot rate mean 0.000 (scans with any overshoot: 0.00); Spearman(omega, rate) = +nan (p=nan); Spearman(omega, median signed overshoot) = -0.019 (p=0.77)
+      omega in [0,0.005):  193 scans, mean behind-beam overshoot rate 0.000
+      omega in [0.005,0.02):   34 scans, mean behind-beam overshoot rate 0.000
+      omega in [0.02,0.08):    4 scans, mean behind-beam overshoot rate 0.000
+
+== evaluation-3-diamond-slow: false-occupied cells 57; scans that marked any of them occupied: 214 of 527; beams that did: {'behind(0-14)': 489, 'other': 89}
+   |omega| (rad/s) of responsible scans: median 0.0000 p90 0.0005 max 0.0215; all integrated scans: median 0.0000 p90 0.0060 max 0.0750
+   Mann-Whitney responsible vs the rest: U=29148, p=0.00127; share of responsible scans with omega<0.01: 1.00, of the rest: 0.88
+   per-scan behind-beam (0-14) wall hits, 265 scans with >=5: overshoot rate mean 0.281 (scans with any overshoot: 0.60); Spearman(omega, rate) = -0.579 (p=4.5e-25); Spearman(omega, median signed overshoot) = -0.488 (p=2.8e-17)
+      omega in [0,0.005):  209 scans, mean behind-beam overshoot rate 0.344
+      omega in [0.005,0.02):   43 scans, mean behind-beam overshoot rate 0.045
+      omega in [0.02,0.08):   13 scans, mean behind-beam overshoot rate 0.051

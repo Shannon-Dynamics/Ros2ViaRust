@@ -1,0 +1,28 @@
+
+development-3-route-long: pillar samples (observable, seen by >=1 integrated scan) by BEST cos(incidence) over all integrated scans that see them
+   best cos in [-1.0,0.2):   25 samples, missed   25 = 1.00
+   best cos in [0.2,0.4):   28 samples, missed   28 = 1.00
+   best cos in [0.4,0.6):   25 samples, missed   24 = 0.96
+   best cos in [0.6,0.8):   33 samples, missed   27 = 0.82
+   best cos in [0.8,1.0):  169 samples, missed   10 = 0.06
+
+evaluation-1-cross: pillar samples (observable, seen by >=1 integrated scan) by BEST cos(incidence) over all integrated scans that see them
+   best cos in [-1.0,0.2):   24 samples, missed   24 = 1.00
+   best cos in [0.2,0.4):   25 samples, missed   20 = 0.80
+   best cos in [0.4,0.6):   25 samples, missed   19 = 0.76
+   best cos in [0.6,0.8):   33 samples, missed   25 = 0.76
+   best cos in [0.8,1.0):  228 samples, missed   77 = 0.34
+
+evaluation-2-wall-lobes: pillar samples (observable, seen by >=1 integrated scan) by BEST cos(incidence) over all integrated scans that see them
+   best cos in [-1.0,0.2):   23 samples, missed   21 = 0.91
+   best cos in [0.2,0.4):   24 samples, missed   19 = 0.79
+   best cos in [0.4,0.6):   27 samples, missed   16 = 0.59
+   best cos in [0.6,0.8):   31 samples, missed   20 = 0.65
+   best cos in [0.8,1.0):  252 samples, missed  109 = 0.43
+
+evaluation-3-diamond-slow: pillar samples (observable, seen by >=1 integrated scan) by BEST cos(incidence) over all integrated scans that see them
+   best cos in [-1.0,0.2):   24 samples, missed   21 = 0.88
+   best cos in [0.2,0.4):   24 samples, missed   19 = 0.79
+   best cos in [0.4,0.6):   27 samples, missed   15 = 0.56
+   best cos in [0.6,0.8):   31 samples, missed   12 = 0.39
+   best cos in [0.8,1.0):  167 samples, missed   22 = 0.13

@@ -1,0 +1,8 @@
+straight line eps(j) = a + b*j over beams 20-339 (2744 scans, bootstrap over scans)
+  intercept a = -6.7 mrad   95% -7.2 .. -6.3     source-derived: -8.7
+  slope     b = +38.3 urad/beam 95% +36.0 .. +40.5     source-derived: +48.6
+  fitted value at beam 0 / 179 / 359 (extrapolated): -6.7 / +0.1 / +7.0 mrad;  source-derived: -8.7 / -0.0 / +8.7
+
+the two ends: fitted eps of beams 0-9 and 350-359 against the source-derived table and against the interior line (mrad), with scan-bootstrap 95% intervals
+  beams   0-9  : fitted  -17.0  (95%  -17.3 ..  -16.6)   source-derived   -8.5   interior line   -6.6
+  beams 350-359: fitted  +17.3  (95%  +17.0 ..  +17.6)   source-derived   +8.5   interior line   +6.8

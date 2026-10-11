@@ -1,0 +1,7 @@
+beams 0-14 and all other beams: wall hits more than 4.5 cm past the face; the angular-error table is fitted WITHOUT the run it predicts
+
+held-out run                 beams 0-14 observed  predicted    other beams observed  predicted
+development-3-route-long                   2.34%      3.54%                   0.14%      0.39%
+evaluation-1-cross                         0.00%      0.40%                   0.13%      0.34%
+evaluation-2-wall-lobes                    0.00%      0.57%                   0.09%      0.28%
+evaluation-3-diamond-slow                 25.71%     24.28%                   0.25%      0.37%

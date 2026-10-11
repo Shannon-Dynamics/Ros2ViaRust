@@ -1,0 +1,5 @@
+evaluator's nearest-cell lookup for a sample exactly on each wall face (the lattice line between two cell columns/rows):
+  E wall (3.0, 0.0125): cell (130,70) centre (3.025,0.025), the OUTER cell of that wall
+  W wall (-3.0, 0.0125): cell (10,70) centre (-2.975,0.025), the INNER cell of that wall
+  N wall (0.0125, 3.0): cell (70,130) centre (0.025,3.025), the OUTER cell of that wall
+  S wall (0.0125, -3.0): cell (70,10) centre (0.025,-2.975), the INNER cell of that wall

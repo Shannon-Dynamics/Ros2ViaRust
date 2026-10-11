@@ -358,9 +358,16 @@ not repeated here.
   `robotics_mapping::occupancy::OccupancyParams`, each with its reason in that item's
   documentation. Chosen by reasoning before any run, except the occupied threshold, which the
   development runs changed (item 10). They are frozen at the third development run's values.
-* The beam-index dependence of the hits that land outside the walls (8.4), not explained.
-* The three routes of the evaluation runs, which have to be written before the runs, and the
-  evaluation runs themselves.
+* The beam-index dependence of the hits that land outside the walls (8.4), not explained. The
+  evaluation runs show it is route-dependent (0 of about 3500 behind-hits on two routes, 25.5 per
+  cent on the diamond route), so it is not a fixed property of those beams. The read-only analysis in
+  `evidence/phase-4-mapping/2026-10-11-evaluation-group/NOTE-root-cause-analysis.md` finds it is an angular error
+  of the beams near the two ends of the index range (about -14 to -23 mrad for beams 0 to 9, about +17 mrad for
+  350 to 359) that shows only where a route meets the walls obliquely; a table fitted without a run predicts that
+  run's rate. Where the error comes from (driver angle grid, sensor, TF) is not determined.
+* Completeness below 0.95 on all three evaluation routes (0.926, 0.907, 0.886), not broken down.
+* The verdict script's `same_launch_args` group check compares strings containing the route, so it
+  is false for any three different routes; not edited, since the script is committed.
 
 ## 6. Evidence, and how this part will be run
 
@@ -400,7 +407,7 @@ and the `mcl_node` TF question of D3 is recorded and not acted on.
 | T5 | signed ESDF over the existing exact EDT | built, `robotics_mapping::esdf`; published as a `32FC1` image (D12); no consumer yet |
 | T6 | `ground_truth_tf_adapter` | built, `robotics_mapping_ros` |
 | T7 | `mapping_node`, `mapping_evaluator` | built, `robotics_mapping_ros`; the `~/reset` service is **not** built (no `std_srvs` Rust bindings in the interface underlay) |
-| T8 | harness | built: `scripts/run_phase4_mapping.sh`, `scripts/phase4_verdict.py`, `robotics_bringup/launch/phase4_mapping.launch.py`, `scripts/verify_phase4_mapping.sh`. `benchmarks/phase-4-mapping.csv` is **not** written: it is for the evaluation runs, which do not exist yet |
+| T8 | harness | built: `scripts/run_phase4_mapping.sh`, `scripts/phase4_verdict.py`, `robotics_bringup/launch/phase4_mapping.launch.py`, `scripts/verify_phase4_mapping.sh`. `benchmarks/phase-4-mapping.csv` is **not** written: it is for the evaluation runs, which now exist (8.3) but have not been written into it |
 | T9 | informative references (rclpy port, `nav2_costmap_2d`) | **not built**; non-blocking |
 | T10 | estimated-pose integration (M5) | **not started**; waits for D3 |
 
@@ -434,6 +441,10 @@ and each run has a `NOTE-what-this-run-found.md` where something needs saying.
 | `2026-10-11-development-route-long` | development run 1 | M2, M4 pass; M1 fails on five checks |
 | `2026-10-11-development-2-route-long` | development run 2 (D16 was not in effect, see its note) | M2, M4 pass; M1 fails on three checks |
 | `2026-10-11-development-3-route-long` | development run 3, parameters frozen | M2, M4 pass; M1 fails on one check (false occupied) |
+| `2026-10-11-evaluation-1-cross` | evaluation run 1, `route_eval_cross.yaml` | M2, M4 pass; M1 fails on one check (completeness) |
+| `2026-10-11-evaluation-2-wall-lobes` | evaluation run 2, `route_eval_wall_lobes.yaml` | M2, M4 pass; M1 fails on two checks (completeness, false free) |
+| `2026-10-11-evaluation-3-diamond-slow` | evaluation run 3, `route_eval_diamond.yaml`, 0.3 rad/s turns | M2, M4 pass; M1 fails on three checks (surface error p95, false occupied, completeness) |
+| `2026-10-11-evaluation-group` | the group verdict, the overshoot analysis, and the cross-run note | see its `NOTE-what-the-evaluation-found.md` |
 | `phase-4-mapping-runtime/*` | the integration test | see 8.4 |
 
 **What the development runs establish and what they do not.** They establish that the mapper is
@@ -441,9 +452,9 @@ deterministic on real simulator data (M2), cheap (M4), and that with ground-trut
 room's walls and pillars to within a cell on average, completely and with almost no free-space
 errors, and that what separates it from the pre-registered tolerance is a small set of cells in the
 row just outside the walls. They do not establish M1: the tolerances are for the evaluation runs, on
-routes that played no part in choosing the parameters, and those are not made. The parameters were
-chosen over three runs on one route, so the development run's own result is optimistic by
-construction. M5 and the claim that mapping works with an estimator's pose are untouched.
+routes that played no part in choosing the parameters. The parameters were chosen over three runs
+on one route, so the development run's own result is optimistic by construction, and the evaluation
+runs (below) bear that out: M1 is met on none of the three, each missing different checks. M5 and the claim that mapping works with an estimator's pose are untouched.
 
 ### 8.4 Limitations known now
 

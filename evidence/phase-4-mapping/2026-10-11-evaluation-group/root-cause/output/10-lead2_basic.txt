@@ -1,0 +1,8 @@
+development-3-route-long: integrated 1312; |omega| over the 0.2 s window (rad/s): median 0.0000 p95 0.0045 max 0.0710; speed (m/s): median 0.180 p95 0.180 max 0.180; share of integrated scans with omega < 0.01: 0.98, 0.01-0.04: 0.02, >=0.04: 0.00
+      gaps between consecutive integrated scans: median 0.22 s, share > 0.45 s: 0.02, max 14.9 s; omega over ALL scans seen by the gate (integrated+motion-skipped): p95 0.800, max 0.802
+evaluation-1-cross: integrated 451; |omega| over the 0.2 s window (rad/s): median 0.0000 p95 0.0010 max 0.0040; speed (m/s): median 0.180 p95 0.180 max 0.180; share of integrated scans with omega < 0.01: 1.00, 0.01-0.04: 0.00, >=0.04: 0.00
+      gaps between consecutive integrated scans: median 0.22 s, share > 0.45 s: 0.01, max 14.0 s; omega over ALL scans seen by the gate (integrated+motion-skipped): p95 0.800, max 0.802
+evaluation-2-wall-lobes: integrated 454; |omega| over the 0.2 s window (rad/s): median 0.0000 p95 0.0100 max 0.0740; speed (m/s): median 0.180 p95 0.180 max 0.180; share of integrated scans with omega < 0.01: 0.95, 0.01-0.04: 0.05, >=0.04: 0.00
+      gaps between consecutive integrated scans: median 0.22 s, share > 0.45 s: 0.03, max 14.7 s; omega over ALL scans seen by the gate (integrated+motion-skipped): p95 0.800, max 0.802
+evaluation-3-diamond-slow: integrated 527; |omega| over the 0.2 s window (rad/s): median 0.0000 p95 0.0128 max 0.0750; speed (m/s): median 0.180 p95 0.180 max 0.180; share of integrated scans with omega < 0.01: 0.93, 0.01-0.04: 0.07, >=0.04: 0.00
+      gaps between consecutive integrated scans: median 0.22 s, share > 0.45 s: 0.02, max 12.8 s; omega over ALL scans seen by the gate (integrated+motion-skipped): p95 0.300, max 0.302

@@ -1,0 +1,40 @@
+
+== development-3-route-long: 281910 beams with a finite return and a true range < 3.4 m; wall beams 243674; overall residual (measured - true): mean -1.9 mm, sd 96.4 mm
+   wall beams: residual mean (mm) / sd (mm) / n, by beam group (rows) and incidence from the wall normal (columns)
+   group                        inc 0-20 deg             inc 20-35 deg             inc 35-50 deg             inc 50-90 deg
+   beams 0-14          -23.5 / 144.5 /  5351      -0.6 /  23.5 /  3075     +32.6 /  21.7 /  1077     +76.5 /  41.4 /   271
+   beams 15-44         -10.5 / 101.1 /  8147      -1.5 /  67.3 /  4613      +3.1 /  88.2 /  2601     +20.8 /  23.9 /   784
+   beams 45-89          -9.3 /  89.2 /  8946      -7.1 /  87.0 /  5086      -3.0 /  78.8 /  2689      +7.4 /  71.5 /  1085
+   beams 90-269         -2.2 /  50.9 / 62921      -2.8 /  54.1 / 35679      -5.3 /  82.8 / 19270     -14.3 / 115.8 /  4371
+   beams 270-344        -7.1 /  71.7 / 33039     -10.7 /  84.6 / 20976     -11.6 /  80.7 / 10738     -12.8 / 146.2 /  1647
+   beams 345-359        -5.3 /  44.9 /  6184     -10.5 /  92.7 /  3128     -36.8 /  32.3 /  1612     -63.8 /  35.2 /   384
+
+== evaluation-1-cross: 105803 beams with a finite return and a true range < 3.4 m; wall beams 93470; overall residual (measured - true): mean +0.3 mm, sd 120.5 mm
+   wall beams: residual mean (mm) / sd (mm) / n, by beam group (rows) and incidence from the wall normal (columns)
+   group                        inc 0-20 deg             inc 20-35 deg             inc 35-50 deg             inc 50-90 deg
+   beams 0-14           +0.5 /  12.2 /  3477                         -                         -                         -
+   beams 15-44          +3.1 /  11.8 /  1091      +6.1 /  13.1 /  2961      +8.6 /  16.5 /  1655                         -
+   beams 45-89         -12.9 / 129.9 /  7731     -13.1 /  83.1 /  2752      +3.3 /  22.2 /   706     +17.0 /  44.3 /  2123
+   beams 90-269         -5.2 / 106.2 / 26531      -0.1 /  61.3 / 12390      -8.7 /  78.2 /  5623     -15.0 /  87.6 /  4953
+   beams 270-344        -8.7 / 102.6 /  8656      -7.7 /  92.1 /  5376      -5.2 / 118.3 /  2034      +5.3 / 143.6 /  1927
+   beams 345-359        +0.0 /  11.1 /  3484                         -                         -                         -
+
+== evaluation-2-wall-lobes: 101295 beams with a finite return and a true range < 3.4 m; wall beams 90189; overall residual (measured - true): mean -2.2 mm, sd 102.7 mm
+   wall beams: residual mean (mm) / sd (mm) / n, by beam group (rows) and incidence from the wall normal (columns)
+   group                        inc 0-20 deg             inc 20-35 deg             inc 35-50 deg             inc 50-90 deg
+   beams 0-14           -1.2 /  58.0 /  2891      +6.3 /  13.4 /   443                         -                         -
+   beams 15-44          +1.3 /  13.3 /  1242      +2.5 /  69.3 /  2421      -6.5 / 156.7 /  1298     +18.7 /  22.4 /   425
+   beams 45-89          -2.6 /  11.1 /  1149      -4.0 /  12.1 /   169      +0.1 /  20.7 /   627     +11.4 /  56.1 /  1787
+   beams 90-269         -2.5 /  71.5 / 19536      -3.6 /  86.5 / 12266      -3.1 /  47.2 /  8793      -7.6 /  38.7 /  7980
+   beams 270-344        -7.3 /  96.7 /  9335     -12.4 / 111.6 /  5946     -18.7 / 118.2 /  5423     -13.4 /  69.7 /  5056
+   beams 345-359        -3.1 /  17.1 /  2937      +1.2 /  17.6 /   219                         -    -186.5 /  75.7 /   246
+
+== evaluation-3-diamond-slow: 115238 beams with a finite return and a true range < 3.4 m; wall beams 100178; overall residual (measured - true): mean -2.3 mm, sd 105.6 mm
+   wall beams: residual mean (mm) / sd (mm) / n, by beam group (rows) and incidence from the wall normal (columns)
+   group                        inc 0-20 deg             inc 20-35 deg             inc 35-50 deg             inc 50-90 deg
+   beams 0-14           +1.2 /   8.2 /   162                         -     +52.0 /  25.6 /  1156     +59.9 /  23.4 /  2008
+   beams 15-44         -18.5 / 102.8 /  2189      -6.6 /  16.1 /   277                         -     +41.1 /  15.3 /   285
+   beams 45-89         -17.6 / 121.9 /  2062      +1.8 /  17.3 /   657                         -                         -
+   beams 90-269         -4.4 /  64.0 / 24964      -2.1 /  53.3 / 14808      -9.4 /  78.0 /  9863     -18.3 / 215.2 /  2904
+   beams 270-344       -11.7 /  93.2 / 16963      -6.2 /  67.3 / 11536      -8.0 /  86.2 /  2996      +4.2 /  24.6 /  1334
+   beams 345-359        +1.1 /   6.7 /   162     -23.0 /  14.6 /  1467     -38.3 /  23.2 /  4385                         -

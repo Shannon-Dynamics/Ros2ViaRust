@@ -1,0 +1,7 @@
+scan-time-offset check: pose displacement along the heading, delta (mm), fitted from wall range residuals after removing the beam-angle term;
+equivalent time error = delta / 0.18 m/s. Only the magnitude is interpreted; the sign convention of delta was not verified against the pose lookup
+
+development-3-route-long    delta   -1.2 mm  (95% scan bootstrap   -1.7 ..   -0.6)  =     -7 ms  (-9 .. -3 ms); wall beams used 241838
+evaluation-1-cross          delta   -1.0 mm  (95% scan bootstrap   -2.1 ..   +0.0)  =     -6 ms  (-12 .. +0 ms); wall beams used 88956
+evaluation-2-wall-lobes     delta   -1.1 mm  (95% scan bootstrap   -2.1 ..   -0.2)  =     -6 ms  (-12 .. -1 ms); wall beams used 81560
+evaluation-3-diamond-slow   delta   -0.1 mm  (95% scan bootstrap   -1.1 ..   +0.7)  =     -1 ms  (-6 .. +4 ms); wall beams used 98907

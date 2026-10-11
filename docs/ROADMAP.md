@@ -174,14 +174,19 @@ likelihood-field / landmark models, tempering, `ParticleSet` + KLD sizing with
   out of Phase 4 on 2026-10-10; see Phase 5.)*
 * `mapping_node`: `/scan` + `map → base_link` → `/map` (latched), `/map_entropy`.
 
-**Status (2026-10-11): T1 to T8 built; three development runs made, the evaluation runs of M1
-not made; M5 waits for decision D3.** The plan below was written on 2026-10-10 while Phase 3
-was still open and decisions confirmed the same day; what is built, what the runs found and what
-is not built are in `docs/phase-4-mapping/implementation.md` section 8. With ground-truth pose the
-mapper is deterministic and cheap and meets six of the seven pre-registered accuracy checks of M1
-on the third development run, missing false-occupied cells (2.6 per cent against 2); the
-pre-registered tolerances are for the evaluation runs, which need three routes that are not
-written yet. Original status line: *planned and confirmed, nothing built*. Design doc:
+**Status (2026-10-11): T1 to T8 built; three development runs and three M1 evaluation runs made;
+M1 is not met on any of the three evaluation runs; M5 waits for decision D3.** The plan below was
+written on 2026-10-10 while Phase 3 was still open and decisions confirmed the same day; what is
+built, what the runs found and what is not built are in `docs/phase-4-mapping/implementation.md`
+section 8. With ground-truth pose the mapper is deterministic (M2) and cheap (M4) on all six runs.
+The three evaluation runs, on routes that played no part in choosing the parameters, each miss
+different pre-registered M1 checks: route 1 (cross) misses completeness (0.926 against 0.95); route 2
+(wall lobes) misses completeness (0.907) and false free (6.2 per cent against 5); route 3 (diamond,
+slow turns) misses surface error p95 (1.5 cells against 1), false occupied (7.9 per cent against 2)
+and completeness (0.886). Each is a row of its own in
+`evidence/phase-4-mapping/2026-10-11-evaluation-*`, with the cross-run note in
+`2026-10-11-evaluation-group/`; no pass rate is claimed. Parameters stay frozen; the causes are open
+findings (implementation.md 5.3). Original status line: *planned and confirmed, nothing built*. Design doc:
 [phase-4-mapping.md](phase-4-mapping.md), with the detail in `docs/phase-4-mapping/`:
 [problem](phase-4-mapping/problem.md), [implementation](phase-4-mapping/implementation.md),
 [benchmark](phase-4-mapping/benchmark.md). The two bullets above are the original scope with

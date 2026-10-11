@@ -3,10 +3,10 @@
 > **Status (2026-10-11): what is measured and the tolerances are fixed and in use;
 > `benchmarks/phase-4-mapping.csv` is not written yet.** The metrics of section 2 are computed
 > by `robotics_mapping::eval` (graded by `scripts/phase4_verdict.py`, whose tolerances were
-> committed before the first run), and three development runs exist
-> (`evidence/phase-4-mapping/2026-10-11-development-*`); their numbers are in their
-> `map-metrics.yaml` and `phase4-verdict.yaml`, not here. The CSV is for the evaluation runs, which
-> are not made. The rclpy port and `nav2_costmap_2d` of section 3 are not built (non-blocking).
+> committed before the first run), and three development runs and three evaluation runs exist
+> (`evidence/phase-4-mapping/2026-10-11-development-*`, `-evaluation-*`); their numbers are in
+> their `map-metrics.yaml` and `phase4-verdict.yaml`, not here. The CSV is for the evaluation runs,
+> which are made but not yet written into it. The rclpy port and `nav2_costmap_2d` of section 3 are not built (non-blocking).
 > This file contains no numbers and will contain none; the rules are those of
 > [../../benchmarks/README.md](../../benchmarks/README.md).
 

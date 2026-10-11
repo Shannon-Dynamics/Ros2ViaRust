@@ -1,0 +1,28 @@
+
+== development-3-route-long: observable 2680, missed 124 (0.0463); integrated scans 1312
+    124  D: marked occupied by >=4 scans, net log-odds still below threshold
+   missed by owner: {'p0': 31, 'p1': 23, 'p2': 31, 'p3': 29, 'w0': 10}
+   per missed sample: scans able to see it (integrated poses) min/median/max 1/273/1043; trajectory positions that see it median 520; max scans that marked a 5-cell neighbourhood cell occupied: median 194 max 663; best final log-odds in the neighbourhood: median -1.55 max 2.67 (threshold 2.94)
+   found samples: scans able to see them median 611, p5 230
+
+== evaluation-1-cross: observable 2738, missed 203 (0.0741); integrated scans 451
+      3  A: visible only from poses no scan was integrated at
+      4  C: marked occupied by 1-3 scans (fewer than the 4 needed)
+    196  D: marked occupied by >=4 scans, net log-odds still below threshold
+   missed by owner: {'p0': 47, 'p1': 42, 'p2': 37, 'p3': 42, 'w0': 35}
+   per missed sample: scans able to see it (integrated poses) min/median/max 0/95/366; trajectory positions that see it median 177; max scans that marked a 5-cell neighbourhood cell occupied: median 52 max 318; best final log-odds in the neighbourhood: median 0.00 max 2.70 (threshold 2.94)
+   found samples: scans able to see them median 221, p5 107
+
+== evaluation-2-wall-lobes: observable 2758, missed 256 (0.0928); integrated scans 454
+      1  A: visible only from poses no scan was integrated at
+    255  D: marked occupied by >=4 scans, net log-odds still below threshold
+   missed by owner: {'p0': 62, 'p1': 49, 'p2': 49, 'p3': 26, 'w0': 40, 'w1': 15, 'w3': 15}
+   per missed sample: scans able to see it (integrated poses) min/median/max 0/136/322; trajectory positions that see it median 249; max scans that marked a 5-cell neighbourhood cell occupied: median 69 max 218; best final log-odds in the neighbourhood: median 0.64 max 2.70 (threshold 2.94)
+   found samples: scans able to see them median 177, p5 121
+
+== evaluation-3-diamond-slow: observable 2675, missed 306 (0.1144); integrated scans 527
+      2  A: visible only from poses no scan was integrated at
+    304  D: marked occupied by >=4 scans, net log-odds still below threshold
+   missed by owner: {'p0': 29, 'p1': 26, 'p2': 22, 'p3': 14, 'w0': 100, 'w2': 5, 'w3': 110}
+   per missed sample: scans able to see it (integrated poses) min/median/max 0/201/447; trajectory positions that see it median 367; max scans that marked a 5-cell neighbourhood cell occupied: median 83 max 319; best final log-odds in the neighbourhood: median 1.47 max 2.88 (threshold 2.94)
+   found samples: scans able to see them median 239, p5 128

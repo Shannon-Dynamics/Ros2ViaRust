@@ -1,0 +1,8 @@
+Missed completeness samples, by what kind of sample and how well any integrated scan viewed it
+(best cos = cosine between the sample's surface normal and the direction to the best-placed integrated scan pose that sees it)
+
+run                        observable  missed  unseen by any scan  pillar, best cos<0.8  pillar, best cos>=0.8  wall, best cos<0.5  wall, best cos>=0.5  completeness  if cos<0.8 pillar samples were not counted (diagnostic only)
+development-3-route-long   2680        124     0                   104                   10                     0                   10                   0.9537        0.9922                                                      
+evaluation-1-cross         2738        203     3                   88                    77                     0                   35                   0.9259        0.9563                                                      
+evaluation-2-wall-lobes    2758        256     1                   76                    109                    0                   70                   0.9072        0.9322                                                      
+evaluation-3-diamond-slow  2675        306     2                   67                    22                     0                   215                  0.8856        0.9070                                                      

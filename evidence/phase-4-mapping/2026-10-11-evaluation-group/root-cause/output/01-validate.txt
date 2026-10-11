@@ -1,0 +1,4 @@
+development-3-route-long scans 1312 max |L - saved| = 0.0 cells differing: 0 occupied mine/saved: 689 689 85s
+evaluation-1-cross scans 451 max |L - saved| = 0.0 cells differing: 0 occupied mine/saved: 778 778 28s
+evaluation-2-wall-lobes scans 454 max |L - saved| = 0.0 cells differing: 0 occupied mine/saved: 658 658 24s
+evaluation-3-diamond-slow scans 527 max |L - saved| = 0.0 cells differing: 0 occupied mine/saved: 722 722 33s

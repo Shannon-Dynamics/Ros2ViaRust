@@ -1,0 +1,9 @@
+angular error eps (mrad) per group of 15 beams, fitted as  residual = range * tan(alpha) * eps  (alpha: signed incidence from the wall's outward normal), wall beams with |alpha| > 10 deg and |residual| < 0.2 m
+a constant mount yaw error would give the same eps in every group; a seam effect would not
+
+development-3-route-long   -15    -6    -6    -3    -6    +3   -10    -3    -5    -0    -1    +6    -6    +0    -1    +3    +2   +10    -3    +5    +5    +9    +6   +16
+evaluation-1-cross          -6    -7    -5    -2    -6    +0    -4    -2    -4    -1    +0    +2    -5    -2    +1    +5    +1    +7    +2    +5    +3    +5    +5    +3
+evaluation-2-wall-lobes    -11    -8    -7    -3    -5    +5    -3    -3    -3    -0    -1    +5    -1    +1    -1    +3    +1   +10    -1    +4    +4   +10    +6   +12
+evaluation-3-diamond-slo   -15    -7   -12    +1    -6    -6    -5    -4    -4    -0    -2    +6    -6    +4    +1    +5    +2   +10    -3    +6    +3   +16    +7   +17
+
+                             0    15    30    45    60    75    90   105   120   135   150   165   180   195   210   225   240   255   270   285   300   315   330   345   <- first beam index of the group (0 = straight behind, 180 = straight ahead)

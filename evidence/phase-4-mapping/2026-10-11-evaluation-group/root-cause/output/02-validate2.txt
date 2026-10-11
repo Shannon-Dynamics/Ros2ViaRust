@@ -1,0 +1,4 @@
+development-3-route-long | observable mine/saved: 2680 2680 | completeness mine/saved: 0.9537313433 0.9537313433 | false_free mine/saved: 123 123 | traj rows 2449 positions_kept 2449
+evaluation-1-cross | observable mine/saved: 2738 2738 | completeness mine/saved: 0.9258582907 0.9258582907 | false_free mine/saved: 133 133 | traj rows 822 positions_kept 822
+evaluation-2-wall-lobes | observable mine/saved: 2758 2758 | completeness mine/saved: 0.9071791153 0.9071791153 | false_free mine/saved: 172 172 | traj rows 831 positions_kept 831
+evaluation-3-diamond-slow | observable mine/saved: 2675 2675 | completeness mine/saved: 0.8856074766 0.8856074766 | false_free mine/saved: 112 112 | traj rows 963 positions_kept 963

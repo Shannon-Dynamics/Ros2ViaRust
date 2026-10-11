@@ -1,0 +1,9 @@
+run                                   occupied false occ fraction p95 cells max cells complete false free
+development-3-route-long    published      689        18    2.61%      0.50      1.50   0.9537      4.59%
+development-3-route-long    H1             728         4    0.55%      0.50      1.50   0.9586      4.63%
+evaluation-1-cross          published      778         0    0.00%      0.50      0.88   0.9259      4.86%
+evaluation-1-cross          H1             698         0    0.00%      0.50      0.88   0.9098      5.59%
+evaluation-2-wall-lobes     published      658         0    0.00%      0.50      0.88   0.9072      6.24%
+evaluation-2-wall-lobes     H1             628         0    0.00%      0.50      0.88   0.8930      6.02%
+evaluation-3-diamond-slow   published      722        57    7.89%      1.50      1.50   0.8856      4.19%
+evaluation-3-diamond-slow   H1             689         0    0.00%      0.50      0.88   0.9320      3.59%
