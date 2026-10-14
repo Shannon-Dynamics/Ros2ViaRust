@@ -229,12 +229,36 @@ In outline:
 Phase 3 is not closed by this plan: the Nav2/rclpy benchmark and the remaining Phase 3
 items above are untouched and still open.
 
-## Phase 5 — SLAM (in progress: the pure core is built, the nodes are deferred)
+## Phase 5 — SLAM (in progress, **not closed**: the core, the nodes, `/map` and `map -> odom` are built and the nodes ran once against live Webots; S4 is met on Webots data, S5's zero wrong constraints only on a recording whose ground truth was corrected, and fails on both recordings as recorded)
 
-**Status (2026-10-11): design written; the pure crate `robotics_slam` built (76 unit and 39
-integration tests, fmt and clippy clean) with the verdict script and a synthetic harness; no evidence
-run made; `scan_matcher_node` and `pose_graph_node` are deferred pending Phase 4's M1 and are not
-started, not even as stubs.** Original status line: *scope bullets only, nothing built*. Phase 5 was
+**Status (2026-10-15): not closed. Stage B (submap-rendered `/map`, `map -> odom` owned by `pose_graph_node`, DS17/DS2) is built and replay-verified; S4 and S5 were measured on Webots data (two recordings of `route_slam_eval_rectangle.yaml`, 13 turns each) and `source:=live` ran against a live Webots driver for the first time. S4 PASSES on both recordings and on the corrected one (graph ATE RMS 1.4 to 1.6 cm, graph/chain ratio 0.60 to 0.72), which disagrees with the Rusty prediction that the ratio check fails on natural runs. S5 FAILS on both recordings as recorded (54 and 63 accepted constraints labelled wrong) and PASSES on the corrected recording 2 (0 of 157); the recorded poses of scans taken in turns are wrong by p95 0.14 rad, above S5's 0.03 rad, and the corrected copy is the only one that can be made (recording 1 has no dense ground-truth track). The correction's lattice phase (0.198 s) disagrees with the earlier probe's (0.0603 s), unexplained, and was selected by agreement with the matcher's own rotations. The live run produced `slam/pose`, `slam/path`, `/map` and `map -> odom` and shut down cleanly; the replay checker passes 20 of 25 on it, the five failures explained in benchmark.md 7.1, not re-verified. S8 is not claimable. Phase 5 is not marked closed: whether S5 met on one corrected recording counts as met is the owner's call. Details: `docs/phase-5-slam/benchmark.md` 7.1.**
+Previous status line (2026-10-11), kept: **Status (2026-10-11): design written; the pure crate `robotics_slam` built (76 unit and 40
+integration tests, fmt and clippy clean) with the verdict script and two harnesses; the first evidence
+runs of S1a, S1b, S2, S4, S5, S6 and S7 are made on Rusty (eight synthetic runs, four routes, natural and
+with an injected error) and on the four Phase 4 recordings (the Webots half of S1a); S4 fails its
+pre-registered "graph not worse than the chain" check on all four natural runs because there is no drift to
+repair, and passes with a declared error injected; S5 found no wrong constraint among 1638 accepted, on data
+with almost no false candidates; the first batch also found a front-end bug, fixed. `scan_matcher_node` and
+`pose_graph_node` (package `robotics_slam_ros`) are now built — scan-only LiDAR odometry and the pose graph,
+no `/map`, no TF, no `map -> odom`, `loop_closure: unsupported`, matching the dependency argument in
+problem.md section 6 — and node-replay-verified by `scripts/verify_phase5_slam_nodes.sh` against a release
+build (`scripts/build_release.sh slam`): 66 of 66 checks pass (four synthetic routes, four Phase 4
+recordings, a real-time-rate run, replay determinism, clean shutdown), `cargo test` on `robotics_slam` and
+`robotics_slam_ros` together is 126 passed 0 failed, fmt and clippy clean. Node replay found and fixed a
+second front-end bug beyond the one above: a settled registration with no usable line normal reported a
+zero information matrix that a consumer could not invert; it now reports the configured fallback instead
+(`StepResult::information_fallback`, section 8.3 item 13 of implementation.md). On the two Phase 4
+recordings with no turning scans, the front end loses track at the gaps as expected and check G (trajectory
+against ground truth) is measured, not graded, at several metres ATE — this is the known limit of a
+recording without a turn, not a regression, and is why a live Webots run with a turning-scan recording is
+still needed before S4 and S5 can be measured on Webots data. Submap-rendered `/map` and ownership of
+`map -> odom` are not built; they waited for Phase 4's M1, which is met since Phase 4 closed on 2026-10-11, so
+they are no longer blocked. S8 is not claimable.**
+What each run shows and does not show: `evidence/phase-5-slam/NOTE-first-evidence-runs.md`; the node replay
+runs are under `evidence/phase-5-slam-nodes/`. Previous status
+line: *design written; the pure crate built, no evidence run made; `scan_matcher_node` and `pose_graph_node`
+are deferred pending Phase 4's M1 and are not started, not even as stubs*. Earlier status
+line: *design written; the pure crate built, no evidence run made*. Original status line: *scope bullets only, nothing built*. Phase 5 was
 started while Phase 4 is open, as Phase 4 was started while Phase 3 was open, and only for the part that
 does not consume the occupancy grid: the ICP, NDT and optimizer core reads scans and relative poses, and the
 one place a grid appears (the RBPF's own) is private to it, so `cargo tree -p robotics_slam` has no
@@ -250,12 +274,15 @@ one place a grid appears (the RBPF's own) is private to it, so `cargo tree -p ro
   usable map" (S8) is not claimable** until Phase 4's M1, a measured S5 and the rendering node all exist.
 * **Loop closure is verified, never faked.** The library has a detector and a verifier (fit, not
   degenerate, consistent under a χ² gate on the exact marginal covariance, unambiguous under restarts
-  including quarter turns) with candidates designed to be rejected in its tests, **and they are
-  unevaluated**: S5 has no run. A node reports `loop_closure: unsupported` until it has.
+  including quarter turns) with candidates designed to be rejected in its tests. S5 has been run on synthetic
+  data only, and weakly against false candidates (problem.md section 5): a node reports `loop_closure: unsupported`
+  until the project owner decides that is enough.
 * **TSDF and quadtree: decided, no.** Matching is against points, the room is 14 400 cells, the ESDF
   exists, and any fused map is rebuilt by replay after a loop closure (DS13, with the triggers to
   revisit).
-* **Deferred, pending Phase 4's M1:** the two ROS nodes, submap-rendered `/map` and `map -> odom`.
+* **Deferred, pending Phase 4's M1:** submap-rendered `/map` and ownership of `map -> odom`. The two ROS
+  nodes themselves are no longer deferred on this — they are built and node-replay-verified without either
+  feature, by design (section 6 of problem.md records the dependency argument that made this possible).
 
 Scope as originally written:
 

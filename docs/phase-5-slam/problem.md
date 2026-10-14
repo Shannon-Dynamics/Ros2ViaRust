@@ -4,7 +4,8 @@
 > code, and it is being built in the same pass.** What exists is listed in section 8 of
 > [implementation.md](implementation.md), and nothing else exists. There are no numbers in this
 > file: results, when there are any, are verdict files under `evidence/phase-5-slam/`. This
-> phase was started while Phase 4 is still open, on purpose and for a stated reason (section 6).
+> phase was started while Phase 4 was still open, on purpose and for a stated reason (section 6). Phase 4
+> closed on 2026-10-11 with M1 met.
 
 ## 1. The situation
 
@@ -91,7 +92,7 @@ on Phase 4 M1" is a phrase this phase has to be able to write without ambiguity.
 | **S5** loop closure is safe, and how much it finds | counts over the candidate set, with a stated cost for a false accept | every candidate the detector proposes on the S4 runs, labelled by ground truth (the adversarial candidates are in the unit and integration tests) | accepted-and-wrong (the **safety count**: an accepted constraint whose error against the ground-truth relative pose exceeds the limits of benchmark.md section 2, pre-registered to be zero), accepted-and-correct, and the rejections by reason, which include true loops that were missed (their cost is drift and nothing else). Candidate-level precision with a Wilson interval; the rule of three for what "zero false accepts in n" supports. Recall is reported and **not** a pass criterion. |
 | **S6** the pipeline is deterministic and cheap enough | deterministic test, and a distribution | bit-identical replay of the whole pipeline on a recorded scan stream; per-scan registration time and per-optimization time over a run | the replay is pass or fail; latency as median, 95th and 99th percentile, with the S1a accuracy of the same run next to it (benchmarks rule 6). |
 | **S7** the two back ends work on the problem they were designed for | informative, **non-blocking** | EKF-SLAM and grid RBPF on the same synthetic run | EKF-SLAM: NEES of the pose over time; both: trajectory error against ground truth. No ranking of back ends: the odometry noise of Rusty is a configurable property of a simulator, so who wins is a statement about that setting. |
-| **S8** *(not claimable)* SLAM produces a usable map | none | none | **Blocked on three things, none of which this phase can unblock alone:** Phase 4's M1 (the grid it renders into does not meet its own pre-registered tolerances yet), a real loop closure whose S5 safety count has been measured, and the submap-rendering node, which is not built. It stays `unsupported`, see section 5. |
+| **S8** *(not claimable)* SLAM produces a usable map | none | none | **Blocked on three things, none of which this phase can unblock alone:** Phase 4's M1 (met on 2026-10-11 on three fresh routes, so this one is cleared), a real loop closure whose S5 safety count has been measured, and the submap-rendering node, which is not built. It stays `unsupported`, see section 5. |
 
 ### 4.1 What is explicitly not claimed
 
@@ -152,11 +153,24 @@ So three states have to be kept apart, and the words are fixed here:
 | enabled | the S5 safety count was measured on the evaluation runs and is zero | nothing |
 
 A node may switch loop closure on only in the third state, and until then it reports
-`unsupported` whatever the library contains. There is no placeholder heuristic: a loop edge
+`unsupported` whatever the library contains.
+
+**Update after the first evidence runs (2026-10-11).** The criterion of the third state as written (the safety
+count measured on the evaluation runs, and zero) is met on the Rusty runs: no wrong constraint among 1638 accepted
+over eight runs. It is **not** enough to switch anything on, and no state is changed by this paragraph. The runs
+contain almost no false candidates (nearly everything the detector proposed in this small, fully overlapping room
+was a true loop), so a zero measures the verifier on easy candidates; the hard ones are in the tests, not in the
+evidence. There is no Webots-level S5 (the recordings have no turning scans) and no node to enable. Whether this is
+enough is a decision for the project owner, and until it is made every node reports `unsupported`. There is no placeholder heuristic: a loop edge
 enters the graph only through the verifier of implementation section 6, never through a
 distance test alone, and not through a flag that bypasses it.
 
 ## 6. Why part of this could start before Phase 4 closes, and what could not
+
+**Update 2026-10-11: Phase 4 is closed, with M1 met on each of three fresh evaluation routes (ROADMAP.md,
+Phase 4).** This section is kept as the record of why the work could start early; what it lists as waiting
+for M1 (submap rendering, `map -> odom`) is no longer blocked by it, and is not built. What follows was
+written while Phase 4 was open.
 
 Phase 4 is not closed: its claim M1 is not met. The state, with the runs and numbers it comes
 from, is the Phase 4 status line of [../ROADMAP.md](../ROADMAP.md); it is not repeated here because
@@ -173,14 +187,18 @@ argument that can be checked.
 | EKF-SLAM | range-bearing detections | no |
 | grid RBPF | raw scans, odometry | **would, if it used `robotics_mapping::OccupancyGrid`; it does not.** It carries its own copy-on-write grid (decision DS12), so no RBPF number can be a Phase 4 number in disguise |
 | submap rendering into `/map`, the `map -> odom` owner | the occupancy grid of Phase 4 | **yes. Not built.** Any map error in a SLAM-rendered `/map` could be the mapper's or the trajectory's, and with M1 open there would be no way to tell which |
-| `scan_matcher_node`, `pose_graph_node` | everything above, plus `/map` publication | yes through `/map`. Not built. |
+| `scan_matcher_node`, `pose_graph_node` | everything above, minus `/map` publication | no, once built without it. **Built 2026-10-11** (implementation.md 8.6): scan-only odometry and the pose graph, no TF, no `/map`, no `map -> odom`, `loop_closure: unsupported`. Node-replay-verified, 66 of 66 checks. |
 
 `cargo tree -p robotics_slam` has no `robotics_mapping` in it, and that is how the first row
 and the third are kept honest; section 8 of the implementation file records the check.
 
-The two nodes are deferred pending Phase 4's M1. `scan_matcher_node` alone would not publish
-`/map` and could be built earlier, but the two nodes were specified as a pair and nothing
-consumes LiDAR odometry without the graph, so the ROADMAP entry says both are deferred.
+**Revised 2026-10-11.** The two nodes were specified as a pair and nothing consumes LiDAR odometry
+without the graph, so the original plan deferred both rather than building `scan_matcher_node` alone. The
+decision that was actually taken keeps that pairing but drops the `/map`-publishing features from this pass:
+both nodes are built, together, without `/map`, TF, or `map -> odom`, and verified by replay against the
+same recorded and synthetic streams the table above lists as not depending on Phase 4's mapper. What still
+waits for Phase 4's M1 is exactly the row above it: submap rendering and ownership of `map -> odom`, which
+is what touches the occupancy grid.
 
 ## 7. Why this is the next step
 

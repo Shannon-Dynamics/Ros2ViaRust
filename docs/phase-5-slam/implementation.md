@@ -1,9 +1,11 @@
 # Phase 5, implementation: the Rust side
 
-> **Status (2026-10-11): design settled; `robotics_slam`, the verdict script and the example are
-> built (section 8).** Section 8 is the only authority on what exists; anything it does not list
-> does not exist. No ROS package, node or launch file exists for this phase, and none is
-> started: that is a decision (DS2), not an omission. The decisions of section 5 were made on the
+> **Status (2026-10-11): design settled; `robotics_slam`, the verdict script and both harnesses are
+> built, and the first evidence runs of S1a, S1b, S2, S4, S5, S6 and S7 have been made (section 8,
+> `evidence/phase-5-slam/NOTE-first-evidence-runs.md`); `scan_matcher_node` and `pose_graph_node` are built
+> without `/map`, TF or `map -> odom` and verified by replay only (8.6).** Section 8 is the only authority on what
+> exists; anything it does not list does not exist. No live Webots run of the nodes has been made. Phase 4 closed on 2026-10-11 with M1 met on three fresh evaluation routes (ROADMAP.md, Phase 4), so
+> the dependency that deferred submap rendering and `map -> odom` (section 7) is gone; neither is built. The decisions of section 5 were made on the
 > instruction to decide and document them, so every one is open to the project owner's revision;
 > none was separately confirmed, unlike Phase 4's 5.1. The claims S1 to S8 of
 > [problem.md](problem.md) section 4 are likewise a proposal until confirmed.
@@ -38,10 +40,10 @@ Not in the repository, and decided not to be needed: a TSDF and a quadtree (DS13
 | T7 | pose graph: keyframes, odometry edges, loop-candidate generation, ICP verification with the ambiguity, degeneracy and χ² checks | `robotics_slam::pose_graph` | yes |
 | T8 | EKF-SLAM with provisional landmarks | `robotics_slam::ekf_slam` | yes |
 | T9 | grid RBPF with a copy-on-write grid | `robotics_slam::rbpf` | yes |
-| T10 | `scripts/phase5_verdict.py` with every tolerance, committed before the first evidence run; its self-test | `scripts/` | yes (script and self-test; **no evidence run**) |
-| T11 | `slam_synthetic_run` example: a seeded Rusty run that writes the metrics file the verdict script reads | `crates/robotics_slam/examples/` | the example, yes; **not run into `evidence/`** |
-| T12 | `scan_matcher_node` and `pose_graph_node`, submap rendering into `/map`, `map -> odom` | `ros2_ws/src/…` | **no, deferred pending Phase 4's M1 (DS2)** |
-| T13 | the evidence runs: S1 to S6 on synthetic and recorded data, then Webots | `evidence/phase-5-slam/` | **no** |
+| T10 | `scripts/phase5_verdict.py` with every tolerance, committed before the first evidence run; its self-test | `scripts/` | yes (script and self-test; its tolerances were not changed by any run) |
+| T11 | `slam_synthetic_run` example: a seeded Rusty run that writes the metrics file the verdict script reads | `crates/robotics_slam/examples/` | yes: `slam_synthetic_run`, and `slam_recorded_run` for the Webots recordings |
+| T12 | `scan_matcher_node` and `pose_graph_node`, submap rendering into `/map`, `map -> odom` | `ros2_ws/src/robotics_slam_ros` | **the two nodes: yes, without `/map`, TF or `map -> odom`, replay-tested only (8.6). Submap rendering and `map -> odom`: no** (no longer blocked: Phase 4's M1 is met) |
+| T13 | the evidence runs: S1 to S6 on synthetic and recorded data, then Webots | `evidence/phase-5-slam/` | **S1a, S1b, S2, S4, S5, S6, S7 on Rusty and the Webots half of S1a, S2, S6 on the four Phase 4 recordings: yes (8.5). S4 and S5 on Webots: no, the recordings have no turning scans, and no new Webots run was made** |
 | T14 | informative references: `slam_toolbox` (installed in `/opt/ros/jazzy`) on the same recorded scan stream, graded against the same ground truth | `scripts/` | **no**, non-blocking |
 
 ## 3. Conventions
@@ -139,6 +141,8 @@ useful: the API is already fixed by what the tests need, and a package named
 in `ARCHITECTURE.md`'s table, as the beginning of a node that publishes `/map`. That is the
 thing this pass must not start. When Phase 4's M1 closes, the nodes are written from scratch
 against a library that has already been tested, and the first commit of each says so.
+*Revised 2026-10-11:* the nodes were built before M1 closed, but without the part that reads the grid (no
+`/map`, no TF, no `map -> odom`, problem.md section 6); still no stub of the deferred features exists.
 
 **DS4. ICP.** *Point-to-plane* (the default for scan-to-map) minimizes `Σ w_k (n_k · (T p_k − q_k))²`
 with `T ⊞ δ`, the residual Jacobian taken on the SE(2) tangent, the step solved from the 3 by 3
@@ -180,13 +184,18 @@ stamps: the Webots lidar measures on a regular 0.2 s lattice and stamps irregula
 ([Phase 4 implementation 5.2, item 2](../phase-4-mapping/implementation.md)), so a per-second velocity
 times a stamp difference would inject the stamp lag into the prediction. The front end does not
 deskew, for the reason D9 of Phase 4 gives (a Webots scan is one instant); a real-robot driver
-would need it.
+would need it. **Amended by the first evidence runs:** a registration that does not settle at `τ` is tried once
+more at `τ₀` (the no-knowledge threshold) from the same guess when `τ` is below it. Without that the front end
+deadlocks after a long straight: `τ` shrinks to a few centimetres, the first turning scan needs several times
+that, ICP crawls to its iteration limit, and a failed step left `τ` unchanged so no later step could do better
+(8.3, item 10). No parameter was changed; `τ₀` already existed.
 
 **DS7. Information matrix.** For the final correspondences, `Λ = (1/σ²) Σ w_k J_kᵀ J_k` with `J_k`
 the residual Jacobian on the SE(2) tangent and `σ²` the weighted residual variance floored at the
 square of the lidar noise (so a perfect synthetic fit does not report infinite certainty).
-`info_inflation` divides `Λ`; it is **1.0 until S2 has been measured on the development run, then
-frozen**, and a different value is a visible edit. The reference chapter admits its inflation factor
+`info_inflation` divides `Λ`; it was **1.0 until S2 was measured on the development run, and is now frozen at
+1.5** (mean NEES 4.53 over 1828 registrations, divided by 3, two significant digits; 8.5), and a different value
+is a visible edit. The reference chapter admits its inflation factor
 is a fudge, and so is this one; the point is that it is one named number with a measurement behind
 it, not a constant inherited from a widget. The matrix is regularized by adding `ε·tr(Λ)/3·I` with
 `ε = 1e-6`, nothing absolute. A `degenerate` flag is set when the smaller eigenvalue of the
@@ -305,8 +314,8 @@ disagree, or where the text is silent, and the choice made is the one a test in 
 scans, at the optimized poses, into a Phase 4 `OccupancyGrid` with the Phase 4 `ScanIntegrator`, from scratch.
 No incremental repair exists or is planned: after a loop closure every keyframe moves a little and a replay of
 a few hundred scans costs less than reasoning about which cells to undo. This is a note for the deferred node;
-the library does not render a map, because the grid it would render into is the thing Phase 4's M1 has not
-validated.
+the library does not render a map, because the grid it would render into is the thing Phase 4's M1 had not
+validated when this was written. (M1 is met since 2026-10-11; the rendering is still not built.)
 
 **DS18. Parameters.** Initial values in this file and in the crate's `Default` impls are of three kinds, and
 each says which: *derived* (a sentence of arithmetic from a sensor or geometry fact), *chosen* (a design
@@ -371,10 +380,14 @@ perturbed so ICP does not converge.
 
 ## 7. What waits for Phase 4
 
+*Updated 2026-10-11:* Phase 4 closed on 2026-10-11 with M1 met on three fresh evaluation routes (ROADMAP.md, Phase 4). The table is kept as the
+dependency record; what it marks **yes** is now unblocked, and of it only the two nodes are built (8.6).
+
 | Part of Phase 5 | Needs Phase 4's M1? | Why |
 |---|---|---|
 | T1 to T11 (the pure core, the verdict script, the example) | no | consumes scans, relative poses and covariances; no occupancy grid anywhere |
-| T12 submap rendering, `/map`, `map -> odom`, the two nodes | **yes** | the rendered `/map` is Phase 4's grid, and its accuracy is the open question |
+| T12 submap rendering, `/map`, `map -> odom` | **yes** | the rendered `/map` is Phase 4's grid, and its accuracy is the open question |
+| T12 the two nodes, minus `/map`/`map -> odom` | no, once built without those two features | **built 2026-10-11** (section 8.6), node-replay-verified |
 | the S8 claim | **yes**, and S5 | problem.md section 4 |
 | T13 evidence runs of S1 to S6 on Rusty | no | synthetic, exact ground truth, no Phase 4 output |
 | T13 on Webots | no for S1, S2, S4, S5, S6 (they read scans and ground truth); running Webots is shared with Phase 4's runs | |
@@ -404,8 +417,9 @@ not exist.
 | `ekf_slam` | EKF-SLAM with provisional landmarks | 10 |
 | `rbpf` | grid RBPF with a private copy-on-write chunk grid | 15 |
 
-That is **76 unit tests** and **39 integration tests**, 115 in all: `front_end_it` 6 (ICP on Rusty scans
-with exact truth, degeneracy of a corridor, the front end over two laps, determinism), `pose_graph_it` 13
+That is **76 unit tests** and **40 integration tests**, 116 in all: `front_end_it` 7 (ICP on Rusty scans
+with exact truth, degeneracy of a corridor, the front end over two laps, determinism, and a sharp turn after a
+long straight, the regression test of 8.3 item 10), `pose_graph_it` 13
 (two laps with an injected yaw error: verified loops reduce the trajectory error and every accepted
 constraint is correct, the graph without loops is the odometry chain, and the designed-to-be-rejected
 candidates below), `ndt_it` 10, `ekf_slam_it` 5, `rbpf_it` 5.
@@ -420,7 +434,7 @@ whose remainder matches is accepted; and the same alias is accepted once a box b
 The tests each give a *model-level* result on seeded Rusty scans; none is a claim S1 to S8.
 
 **Gates, in the mirror:** `cargo fmt -p robotics_slam --check` clean; `cargo clippy -p robotics_slam
---all-targets -- -D warnings` clean; `cargo test -p robotics_slam` 115 passed, 0 failed. Not run: the
+--all-targets -- -D warnings` clean; `cargo test -p robotics_slam` 116 passed, 0 failed. Not run: the
 workspace-wide gate `scripts/gates.sh` (it includes a Phase 3 `docs` step that already failed before this
 work), and the colcon build, which this crate does not enter.
 
@@ -438,10 +452,28 @@ minutes); `Cargo.lock` gains `faer` and its dependencies.
   written before the example was ever run. `scripts/phase5_verdict_selftest.py` grades fabricated fixtures
   (written to a temporary directory and thrown away, never under `evidence/`) and checks that each claim fails
   for its own reason and that malformed files are refused: all its checks pass.
-* `crates/robotics_slam/examples/slam_synthetic_run.rs`: the seeded Rusty harness that writes
-  `slam-metrics.yaml`. **No evidence run has been made.** The example was run once into a scratch directory
-  to check that its file satisfies the schema and that the grader accepts it; that output was discarded, it is
-  not evidence, and no tolerance was changed after it.
+* `crates/robotics_slam/examples/slam_synthetic_run.rs`: drives a route file in Rusty (a turn in place, then a
+  straight leg, a scan every 0.2 s, exact kinematics, a lidar shaped like the Webots one), **records the scans
+  to `scans.csv` and grades everything on what it reads back**, and writes `slam-metrics.yaml`: S1a, S2, S1b,
+  S4, S5, S6 (the whole pipeline run twice on the recorded file and compared bit for bit) and S7.
+* `crates/robotics_slam/examples/slam_recorded_run.rs`: the Webots half of S1a, S2 and the replay of S6 on a
+  recording. Its input is Phase 4's `integrated-scans.csv`: the scans `mapping_node` integrated, each with the
+  ground-truth sensor pose it integrated them at (the ground truth of the transform less the 0.06 s mean lidar
+  lag, D15). **Every scan in that file already passed Phase 4's motion gate** (D13: the sensor moved at most 5 cm
+  and 0.015 rad across the window the stamp leaves open), so the "motion-gated ground-truth join" of problem.md
+  4.2 is done by Phase 4 and read here, not rebuilt. The gate is a function of poses; no occupancy-grid value is
+  read and `robotics_mapping` is not a dependency of this program, although the recording is a product of Phase
+  4's node. The mapper skipped the turning scans, so a registration is made only between consecutive lines at most 0.5 s apart,
+  and **the front end and the graph cannot be run on these files**: S4 and S5 have no Webots half, and that is
+  a dependency that does not exist yet (a recording of every scan of a run, with ground truth, which only a new
+  Webots run would give), not something skipped.
+* `scripts/run_phase5_slam.sh` runs a harness and then the verdict; it records the environment, the
+  harness binary's SHA-256, the source SHA-256s and the commit with its dirty paths, writes into the Windows
+  checkout's `evidence/` through `scripts/evidence_root.sh`, and refuses to overwrite a run.
+  `scripts/phase5_benchmark_csv.py` writes `benchmarks/phase-5-slam.csv` from the metrics files;
+  `scripts/phase5_evidence_tables.py` writes (and `--check`s) the tables of the evidence note;
+  `scripts/phase5_route_revisits.py` is the route rule of section 9; `scripts/phase5_recorded_gt_steps.py` is the check
+  behind the Webots caveat of 8.5.
 
 ### 8.3 What the build found
 
@@ -470,25 +502,143 @@ Each of these was found by a test, and each changed the design above. They are m
    copy-on-write grid shares little inside a small enclosed room, because every scan touches nearly every chunk
    it sees.
 
+10. **Found by the evidence runs, not by a test: the front end deadlocked on a sharp turn after a long straight**
+    (DS6). It was invisible on `route_long.yaml`, which begins with a turn, and crashed the harness on
+    `route_eval_cross.yaml`. The fix is in DS6 and a test that fails without it is in `front_end_it.rs`.
+11. **Also found by the runs: an injected systematic error needs matching edge information.** With the
+    compounded ICP information (which knows nothing of the injection) the gate rejects every true loop, which is
+    the gate working. The injected variants therefore hand the graph the information their error warrants (8.5).
+12. **The natural drift of the scan matcher in Rusty is negligible, so S4's "the graph is not worse than the
+    chain" check fails on every natural run** (8.5). That is a property of the model-level world, and the check
+    is reported as it was pre-registered.
+13. **Found by replaying the nodes against recorded Webots streams, not by a unit test: a settled registration
+    with no usable line normal (a scene with no line features, such as thin poles only) reported an information
+    matrix of exactly zero.** Nothing in the front end rejected it, and a consumer that has to invert it to get a
+    covariance (a pose-graph edge, a message) silently lost the increment instead of erroring. The front end now
+    reports the configured fallback information instead (`StepResult::information_fallback`), and the step's
+    information is always something a covariance can be made of; a regression test with a world of thin poles and
+    no walls (`a_registration_with_no_line_features_reports_the_fallback_information_and_never_a_zero_matrix`,
+    `front_end_it.rs`) asserts this. On the Phase 4 recordings with no turning scans this fallback fires often
+    once the front end has lost track (812 of 1190 tracked steps on one recording) — expected given 8.4's gap, not
+    a new finding about the fallback itself.
+
 ### 8.4 Not built
 
-`scan_matcher_node`, `pose_graph_node`, a ROS package, a launch file, anything that publishes `/map` or
-`map -> odom` for SLAM (DS2); submap rendering (DS17); every evidence run (T13), including S1a on Webots data,
-which also needs the motion-gated ground-truth join; the S7 harness for the two back ends; landmark
-FastSLAM (Chapter 17's first half); the `Slam2d` pipeline wrapper of the reference's design document; a
-place-recognition descriptor; the `slam_toolbox` reference (T14); `benchmarks/phase-5-slam.csv`.
+Graded S4 and S5 on the live run itself (the live run of 8.6 is checked, not graded, benchmark.md 7.1); the Webots
+S1a and S5 with a ground truth that is not limited by the stamp lag, except for recording 2, which has the dense track
+and is the only one that can be corrected (benchmark.md 7.1); landmark FastSLAM (Chapter 17's first half); the
+`Slam2d` pipeline wrapper of the reference's design document; a place-recognition descriptor; the
+`slam_toolbox` reference (T14); the dense-solver timing (open question 3). `scan_matcher_node` and
+`pose_graph_node` moved out of this list on 2026-10-11 (section 8.6) — built without either deferred feature.
+Moved out of this list on 2026-10-15: `/map` and `map -> odom` for SLAM (DS2) and submap rendering (DS17), built in
+`pose_graph_node` and verified by replay and by one live run (8.6); S4 and S5 on Webots data, measured on two
+recordings of `route_slam_eval_rectangle.yaml` with turning scans (benchmark.md 7.1).
+Not a gap but a limit: S3 is the unit tests, and there is no S7 comparison against another SLAM system.
+
+### 8.5 The first evidence runs
+
+Made on 2026-10-11, under the protocol of [benchmark.md](benchmark.md) section 6, which was written before any
+of them. The runs are in `evidence/phase-5-slam/` (`v2-*` is the graded set; `batch-1-before-front-end-fix/` is
+the superseded first batch, kept as evidence of the bug of 8.3 item 10 and of where `info_inflation` came from);
+the numbers, generated from the metrics files, and what each claim does and does not show are in
+[`NOTE-first-evidence-runs.md`](../../evidence/phase-5-slam/NOTE-first-evidence-runs.md); the verdict of each run is
+its `phase5-verdict.yaml`; the long-format rows are `benchmarks/phase-5-slam.csv`. In one line per claim:
+
+* **S1a.** Millimetres on exact ground truth, on every route, every registration graded. On the Webots recordings
+  the translation error is about 3 cm at p95 and the same on all four, which is the recorded ground truth's own
+  quantization to one scan period of travel, not the matcher's: that half bounds the error above and cannot resolve
+  it below a few centimetres.
+* **S1b.** 100 of 100 up to 0.3 m / 0.25 rad, 99 or 100 at 0.5 m / 0.4 rad, 40 to 44 of 100 at 1.0 m / 0.8 rad;
+  model level, one pair per run.
+* **S2.** OVERCONFIDENT at `info_inflation` 1.0 (4.53 against 3); after the freeze at 1.5, within the chi-squared
+  interval on the development run and two evaluation routes and marginally above it on the third. Meaningless on
+  the Webots recordings (the ground truth's error dominates).
+* **S4.** Natural drift: the front end drifts about 3 mm ATE RMS, the graph is **worse** than it (1.99 to 2.93 times)
+  and S4 is FAIL on all four routes by the pre-registered ratio check, with every absolute check passing. With a
+  declared yaw error injected: the front end alone is at 0.23 to 0.59 m and the graph at 7 to 11 mm, PASS on all four.
+* **S5.** 1638 loop constraints accepted over eight runs, none wrong; the data hold almost no false candidates, so
+  this is a weak test of the safety count (the strong one is `pose_graph_it.rs`). The rejections were true loops.
+* **S6.** Bit-identical replay on every run; per-registration time a few milliseconds at p99 and per-optimization
+  time tenths of a second at p99, release build.
+* **S7.** EKF-SLAM beats dead reckoning of the synthetic odometry on all four routes and holds more landmarks than
+  pillars (detector false positives, no retirement); the grid RBPF does worse than dead reckoning on all four.
+  No ranking.
+
+S8 is not claimable and nothing here changes that.
+
+### 8.6 The nodes
+
+Built on 2026-10-11, after the evidence runs above, in the Windows checkout. `ros2_ws/src/robotics_slam_ros`:
+`scan_matcher_node` (scan in, registration and `scan_matched` out, no odometry input, no TF) and
+`pose_graph_node` (registration and `scan_matched` in, `slam/pose` and `slam/path` out in frame
+`slam_origin`, a keyframe every 0.5 m or 0.35 rad). Neither publishes TF or `/map`; `pose_graph_node`'s
+diagnostics say `loop_closure: unsupported` and no `map -> odom` is published — the two features problem.md
+section 6 defers to Phase 4's M1, built out from the start rather than stubbed. One launch file,
+`ros2_ws/src/robotics_bringup/launch/phase5_slam.launch.py`. `scripts/build_release.sh slam` builds the
+package into the same `install_release` space Phase 3 uses (`--packages-select robotics_slam_ros
+--cargo-args --release`), because a scan matcher that has lost track costs seconds per step in a debug
+build and would make a replay check measure the build profile, not the node; the launch file and
+`robotics_ros_bridge` still come from the debug install, only the node binaries are release.
+
+`scripts/verify_phase5_slam_nodes.sh` replays recorded and synthetic streams through the launch file and
+checks the node against an in-process reference built from the same `robotics_slam` crate: one registration
+per scan with identical fields row for row, identical keyframes, a float64 reference reproducing the
+graded evidence run's front end, trajectory against ground truth (measured, not graded, item 13 above), a
+real-time-rate run with no lockstep, replay determinism (two replays of the same stream give the same
+files), and clean shutdown. Against the release build: 66 of 66 checks pass — four synthetic routes (6
+checks each), four Phase 4 recordings (5 checks each, no E1 since there is no float64 reference for a
+recording), the real-time-rate run, replay determinism, and shutdown. `cargo test` on `robotics_slam` and
+`robotics_slam_ros` together: 126 passed, 0 failed; `cargo fmt --check` and `cargo clippy --all-targets -- -D
+warnings` both clean.
+
+Two bugs were found this way and are not visible in the Rusty evidence runs of 8.5, because neither recorded
+Phase 4 stream has a turning scan: item 13 above (the zero information matrix), and the front-end deadlock of
+item 10, which this replay also exercises on `route_eval_cross.yaml`'s synthetic counterpart. Both are fixed
+in `crates/robotics_slam/src/odometry.rs` and covered by `front_end_it.rs`, not by anything node-specific —
+the nodes call the same crate the evidence runs do.
+
+**What this does not show.** Every recording replayed is one of the four Phase 4 recordings or a synthetic
+route, and none has a scan taken while the robot is turning (the mapper that produced them skipped turning
+scans, 8.2). Check G on these is measured, not graded, and is poor by design (several metres ATE on the two
+recordings with the most lost track, 8.3 item 13) — a property of the input, not evidence the nodes
+regressed. S4 and S5 remain unmeasured on Webots data (8.4) for the same reason: a live run with the
+`/scan` driver at its own timing, real stamps, and a route that actually turns, has not been made.
+
+*Superseded on 2026-10-15 for the sentence above, kept as it was written:* S4 and S5 were measured on Webots data from two
+recordings of `route_slam_eval_rectangle.yaml` with turning scans, and `source:=live` was run against Webots for the
+first time. The numbers and what they do and do not show are benchmark.md 7.1.
+
+**Added after the first version of this section (Stage B and the live run).** `pose_graph_node` now also does
+what the paragraphs above said it did not: with `publish_map:=true` (default) it renders `/map` by replaying every
+keyframe's scan at its optimized pose into a fresh Phase 4 grid (DS17), after each loop closure that changed the graph
+and once at the end of the run; with `publish_map_odom:=true` (default) it owns `map -> odom` (the `map` frame is the
+first keyframe's sensor pose; it needs `odom -> <scan frame>` in TF, from the driver in a live run); `loop_closure:=true`
+turns the loop detector and verifier on (default off, and then the diagnostics still say `loop_closure: unsupported`).
+`publish_map:=false publish_map_odom:=false` gives back the node of the first version. Check G of
+`scripts/verify_phase5_slam_nodes.sh` verifies this by replay (`phase5_stage_b_check.py`): the run in
+`evidence/phase-5-slam-nodes/2026-10-14-section-g-only/` passes 34 of 34. The first run of `source:=live`
+(`evidence/phase-5-slam/2026-10-15-live-source-live-1/`, `scripts/run_phase5_live.sh`) produced `slam/pose`, `slam/path`,
+`/map` and `map -> odom` from the live driver's `/scan` and `odom -> base_link`, and shut down cleanly; the replay checker
+passes 20 of 25 on it, and the five failures are explained, not hidden, in benchmark.md 7.1 (three by the probe being
+stopped before the nodes, two by a replay-only assumption of stationary odometry). That is one run: no live run was
+repeated, so run-to-run variation of a live run is not known.
 
 ## 9. Open questions
 
-1. **Evaluation routes.** S4 needs one development and three evaluation routes with revisits.
-   `route_long.yaml` visits the pentagram twice and so has real loops. Three further routes
-   (`route_eval_cross.yaml`, `route_eval_wall_lobes.yaml`, `route_eval_diamond.yaml`) were written for Phase 4's
-   M1 by the other prompt; they were designed to cover the room for mapping, and whether they revisit places
-   enough to produce loop candidates has not been checked. Whether Phase 5 reuses them or writes its own is
-   open and is not decided here.
+1. **Evaluation routes: decided 2026-10-11, before any run.** Phase 5 reuses two of Phase 4's three M1 routes and
+   writes one. The rule, fixed first: a route serves S4 and S5 if it has at least 20 *true-loop keyframe pairs*
+   (at least 6 m of path apart and within 1.5 m, keyframes by the graph's own policy), counted on the route's
+   geometry alone by `scripts/phase5_route_revisits.py`. `route_long.yaml` has 5754 such pairs (the development
+   route); `route_eval_cross.yaml` 88 and `route_eval_diamond.yaml` 363 (driven at 0.3 rad/s as Phase 4 drove it) are
+   reused as evaluation routes; `route_eval_wall_lobes.yaml` has 16, on 8 keyframes, because it was designed to
+   meet the walls and not to come back, and is **not** used for S4 and S5. In its place
+   `sim/webots/config/route_slam_eval_rectangle.yaml` (a 2.2 m by 1.8 m rectangle, three laps) has 925. Reusing
+   Phase 4's routes does not conflict with their being spent for M1: here they are driven in Rusty for a different
+   claim and no parameter was chosen on them. The wall-lobes recording is still used for the Webots half of S1a.
 2. **A place-recognition descriptor** (Scan Context and relatives) for loops the drift has hidden from the
    covariance gate. Not built, not planned; the limit is stated in problem.md 4.1.
 3. **Whether the sparse solver is worth it at this size.** A route of a few hundred keyframes is a
    ~1000-variable system, which a dense Cholesky solves in milliseconds. The sparse path is required by the
-   ROADMAP and is tested against the dense one, and S6 will say whether it earns its dependency.
+   ROADMAP and is tested against the dense one. S6 timed only the sparse path (tenths of a second per optimization on
+   up to 192 keyframes); the dense path was not timed, so this is not answered.
 4. **The RBPF's duplicate grid** (DS12) once Phase 4 closes.

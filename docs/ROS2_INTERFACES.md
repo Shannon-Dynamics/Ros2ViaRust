@@ -41,7 +41,9 @@ frontier candidates) and will live in a single `robotics_interfaces` package.
 | `/pose`, `/amcl_pose` | `geometry_msgs/PoseWithCovarianceStamped` | `localization_node` |
 | `/particle_cloud` | `geometry_msgs/PoseArray` | `localization_node` |
 | `/initialpose` | `geometry_msgs/PoseWithCovarianceStamped` | RViz → `localization_node` |
-| `/slam/pose`, `/slam/path`, `/slam/graph` | `PoseWithCovarianceStamped`, `nav_msgs/Path`, `visualization_msgs/MarkerArray` | SLAM |
+| `/slam/pose`, `/slam/path` | `PoseWithCovarianceStamped` (newest keyframe, marginal covariance), `nav_msgs/Path` (every keyframe, latched; both in the frame `slam_origin`, the first keyframe's sensor pose: not `map`, not in the TF tree) | `pose_graph_node` (built 2026-10-11, replay-tested) |
+| `/slam/graph` | `visualization_msgs/MarkerArray` | **not built** |
+| `/registration`, `/scan_matched` | `PoseWithCovarianceStamped` (the increment from the previous scan, covariance = inverse ICP information in the `(x, y, yaw)` slots), `sensor_msgs/LaserScan` (the same scan, reliable QoS) | `scan_matcher_node` → `pose_graph_node`. Internal to SLAM: not a stable interface |
 | `/goal_pose` | `geometry_msgs/PoseStamped` | RViz / explorer → planner |
 | `/plan` | `nav_msgs/Path` | `planner_node` → `controller_node` |
 | `/esdf` | `sensor_msgs/Image`, `32FC1` (signed distance in metres, one float per cell, row 0 = grid row `j = 0`), paired by `header.stamp` with the `/map` it was computed from, whose grid geometry it shares | mapping → planner/controller; encoding decision D12 of `docs/phase-4-mapping/implementation.md` section 5.2 |
