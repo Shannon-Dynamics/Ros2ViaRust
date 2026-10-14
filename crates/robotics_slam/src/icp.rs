@@ -64,7 +64,11 @@ pub struct IcpConfig {
     /// Floor on the residual standard deviation used for the information matrix (m): the lidar
     /// noise, so a perfect synthetic fit does not report infinite certainty.
     pub sigma_floor: f64,
-    /// Divides the information matrix. 1.0 until claim S2 has been measured, then frozen.
+    /// Divides the information matrix. **Frozen at 1.5** from the development run
+    /// `evidence/phase-5-slam/synthetic-1-dev-route-long`, where the mean NEES of the 1828
+    /// registrations under the raw matrix (`info_inflation = 1.0`) was 4.53 against the
+    /// chi-squared(3) mean of 3: `4.53 / 3 = 1.51`, rounded to two significant digits by the rule of
+    /// `docs/phase-5-slam/benchmark.md` section 6. The three evaluation runs use it unchanged.
     pub info_inflation: f64,
     /// Ridge of the normal equations and of the information matrix, relative to their trace.
     pub ridge: f64,
@@ -88,7 +92,7 @@ impl Default for IcpConfig {
             normal_min_points: 3,
             planarity_ratio: 0.1,
             sigma_floor: 0.015,
-            info_inflation: 1.0,
+            info_inflation: 1.5,
             ridge: 1e-6,
             degeneracy_ratio: 0.02,
             min_correspondences: 10,

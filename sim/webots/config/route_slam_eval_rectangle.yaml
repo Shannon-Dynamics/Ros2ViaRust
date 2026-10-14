@@ -1,0 +1,30 @@
+# A Phase 5 evaluation route for the loop-closure claims (S4, S5): a rectangle driven three times.
+#
+# Why this file exists. docs/phase-5-slam/implementation.md section 9 asked whether Phase 5 reuses
+# Phase 4's three M1 evaluation routes. Two of them revisit places enough for loop candidates
+# (cross and diamond: 88 and 363 true-loop keyframe pairs by the rule below) and are reused;
+# route_eval_wall_lobes.yaml does not (16 pairs, 8 keyframes with a partner: it was designed to
+# meet the walls, not to come back to where it was), so this route replaces it.
+#
+# The rule, fixed before any run: a keyframe pair is a true loop if the robot was within 1.5 m of
+# the same place at least 6 m of path apart; a route serves S4 and S5 if it has at least 20 such
+# pairs (the fewest candidates the verdict script will grade S5 on). Keyframes by the pose
+# graph's own policy (0.5 m or 0.35 rad), the path driven as route_driver drives it (turn in
+# place, then straight at 0.18 m/s, turns at 0.8 rad/s), counted by
+# scripts/phase5_route_revisits.py on the route's geometry alone, not on any run.
+#
+# The shape: 2.2 m by 1.8 m, inside the room, every corner at least 0.67 m from the nearest
+# pillar centre (landmarks.yaml; the pillars have radius 0.15 m and the Burger's footprint is
+# about 0.11 m), driven with `laps: 3` (one lap is the waypoint list, which ends where it
+# starts). It is neither a circle nor the star of route_long.yaml. Coordinates are the map frame
+# of ./landmarks.yaml, metres.
+
+route:
+  name: slam-eval-rectangle
+
+waypoints:
+  - {x: 1.200, y: -0.900}
+  - {x: 1.200, y: 0.900}
+  - {x: -1.000, y: 0.900}
+  - {x: -1.000, y: -0.900}
+  - {x: 1.200, y: -0.900}

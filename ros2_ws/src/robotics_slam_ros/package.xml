@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>robotics_slam_ros</name>
+  <version>0.1.0</version>
+  <description>SLAM (Phase 5): the LiDAR scan matcher (scan in, relative-pose registration out), the pose graph (registrations in, keyframe poses and path out, loop closure reported unsupported), and a replayer of recorded scan streams for testing them without a simulator. Publishes no TF and no map.</description>
+  <maintainer email="russell.otniel@shannon.id">Shannon Robotics</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>rclrs</depend>
+  <depend>robotics_ros_bridge</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>diagnostic_msgs</depend>
+  <depend>builtin_interfaces</depend>
+
+  <export>
+    <build_type>ament_cargo</build_type>
+  </export>
+</package>

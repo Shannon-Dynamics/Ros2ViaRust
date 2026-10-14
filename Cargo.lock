@@ -1552,8 +1552,23 @@ dependencies = [
  "rand 0.10.3",
  "robotics_core",
  "robotics_filters",
+ "robotics_localization",
  "robotics_models",
  "robotics_sim",
+ "thiserror 2.0.21",
+]
+
+[[package]]
+name = "robotics_slam_ros"
+version = "0.1.0"
+dependencies = [
+ "rclrs",
+ "robotics_core",
+ "robotics_mapping",
+ "robotics_ros_bridge",
+ "robotics_sim",
+ "robotics_slam",
+ "ros-env",
  "thiserror 2.0.21",
 ]
 

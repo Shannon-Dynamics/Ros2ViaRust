@@ -11,7 +11,19 @@
 //!   time between stamps (decision DS6).
 //! * A scan is one instant: no deskewing (decision D9 of Phase 4, a property of the Webots
 //!   driver).
-//! * A registration that does not converge is not believed: the pose advances by the
+//! * A registration that does not settle at the adaptive threshold is tried once more at the
+//!   no-knowledge threshold (`adaptive.initial_threshold`) from the same guess, if the adaptive
+//!   one is smaller. Without this the front end deadlocks: after a long straight the threshold is
+//!   a few centimetres, the first turning scan needs several times that, ICP crawls and hits its
+//!   iteration limit, and a failed step used to leave the threshold where it was, so no later
+//!   step could do better (found by the first evidence run on `route_eval_cross.yaml`).
+//! * A registration that settles but has **no information** (the matrix is not positive definite:
+//!   no correspondence had a usable line normal, so nothing constrains it) is believed for its pose
+//!   and reports the configured fallback information instead, with
+//!   [`StepResult::information_fallback`] set. Without this its zero matrix cannot be inverted into a
+//!   covariance, and a consumer that needs one (the pose graph's edge, a message) silently loses the
+//!   increment (found by replaying a recorded Webots stream through the nodes).
+//! * A registration that still does not settle is not believed: the pose advances by the
 //!   prediction, the scan is **not** added to the map, the threshold is not updated, and the
 //!   step reports [`TrackingStatus::Predicted`] with a fallback information matrix.
 
@@ -86,8 +98,15 @@ pub struct StepResult {
     pub information: Matrix3<f64>,
     /// How the step was resolved.
     pub status: TrackingStatus,
-    /// The correspondence threshold used (m).
+    /// `information` is the configured fallback, not the registration's: true for the first scan, for
+    /// a predicted step, and for a settled registration whose own information was not positive
+    /// definite.
+    pub information_fallback: bool,
+    /// The correspondence threshold of the registration that was used (m).
     pub threshold: f64,
+    /// The registration at the adaptive threshold did not settle and the retry at the
+    /// no-knowledge threshold was the one used (or tried).
+    pub retried: bool,
     /// The registration, when one was run.
     pub icp: Option<IcpResult>,
 }
@@ -160,8 +179,10 @@ impl LidarOdometry {
                 pose: self.pose,
                 delta: Se2::IDENTITY,
                 information: self.fallback_information(),
+                information_fallback: true,
                 status: TrackingStatus::Initialized,
                 threshold: self.adaptive.threshold(),
+                retried: false,
                 icp: None,
             });
         }
@@ -171,9 +192,29 @@ impl LidarOdometry {
             threshold,
             ..self.cfg.icp
         };
-        let r = register(&pts, &self.map, guess, &icp_cfg)?;
+        let mut r = register(&pts, &self.map, guess, &icp_cfg)?;
+        let mut used_threshold = threshold;
+        let mut retried = false;
+        if !r.settled && threshold < self.cfg.adaptive.initial_threshold {
+            retried = true;
+            let wide = IcpConfig {
+                threshold: self.cfg.adaptive.initial_threshold,
+                ..self.cfg.icp
+            };
+            let again = register(&pts, &self.map, guess, &wide)?;
+            if again.settled {
+                r = again;
+                used_threshold = wide.threshold;
+            }
+        }
+        let own_information = r.settled && r.information.cholesky().is_some();
         let (new_pose, status, information) = if r.settled {
-            (r.pose, TrackingStatus::Tracked, r.information)
+            let information = if own_information {
+                r.information
+            } else {
+                self.fallback_information()
+            };
+            (r.pose, TrackingStatus::Tracked, information)
         } else {
             (
                 guess,
@@ -198,7 +239,9 @@ impl LidarOdometry {
             delta,
             information,
             status,
-            threshold,
+            information_fallback: !own_information,
+            threshold: used_threshold,
+            retried,
             icp: Some(r),
         })
     }

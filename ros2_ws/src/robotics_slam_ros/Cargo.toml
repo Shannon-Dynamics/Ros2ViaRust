@@ -1,0 +1,36 @@
+[package]
+name = "robotics_slam_ros"
+description = "SLAM nodes for ros2-rust-robotics (Phase 5): the LiDAR scan matcher and the pose graph (with optional loop closure, a rendered /map and map -> odom), which wrap the pure robotics_slam crate and Phase 4's grid, and a recorded-scan replayer for testing them without a simulator"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "robotics_slam_ros"
+path = "src/lib.rs"
+
+[[bin]]
+name = "scan_matcher_node"
+path = "src/scan_matcher_node.rs"
+
+[[bin]]
+name = "pose_graph_node"
+path = "src/pose_graph_node.rs"
+
+[[bin]]
+name = "scan_replayer"
+path = "src/scan_replayer.rs"
+
+[dependencies]
+robotics_core = { workspace = true }
+robotics_slam = { workspace = true }
+robotics_mapping = { workspace = true }
+robotics_ros_bridge = { workspace = true }
+rclrs = { workspace = true }
+ros-env = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+robotics_sim = { workspace = true }

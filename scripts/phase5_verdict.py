@@ -44,7 +44,8 @@ produce.
   schema: phase5-slam-metrics/1
   run: {data_source: synthetic|webots_recorded|webots_live, ground_truth: exact|webots_gated,
         role: development|evaluation, seed, route, injected_yaw_bias_rad_per_keyframe,
-        robotics_mapping_dependency: false, build_profile: release|debug}
+        robotics_mapping_dependency: false, build_profile: release|debug,
+        info_inflation (optional)}
   s1a: {registrations_made, registrations_graded,
         translation_error_m: STATS, rotation_error_rad: STATS}
   s2:  {dof, samples, mean_nees}
@@ -53,11 +54,31 @@ produce.
   s4:  {keyframes_made, keyframes_graded, path_length_m, odometry: TRAJ, graph: TRAJ}
   s5:  {candidates, accepted_correct, accepted_wrong, true_loops_proposed, true_loops_accepted,
         wrong_constraint_error_m, wrong_constraint_error_rad, rejected_by_reason: {no_overlap,
-        not_converged, poor_fit, degenerate, gate_exceeded, ambiguous}}
+        not_converged, poor_fit, degenerate, gate_exceeded, ambiguous},
+        keyframes_with_true_partner (optional), keyframes_with_accepted_loop (optional),
+        true_loops_missed_by_reason (optional, same keys as rejected_by_reason)}
   s6:  {replay_identical, scan_period_s, registration_latency_s: STATS, optimization_latency_s: STATS}
+
+  s7 (optional; REPORTED, never graded):
+       {odometry_noise: {trans_frac, trans_floor_m, lateral_frac, lateral_floor_m, rot_per_rad,
+                         rot_per_m, rot_floor_rad, yaw_bias_rad_per_m},
+        dead_reckoning: {ate_rms_m, ate_max_m, final_error_m},
+        ekf_slam: {ate_rms_m, ate_max_m, final_error_m, mean_nees, nees_samples,
+                   nees_within_975_bound_fraction, landmarks, distinct_pillars,
+                   landmark_error_max_m, provisional_left},
+        rbpf: {particles, ate_rms_m, ate_max_m, final_error_m, resamples, mean_n_eff_before}}
+
+  A run with data_source webots_recorded may omit s1b, s4, s5 and s7: a recorded stream of the
+  scans the Phase 4 mapper integrated has no turns in it, so the front end and the graph cannot be
+  run on it (docs/phase-5-slam/implementation.md section 8). Their claims are then NOT_GRADED.
 
   STATS = {median, p95, p99, max, count}
   TRAJ  = {ate_rms_m, ate_max_m, final_error_m, drift_m_per_m, heading_drift_rad_per_m}
+
+CHANGES TO THIS FILE AFTER IT WAS WRITTEN (the history is in git; this is the plain statement).
+The first evidence runs (2026-10-11, docs/phase-5-slam/implementation.md section 8.5) needed the
+schema to say three more things: the optional keys and the optional sections named above. No
+tolerance was changed by that edit, and none was changed after any evidence run existed.
 """
 import hashlib
 import math
@@ -258,6 +279,23 @@ def sha256(path):
 STATS = {"median", "p95", "p99", "max", "count"}
 TRAJ = {"ate_rms_m", "ate_max_m", "final_error_m", "drift_m_per_m", "heading_drift_rad_per_m"}
 REASONS = {"no_overlap", "not_converged", "poor_fit", "degenerate", "gate_exceeded", "ambiguous"}
+# Keys a run may carry and need not.
+OPTIONAL_KEYS = {
+    "run": {"info_inflation"},
+    "s5": {"keyframes_with_true_partner", "keyframes_with_accepted_loop", "true_loops_missed_by_reason"},
+}
+OPTIONAL_SECTIONS = {"s7"}
+# A recording of the scans the Phase 4 mapper integrated has no turns: no front end, no graph.
+OPTIONAL_FOR_RECORDED = {"s1b", "s4", "s5"}
+S7_KEYS = {
+    "odometry_noise": {"trans_frac", "trans_floor_m", "lateral_frac", "lateral_floor_m", "rot_per_rad",
+                       "rot_per_m", "rot_floor_rad", "yaw_bias_rad_per_m"},
+    "dead_reckoning": {"ate_rms_m", "ate_max_m", "final_error_m"},
+    "ekf_slam": {"ate_rms_m", "ate_max_m", "final_error_m", "mean_nees", "nees_samples",
+                 "nees_within_975_bound_fraction", "landmarks", "distinct_pillars",
+                 "landmark_error_max_m", "provisional_left"},
+    "rbpf": {"particles", "ate_rms_m", "ate_max_m", "final_error_m", "resamples", "mean_n_eff_before"},
+}
 SCHEMA_KEYS = {
     "schema": None,
     "run": {
@@ -276,6 +314,7 @@ SCHEMA_KEYS = {
     "s6": {
         "replay_identical", "scan_period_s", "registration_latency_s", "optimization_latency_s",
     },
+    "s7": set(S7_KEYS),
 }
 NESTED = {
     ("s1a", "translation_error_m"): STATS,
@@ -283,6 +322,8 @@ NESTED = {
     ("s4", "odometry"): TRAJ,
     ("s4", "graph"): TRAJ,
     ("s5", "rejected_by_reason"): REASONS,
+    ("s5", "true_loops_missed_by_reason"): REASONS,
+    **{("s7", k): v for k, v in S7_KEYS.items()},
     ("s6", "registration_latency_s"): STATS,
     ("s6", "optimization_latency_s"): STATS,
 }
@@ -297,8 +338,11 @@ def schema_problems(m):
     for k in m:
         if k not in SCHEMA_KEYS:
             out.append(f"unknown top-level key: {k}")
+    recorded = isinstance(m.get("run"), dict) and m["run"].get("data_source") == "webots_recorded"
     for sec, keys in SCHEMA_KEYS.items():
         if sec not in m:
+            if sec in OPTIONAL_SECTIONS or (recorded and sec in OPTIONAL_FOR_RECORDED):
+                continue
             out.append(f"missing section: {sec}")
             continue
         if keys is None:
@@ -306,11 +350,12 @@ def schema_problems(m):
         if not isinstance(m[sec], dict):
             out.append(f"{sec} is not a mapping")
             continue
+        optional = OPTIONAL_KEYS.get(sec, set())
         for k in m[sec]:
-            if k not in keys:
+            if k not in keys and k not in optional:
                 out.append(f"unknown key: {sec}.{k}")
         for k in keys:
-            if k not in m[sec]:
+            if k not in m[sec] and k not in optional:
                 out.append(f"missing key: {sec}.{k}")
     for (sec, k), keys in NESTED.items():
         v = m.get(sec, {}).get(k) if isinstance(m.get(sec), dict) else None
@@ -347,6 +392,8 @@ def schema_problems(m):
         if isinstance(v, bool) or not isinstance(v, (int, float)) or (isinstance(v, float) and v != v):
             out.append(f"{'.'.join(map(str, path))} is not a number: {v!r}")
     ranges = m.get("s1b", {}).get("ranges") if isinstance(m.get("s1b"), dict) else None
+    if "s1b" in m and ranges is None:
+        pass
     if ranges is not None:
         if not isinstance(ranges, list) or not ranges:
             out.append("s1b.ranges is not a non-empty list")
@@ -410,18 +457,24 @@ def validity(m):
     if run["robotics_mapping_dependency"] is not False:
         r.append("the pipeline that produced this run depended on robotics_mapping: no S claim may be "
                  "graded on it while Phase 4's M1 is open (problem.md section 6)")
-    if m["s4"]["path_length_m"] < MIN_PATH_M:
+    if "s4" in m and m["s4"]["path_length_m"] < MIN_PATH_M:
         r.append(f"the robot travelled {m['s4']['path_length_m']} m, needs {MIN_PATH_M} m")
-    s5 = m["s5"]
-    n_rej = sum(s5["rejected_by_reason"].values())
-    if s5["accepted_correct"] + s5["accepted_wrong"] + n_rej != s5["candidates"]:
-        r.append("s5 counts do not add up: accepted_correct + accepted_wrong + rejected != candidates")
-    if s5["wrong_constraint_error_m"] != S5_WRONG_CONSTRAINT_ERROR_M or \
-            s5["wrong_constraint_error_rad"] != S5_WRONG_CONSTRAINT_ERROR_RAD:
-        r.append("the harness labelled wrong constraints with limits other than this script's")
+    if "s5" in m:
+        s5 = m["s5"]
+        n_rej = sum(s5["rejected_by_reason"].values())
+        if s5["accepted_correct"] + s5["accepted_wrong"] + n_rej != s5["candidates"]:
+            r.append("s5 counts do not add up: accepted_correct + accepted_wrong + rejected != candidates")
+        if s5["wrong_constraint_error_m"] != S5_WRONG_CONSTRAINT_ERROR_M or \
+                s5["wrong_constraint_error_rad"] != S5_WRONG_CONSTRAINT_ERROR_RAD:
+            r.append("the harness labelled wrong constraints with limits other than this script's")
+        if "true_loops_missed_by_reason" in s5 and \
+                sum(s5["true_loops_missed_by_reason"].values()) != s5["true_loops_proposed"] - s5["true_loops_accepted"]:
+            r.append("s5 true_loops_missed_by_reason does not add up to proposed - accepted")
     if m["s1a"]["registrations_graded"] > m["s1a"]["registrations_made"]:
         r.append("s1a graded more registrations than were made")
-    for rg in m["s1b"]["ranges"]:
+    if run["data_source"] == "webots_recorded" and run["role"] == "evaluation" and False:
+        pass
+    for rg in m.get("s1b", {}).get("ranges", []):
         if rg["successes"] > rg["trials"]:
             r.append("s1b has more successes than trials")
     return r
@@ -451,6 +504,8 @@ def grade_s1a(m):
 
 
 def grade_s1b(m):
+    if "s1b" not in m:
+        return claim("NOT_GRADED", notes=["no s1b section in this run"])
     if m["run"]["data_source"] != "synthetic":
         return claim("NOT_GRADED", notes=["S1b is a model-level trial set; not graded on Webots data"])
     checks, notes = [], []
@@ -491,6 +546,10 @@ def grade_s2(m):
 
 
 def grade_s4(m):
+    if "s4" not in m or "s5" not in m:
+        return claim("NOT_GRADED", notes=[
+            "this run has no pipeline sections: a recording of the scans the Phase 4 mapper integrated has "
+            "no turns in it, so the front end cannot be run on it"])
     run, s4, s5 = m["run"], m["s4"], m["s5"]
     gt = run["ground_truth"]
     if s4["keyframes_graded"] < MIN_GRADED_KEYFRAMES:
@@ -523,9 +582,20 @@ def grade_s4(m):
 
 
 def grade_s5(m):
+    if "s5" not in m:
+        return claim("NOT_GRADED", notes=["no s5 section in this run (no pipeline was run on it)"])
     s5 = m["s5"]
     accepted = s5["accepted_correct"] + s5["accepted_wrong"]
     prec_lo, prec_hi = wilson(s5["accepted_correct"], accepted)
+    if "keyframes_with_true_partner" in s5:
+        wp, wa = s5["keyframes_with_true_partner"], s5["keyframes_with_accepted_loop"]
+        notes_extra = [f"keyframes that had a true-loop partner by ground truth: {wp}; of those, with an "
+                       f"accepted loop edge: {wa}"]
+    else:
+        notes_extra = []
+    if "true_loops_missed_by_reason" in s5:
+        notes_extra.append(f"true loops the detector proposed and the verifier rejected, by reason: "
+                           f"{dict(s5['true_loops_missed_by_reason'])}")
     notes = [
         f"candidates {s5['candidates']}, accepted {accepted} "
         f"(correct {s5['accepted_correct']}, wrong {s5['accepted_wrong']}), "
@@ -535,6 +605,7 @@ def grade_s5(m):
         f"true loops proposed {s5['true_loops_proposed']}, accepted {s5['true_loops_accepted']}: recall "
         "of what the DETECTOR PROPOSED (loops it never proposed are not counted); reported, never required",
     ]
+    notes += notes_extra
     if s5["candidates"] < S5_MIN_CANDIDATES:
         return claim("NOT_GRADED", notes=notes + [f"{s5['candidates']} candidates, needs {S5_MIN_CANDIDATES}"])
     if accepted > 0 and s5["accepted_wrong"] == 0:
@@ -565,6 +636,28 @@ def grade_s6(m):
     return claim("PASS" if all(c.ok for c in checks) else "FAIL", checks, notes)
 
 
+def grade_s7(m):
+    if "s7" not in m:
+        return claim("NOT_GRADED", notes=["no s7 section in this run"])
+    s = m["s7"]
+    d, e, r = s["dead_reckoning"], s["ekf_slam"], s["rbpf"]
+    return claim("REPORTED", notes=[
+        f"synthetic odometry fed to both back ends: {dict(s['odometry_noise'])}; Webots' own odometry has "
+        "no noise model, so this is a statement about that setting and no other",
+        f"dead reckoning of that odometry: ATE RMS {d['ate_rms_m']!r} m, max {d['ate_max_m']!r} m, "
+        f"final {d['final_error_m']!r} m",
+        f"EKF-SLAM (pillar detections of the same scans): ATE RMS {e['ate_rms_m']!r} m, max "
+        f"{e['ate_max_m']!r} m, final {e['final_error_m']!r} m; mean pose NEES {e['mean_nees']!r} over "
+        f"{e['nees_samples']} steps (chi-squared(3) mean is 3), {e['nees_within_975_bound_fraction']!r} of "
+        f"steps within the 97.5 per cent bound; {e['landmarks']} landmarks on {e['distinct_pillars']} "
+        f"distinct pillars, worst landmark error {e['landmark_error_max_m']!r} m",
+        f"grid RBPF ({r['particles']} particles, no scan-matching proposal): ATE RMS {r['ate_rms_m']!r} m, "
+        f"max {r['ate_max_m']!r} m, final {r['final_error_m']!r} m; {r['resamples']} resamples, mean N_eff "
+        f"before resampling {r['mean_n_eff_before']!r}",
+        "informative and non-blocking: no ranking of the back ends is claimed",
+    ])
+
+
 def grade(run_dir):
     """Grade one run directory; return (verdict dict, text lines)."""
     name = os.path.basename(os.path.abspath(run_dir))
@@ -592,7 +685,7 @@ def grade(run_dir):
         "S5": grade_s5(m), "S6": grade_s6(m),
     }
     claims["S3"] = claim("NOT_GRADED", notes=["tests: cargo test -p robotics_slam"])
-    claims["S7"] = claim("NOT_GRADED", notes=["informative, non-blocking; no metrics file in this pass"])
+    claims["S7"] = grade_s7(m)
     claims["S8"] = claim("NOT_CLAIMABLE", notes=[
         "blocked on Phase 4's M1, a measured S5 on the evaluation runs, and the submap-rendering node"])
     lines = header + [
@@ -603,6 +696,7 @@ def grade(run_dir):
         f"seed: {run['seed']}",
         f"route: {run['route']}",
         f"injected_yaw_bias_rad_per_keyframe: {run['injected_yaw_bias_rad_per_keyframe']!r}",
+        f"info_inflation: {run.get('info_inflation', 'not recorded')!r}",
         f"build_profile: {run['build_profile']}",
         "claims:",
     ]

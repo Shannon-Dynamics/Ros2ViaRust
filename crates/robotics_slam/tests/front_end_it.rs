@@ -172,3 +172,118 @@ fn the_front_end_is_deterministic() {
     assert_eq!(bits(5), bits(5));
     assert_ne!(bits(5), bits(6));
 }
+
+/// A long straight, then a sharp turn in place, then straight again: poses at scan rate with the
+/// route driver's rates (0.036 m and 0.16 rad per scan).
+fn straight_then_turn() -> Vec<Se2> {
+    let mut poses = Vec::new();
+    // 2.55 m, 0.45 m short of the east wall, as the cross route (route_eval_cross.yaml) does.
+    for k in 0..=71 {
+        poses.push(Se2::new(k as f64 * 2.55 / 71.0, 0.0, 0.0));
+    }
+    let end = *poses.last().unwrap();
+    for k in 1..=20 {
+        poses.push(Se2::new(
+            end.x(),
+            0.0,
+            std::f64::consts::PI * k as f64 / 20.0,
+        ));
+    }
+    for k in 1..=40 {
+        poses.push(Se2::new(
+            end.x() - k as f64 * 0.036,
+            0.0,
+            std::f64::consts::PI,
+        ));
+    }
+    poses
+}
+
+#[test]
+fn a_sharp_turn_after_a_long_straight_is_tracked() {
+    // The first version lost this: seventy straight scans shrink the adaptive threshold to a few
+    // centimetres, the first turning scan then needs several times that, the registration failed,
+    // and a failed registration did not feed back into the threshold, so it never recovered.
+    let world = pillar_room();
+    let route = straight_then_turn();
+    let (est, predicted) = run_front_end(&world, &route, 8);
+    let worst = est
+        .iter()
+        .zip(&route)
+        .map(|(a, b)| a.distance_to(b))
+        .fold(0.0, f64::max);
+    let heading = est
+        .iter()
+        .zip(&route)
+        .map(|(a, b)| a.between(b).log()[2].abs())
+        .fold(0.0, f64::max);
+    println!("straight then turn: predicted {predicted}, worst position error {worst:.4} m, worst heading error {heading:.4} rad");
+    assert_eq!(predicted, 0, "a registration was lost");
+    assert!(worst < 0.05, "worst position error {worst}");
+    assert!(heading < 0.02, "worst heading error {heading}");
+}
+
+/// A world with no line features at all: about fifty thin poles (radius 0.03 m, a beam or two each)
+/// on a jittered lattice and no walls, so no neighbourhood of a target point is a line.
+fn pillars_only() -> robotics_sim::World {
+    let mut w = robotics_sim::World::empty();
+    for i in -4..=4_i32 {
+        for j in -4..=4_i32 {
+            let cx = i as f64 * 0.8 + 0.13 * ((i * 7 + j * 3).rem_euclid(5)) as f64;
+            let cy = j as f64 * 0.8 + 0.11 * ((i * 5 + j * 11).rem_euclid(5)) as f64;
+            if cx.hypot(cy) < 0.5 {
+                continue; // keep the robot's start clear of a pole
+            }
+            let ring: Vec<_> = (0..12)
+                .map(|k| {
+                    let a = std::f64::consts::TAU * k as f64 / 12.0;
+                    Vector2::new(cx + 0.03 * a.cos(), cy + 0.03 * a.sin())
+                })
+                .collect();
+            w.add_polyline(&ring, true).unwrap();
+        }
+    }
+    w
+}
+
+#[test]
+fn a_registration_with_no_line_features_reports_the_fallback_information_and_never_a_zero_matrix() {
+    // Nothing in this world is a line, so no correspondence has a usable normal and the ICP
+    // information matrix is exactly zero. The first version passed that zero matrix on, and a
+    // consumer that has to invert it (a pose-graph edge, a message covariance) silently lost the
+    // increment; found by replaying a recorded Webots stream through the nodes.
+    let world = pillars_only();
+    let mut lid = lidar(9, true);
+    let mut odo = LidarOdometry::new(OdometryConfig::default()).unwrap();
+    let mut seen_own = 0;
+    let mut seen_fallback = 0;
+    let mut tracked_fallback = 0;
+    for k in 0..12 {
+        let pose = Se2::new(0.03 * k as f64, 0.0, 0.0);
+        let scan = scan_at(&mut lid, &world, &pose, k);
+        let r = odo.step(&scan).unwrap();
+        // Whatever the step reports, its information is something a covariance can be made of.
+        assert!(
+            r.information.cholesky().is_some(),
+            "step {k}: {:?}",
+            r.information
+        );
+        assert!(r.information.try_inverse().is_some());
+        if r.information_fallback {
+            seen_fallback += 1;
+            tracked_fallback += usize::from(r.status == TrackingStatus::Tracked);
+        } else {
+            seen_own += 1;
+        }
+        if let Some(icp) = r.icp {
+            if r.status == TrackingStatus::Tracked && icp.information.cholesky().is_none() {
+                assert!(r.information_fallback, "step {k} used a zero matrix");
+            }
+        }
+    }
+    println!("pillars only: {seen_own} steps with their own information, {seen_fallback} with the fallback");
+    assert!(
+        tracked_fallback > 0,
+        "the scene should have produced a tracked step without line features ({seen_own} own, {seen_fallback} fallback)"
+    );
+}

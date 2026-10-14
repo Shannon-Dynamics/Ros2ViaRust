@@ -24,6 +24,7 @@ members = [
     "ros2_ws/src/robotics_localization_bridge",
     "ros2_ws/src/robotics_integration",
     "ros2_ws/src/robotics_mapping_ros",
+    "ros2_ws/src/robotics_slam_ros",
 ]
 default-members = [
     "crates/robotics_core",

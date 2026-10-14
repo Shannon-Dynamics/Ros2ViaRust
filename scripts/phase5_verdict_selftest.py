@@ -142,6 +142,40 @@ expect(status(grade(mutate(("s6", "replay_identical"), False)), "S6") == "FAIL",
 expect(status(grade(mutate(("s6", "registration_latency_s", "p99"), 0.2)), "S6") == "FAIL", "S6 fails on registration p99")
 expect(status(grade(mutate(("s6", "optimization_latency_s", "p99"), 3.0)), "S6") == "FAIL", "S6 fails on optimization p99")
 
+# --- the schema additions of the first evidence runs ---------------------------------------------------
+m = nominal(); m["run"]["info_inflation"] = 1.6
+m["s5"].update(keyframes_with_true_partner=30, keyframes_with_accepted_loop=28,
+               true_loops_missed_by_reason={"no_overlap": 0, "not_converged": 0, "poor_fit": 0,
+                                            "degenerate": 0, "gate_exceeded": 2, "ambiguous": 0})
+m["s5"]["true_loops_proposed"], m["s5"]["true_loops_accepted"] = 40, 38
+expect(grade(m)["valid"], "the optional run and s5 keys are accepted")
+m["s5"]["true_loops_accepted"] = 37
+expect(not grade(m)["valid"], "true_loops_missed_by_reason that does not add up is refused")
+m = nominal()
+m["s7"] = {
+    "odometry_noise": {"trans_frac": 0.02, "trans_floor_m": 0.001, "lateral_frac": 0.01, "lateral_floor_m": 0.001,
+                       "rot_per_rad": 0.03, "rot_per_m": 0.005, "rot_floor_rad": 0.002, "yaw_bias_rad_per_m": 0.005},
+    "dead_reckoning": {"ate_rms_m": 1.0, "ate_max_m": 2.0, "final_error_m": 2.0},
+    "ekf_slam": {"ate_rms_m": 0.2, "ate_max_m": 0.4, "final_error_m": 0.3, "mean_nees": 5.0, "nees_samples": 800,
+                 "nees_within_975_bound_fraction": 0.8, "landmarks": 4, "distinct_pillars": 4,
+                 "landmark_error_max_m": 0.1, "provisional_left": 0},
+    "rbpf": {"particles": 30, "ate_rms_m": 0.3, "ate_max_m": 0.6, "final_error_m": 0.5, "resamples": 20,
+             "mean_n_eff_before": 12.0},
+}
+r = grade(m)
+expect(r["valid"] and status(r, "S7") == "REPORTED", "S7 is reported, never graded")
+m["s7"]["rbpf"]["surprise"] = 1
+expect(not grade(m)["valid"], "an unknown s7 key is refused")
+m = nominal(); m["run"].update(data_source="webots_recorded", ground_truth="webots_gated")
+for k in ("s1b", "s4", "s5"):
+    del m[k]
+r = grade(m)
+expect(r["valid"], "a recorded run may omit s1b, s4 and s5")
+expect(all(status(r, c) == "NOT_GRADED" for c in ("S1b", "S4", "S5")), "and their claims are then NOT_GRADED")
+expect(status(r, "S1a") in ("PASS", "FAIL") and status(r, "S6") in ("PASS", "FAIL"), "S1a and S6 are still graded on it")
+m = nominal(); del m["s1b"]
+expect(not grade(m)["valid"], "a synthetic run may NOT omit s1b")
+
 # --- what it refuses -------------------------------------------------------------------------------
 m = nominal(); m["extra"] = 1
 expect(not grade(m)["valid"], "an unknown top-level key is refused")
