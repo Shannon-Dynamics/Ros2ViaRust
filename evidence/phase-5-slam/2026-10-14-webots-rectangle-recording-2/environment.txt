@@ -1,0 +1,18 @@
+date_utc: 2026-10-14T15:22:49Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.40.1-microsoft-standard-WSL2
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+ros_distro: jazzy
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+route_file: /home/genta/ros2-rust-robotics/sim/webots/config/route_slam_eval_rectangle.yaml
+route_sha256: 9e06fc3fa2850ff84e4267570cf7d118433b347e467b977600309ee15b14cf50
+laps: 3
+drive_angular_override: none
+scan_time_offset_s: -0.06
+motion_gate: off
+motion_filter: off
+launch_file_sha256: 877b4095e30082cd1a6479484e8857314d4d89863eea9362509d026917420bf4
+mapping_node_executable_sha256: 274d6540ab918960c67f97bb9d20e07b530b6676edf9a52e654223c900ec6762
+source_git_commit: a573519a24ef0fb5aeb62762e3ff3e423d3f592d

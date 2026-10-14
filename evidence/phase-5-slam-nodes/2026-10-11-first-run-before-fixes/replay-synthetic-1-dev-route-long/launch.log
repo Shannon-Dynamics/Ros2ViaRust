@@ -1,0 +1,28 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-12-00-56-345261-LAPTOP-HJL1R3P6-168982
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source replay; loop_closure: unsupported; no TF, no map, no map -> odom published
+[INFO] [pose_graph_node-1]: process started with pid [169025]
+[INFO] [scan_matcher_node-2]: process started with pid [169026]
+[INFO] [scan_replayer-3]: process started with pid [169027]
+[scan_matcher_node-2] [INFO] [1791694856.541281401] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[pose_graph_node-1] [INFO] [1791694856.554143159] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame slam_origin, keyframes every 0.5 m or 0.35 rad, loop_closure: unsupported, no TF, no map, 12 parameters
+[scan_replayer-3] [INFO] [1791694856.686629170] [scan_replayer]: scan_replayer up: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/v2-synthetic-1-dev-route-long/scans.csv -> scan, 8 parameters
+[scan_replayer-3] [INFO] [1791694856.736739970] [scan_replayer]: replaying 1829 scans at 20 Hz, 1 subscriber(s) connected
+[pose_graph_node-1] [WARN] [1791694874.304556765] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_replayer-3] [WARN] [1791694874.305023361] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791694874.305355078] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_replayer-3] [WARN] [1791694907.961354112] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791694907.961623389] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[pose_graph_node-1] [WARN] [1791694907.962124963] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[scan_replayer-3] [WARN] [1791694941.752628376] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791694941.752658245] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[pose_graph_node-1] [WARN] [1791694941.752869111] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[scan_replayer-3] [INFO] [1791694952.592451448] [scan_replayer]: replay finished: 1829 scans published
+[INFO] [scan_replayer-3]: process has finished cleanly [pid 169027]
+[INFO] [launch.user]: scan_replayer finished: shutting the SLAM nodes down
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[scan_matcher_node-2] [INFO] [1791694955.852833332] [scan_matcher_node]: scan_matcher_node shutting down: 1829 scans received, 1829 registrations published (1828 tracked, 0 predicted, 0 retried wide), 0 not registered
+[pose_graph_node-1] [INFO] [1791694955.853567358] [pose_graph_node]: pose_graph_node shutting down: 193 keyframes from 1829 registrations (1829 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: unsupported
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 169026]
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 169025]

@@ -1,0 +1,22 @@
+/pose_graph_node
+  Subscribers:
+    /registration: geometry_msgs/msg/PoseWithCovarianceStamped
+    /scan_matched: sensor_msgs/msg/LaserScan
+  Publishers:
+    /diagnostics: diagnostic_msgs/msg/DiagnosticArray
+    /rosout: rcl_interfaces/msg/Log
+    /slam/path: nav_msgs/msg/Path
+    /slam/pose: geometry_msgs/msg/PoseWithCovarianceStamped
+  Service Servers:
+    /pose_graph_node/describe_parameters: rcl_interfaces/srv/DescribeParameters
+    /pose_graph_node/get_parameter_types: rcl_interfaces/srv/GetParameterTypes
+    /pose_graph_node/get_parameters: rcl_interfaces/srv/GetParameters
+    /pose_graph_node/list_parameters: rcl_interfaces/srv/ListParameters
+    /pose_graph_node/set_parameters: rcl_interfaces/srv/SetParameters
+    /pose_graph_node/set_parameters_atomically: rcl_interfaces/srv/SetParametersAtomically
+  Service Clients:
+
+  Action Servers:
+
+  Action Clients:
+

@@ -1,0 +1,8 @@
+# lidar mount in base_link, read from the first recorded scan: x -0.0300 y -0.0000 yaw 0.00000
+# 889 scans, 888 consecutive pairs with a tracked registration
+best lattice phase 0.198 s, window [-0.035, +0.165): 122 turning pairs, rotation disagreement rms 0.0035 rad, median |.| 0.0020, p95 0.0067, max 0.0128; translation rms 6.2 mm
+probe lattice phase 0.0603 s: 125 turning pairs, rotation disagreement rms 0.0569 rad, median |.| 0.0031, p95 0.1547, max 0.1625; translation rms 8.0 mm
+recorded poses (stamp - 0.06 s): 123 turning pairs, rotation disagreement rms 0.0412 rad, median |.| 0.0154, p95 0.1313, max 0.1461; translation rms 7.0 mm
+# disagreement over the search: best 0.0035 rad, worst 0.0678 rad; the six best (phase s, window edge s, rad): (0.198, -0.035, 0.0035), (0.198, -0.030, 0.0035), (0.198, -0.025, 0.0035), (0.198, -0.020, 0.0035), (0.199, -0.035, 0.0035), (0.199, -0.030, 0.0035)
+# stamp lag behind the best lattice instant: min -0.018 / median 0.062 / max 0.162 s (the probe of 2026-10-10: -0.02 to 0.18, mean 0.061)
+# wrote evidence/phase-5-slam/2026-10-15-gt-instants-recording-2/integrated-scans.csv: 812 of 889 poses replaced

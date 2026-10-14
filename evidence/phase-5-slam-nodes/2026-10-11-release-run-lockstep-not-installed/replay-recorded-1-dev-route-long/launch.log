@@ -1,0 +1,19 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-12-48-54-804559-LAPTOP-HJL1R3P6-206623
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source replay; loop_closure: unsupported; no TF, no map, no map -> odom published
+[INFO] [pose_graph_node-1]: process started with pid [206630]
+[INFO] [scan_matcher_node-2]: process started with pid [206631]
+[INFO] [scan_replayer-3]: process started with pid [206632]
+[scan_matcher_node-2] [INFO] [1791697734.916199916] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[pose_graph_node-1] [INFO] [1791697734.923628703] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame slam_origin, keyframes every 0.5 m or 0.35 rad, loop_closure: unsupported, no TF, no map, 12 parameters
+[scan_replayer-3] [INFO] [1791697734.957537170] [scan_replayer]: scan_replayer up: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-development-3-route-long/integrated-scans.csv -> scan, lockstep false, 11 parameters
+[scan_replayer-3] [INFO] [1791697734.962573269] [scan_replayer]: replaying 1312 scans at 200 Hz, 1 subscriber(s) connected
+[scan_replayer-3] [INFO] [1791697741.517649173] [scan_replayer]: replay finished: 1312 scans published
+[INFO] [scan_replayer-3]: process has finished cleanly [pid 206632]
+[INFO] [launch.user]: scan_replayer finished: shutting the SLAM nodes down
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[pose_graph_node-1] [INFO] [1791697744.733759523] [pose_graph_node]: pose_graph_node shutting down: 203 keyframes from 324 registrations (324 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: unsupported
+[scan_matcher_node-2] [INFO] [1791697744.808599261] [scan_matcher_node]: scan_matcher_node shutting down: 325 scans received, 325 registrations published (268 tracked, 56 predicted, 1 retried wide, 0 tracked with fallback information), 0 not registered
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 206630]
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 206631]

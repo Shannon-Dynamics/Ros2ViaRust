@@ -1,0 +1,470 @@
+header:
+  stamp:
+    sec: 1791694715
+    nanosec: 965280293
+  frame_id: ''
+status:
+- level: "\0"
+  name: scan_matcher_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '218'
+  - key: registrations_published
+    value: '218'
+  - key: initialized
+    value: '1'
+  - key: tracked
+    value: '217'
+  - key: predicted
+    value: '0'
+  - key: retried_at_wide_threshold
+    value: '1'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_few_points
+    value: '0'
+  - key: publish_errors
+    value: '0'
+  - key: threshold_m
+    value: '0.2090'
+  - key: inputs
+    value: scan only, no odometry
+  - key: tf_published
+    value: none
+  - key: last_error
+    value: ''
+  - key: registration_latency_us_p50
+    value: '3434'
+  - key: registration_latency_us_p95
+    value: '5884'
+  - key: registration_latency_us_p99
+    value: '7332'
+---
+header:
+  stamp:
+    sec: 1791694715
+    nanosec: 969853477
+  frame_id: ''
+status:
+- level: "\0"
+  name: pose_graph_node
+  message: 'RUNNING (loop_closure: unsupported)'
+  hardware_id: ''
+  values:
+  - key: loop_closure
+    value: unsupported
+  - key: loop_closure_reason
+    value: S5 measured on synthetic data only and weakly against false candidates; no Webots-level run; owner decision pending (docs/phase-...
+  - key: keyframes
+    value: '20'
+  - key: scans_received
+    value: '218'
+  - key: registrations_received
+    value: '218'
+  - key: registrations_processed
+    value: '218'
+  - key: registrations_out_of_order
+    value: '0'
+  - key: scans_dropped_unjoined
+    value: '0'
+  - key: waiting_scans
+    value: '0'
+  - key: waiting_registrations
+    value: '0'
+  - key: edge_errors
+    value: '0'
+  - key: scans_malformed
+    value: '0'
+  - key: registrations_malformed
+    value: '0'
+  - key: loop_edges
+    value: '0'
+  - key: pose_frame
+    value: slam_origin
+  - key: tf_published
+    value: none
+  - key: map_published
+    value: none
+  - key: map_odom_published
+    value: none
+  - key: last_error
+    value: ''
+---
+header:
+  stamp:
+    sec: 1791694716
+    nanosec: 965341439
+  frame_id: ''
+status:
+- level: "\0"
+  name: scan_matcher_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '238'
+  - key: registrations_published
+    value: '238'
+  - key: initialized
+    value: '1'
+  - key: tracked
+    value: '237'
+  - key: predicted
+    value: '0'
+  - key: retried_at_wide_threshold
+    value: '1'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_few_points
+    value: '0'
+  - key: publish_errors
+    value: '0'
+  - key: threshold_m
+    value: '0.2449'
+  - key: inputs
+    value: scan only, no odometry
+  - key: tf_published
+    value: none
+  - key: last_error
+    value: ''
+  - key: registration_latency_us_p50
+    value: '3388'
+  - key: registration_latency_us_p95
+    value: '5884'
+  - key: registration_latency_us_p99
+    value: '8385'
+---
+header:
+  stamp:
+    sec: 1791694716
+    nanosec: 969846085
+  frame_id: ''
+status:
+- level: "\0"
+  name: pose_graph_node
+  message: 'RUNNING (loop_closure: unsupported)'
+  hardware_id: ''
+  values:
+  - key: loop_closure
+    value: unsupported
+  - key: loop_closure_reason
+    value: S5 measured on synthetic data only and weakly against false candidates; no Webots-level run; owner decision pending (docs/phase-...
+  - key: keyframes
+    value: '23'
+  - key: scans_received
+    value: '238'
+  - key: registrations_received
+    value: '238'
+  - key: registrations_processed
+    value: '238'
+  - key: registrations_out_of_order
+    value: '0'
+  - key: scans_dropped_unjoined
+    value: '0'
+  - key: waiting_scans
+    value: '0'
+  - key: waiting_registrations
+    value: '0'
+  - key: edge_errors
+    value: '0'
+  - key: scans_malformed
+    value: '0'
+  - key: registrations_malformed
+    value: '0'
+  - key: loop_edges
+    value: '0'
+  - key: pose_frame
+    value: slam_origin
+  - key: tf_published
+    value: none
+  - key: map_published
+    value: none
+  - key: map_odom_published
+    value: none
+  - key: last_error
+    value: ''
+---
+header:
+  stamp:
+    sec: 1791694717
+    nanosec: 965257705
+  frame_id: ''
+status:
+- level: "\0"
+  name: scan_matcher_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '258'
+  - key: registrations_published
+    value: '258'
+  - key: initialized
+    value: '1'
+  - key: tracked
+    value: '257'
+  - key: predicted
+    value: '0'
+  - key: retried_at_wide_threshold
+    value: '1'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_few_points
+    value: '0'
+  - key: publish_errors
+    value: '0'
+  - key: threshold_m
+    value: '0.2685'
+  - key: inputs
+    value: scan only, no odometry
+  - key: tf_published
+    value: none
+  - key: last_error
+    value: ''
+  - key: registration_latency_us_p50
+    value: '3291'
+  - key: registration_latency_us_p95
+    value: '5842'
+  - key: registration_latency_us_p99
+    value: '8385'
+---
+header:
+  stamp:
+    sec: 1791694717
+    nanosec: 969890947
+  frame_id: ''
+status:
+- level: "\0"
+  name: pose_graph_node
+  message: 'RUNNING (loop_closure: unsupported)'
+  hardware_id: ''
+  values:
+  - key: loop_closure
+    value: unsupported
+  - key: loop_closure_reason
+    value: S5 measured on synthetic data only and weakly against false candidates; no Webots-level run; owner decision pending (docs/phase-...
+  - key: keyframes
+    value: '28'
+  - key: scans_received
+    value: '258'
+  - key: registrations_received
+    value: '258'
+  - key: registrations_processed
+    value: '258'
+  - key: registrations_out_of_order
+    value: '0'
+  - key: scans_dropped_unjoined
+    value: '0'
+  - key: waiting_scans
+    value: '0'
+  - key: waiting_registrations
+    value: '0'
+  - key: edge_errors
+    value: '0'
+  - key: scans_malformed
+    value: '0'
+  - key: registrations_malformed
+    value: '0'
+  - key: loop_edges
+    value: '0'
+  - key: pose_frame
+    value: slam_origin
+  - key: tf_published
+    value: none
+  - key: map_published
+    value: none
+  - key: map_odom_published
+    value: none
+  - key: last_error
+    value: ''
+---
+header:
+  stamp:
+    sec: 1791694718
+    nanosec: 965249666
+  frame_id: ''
+status:
+- level: "\0"
+  name: scan_matcher_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '278'
+  - key: registrations_published
+    value: '278'
+  - key: initialized
+    value: '1'
+  - key: tracked
+    value: '277'
+  - key: predicted
+    value: '0'
+  - key: retried_at_wide_threshold
+    value: '1'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_few_points
+    value: '0'
+  - key: publish_errors
+    value: '0'
+  - key: threshold_m
+    value: '0.2589'
+  - key: inputs
+    value: scan only, no odometry
+  - key: tf_published
+    value: none
+  - key: last_error
+    value: ''
+  - key: registration_latency_us_p50
+    value: '3282'
+  - key: registration_latency_us_p95
+    value: '5760'
+  - key: registration_latency_us_p99
+    value: '8385'
+---
+header:
+  stamp:
+    sec: 1791694718
+    nanosec: 969862699
+  frame_id: ''
+status:
+- level: "\0"
+  name: pose_graph_node
+  message: 'RUNNING (loop_closure: unsupported)'
+  hardware_id: ''
+  values:
+  - key: loop_closure
+    value: unsupported
+  - key: loop_closure_reason
+    value: S5 measured on synthetic data only and weakly against false candidates; no Webots-level run; owner decision pending (docs/phase-...
+  - key: keyframes
+    value: '29'
+  - key: scans_received
+    value: '278'
+  - key: registrations_received
+    value: '278'
+  - key: registrations_processed
+    value: '278'
+  - key: registrations_out_of_order
+    value: '0'
+  - key: scans_dropped_unjoined
+    value: '0'
+  - key: waiting_scans
+    value: '0'
+  - key: waiting_registrations
+    value: '0'
+  - key: edge_errors
+    value: '0'
+  - key: scans_malformed
+    value: '0'
+  - key: registrations_malformed
+    value: '0'
+  - key: loop_edges
+    value: '0'
+  - key: pose_frame
+    value: slam_origin
+  - key: tf_published
+    value: none
+  - key: map_published
+    value: none
+  - key: map_odom_published
+    value: none
+  - key: last_error
+    value: ''
+---
+header:
+  stamp:
+    sec: 1791694719
+    nanosec: 965284080
+  frame_id: ''
+status:
+- level: "\0"
+  name: scan_matcher_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '298'
+  - key: registrations_published
+    value: '298'
+  - key: initialized
+    value: '1'
+  - key: tracked
+    value: '297'
+  - key: predicted
+    value: '0'
+  - key: retried_at_wide_threshold
+    value: '1'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_few_points
+    value: '0'
+  - key: publish_errors
+    value: '0'
+  - key: threshold_m
+    value: '0.2514'
+  - key: inputs
+    value: scan only, no odometry
+  - key: tf_published
+    value: none
+  - key: last_error
+    value: ''
+  - key: registration_latency_us_p50
+    value: '3291'
+  - key: registration_latency_us_p95
+    value: '5842'
+  - key: registration_latency_us_p99
+    value: '8385'
+---
+header:
+  stamp:
+    sec: 1791694719
+    nanosec: 969879240
+  frame_id: ''
+status:
+- level: "\0"
+  name: pose_graph_node
+  message: 'RUNNING (loop_closure: unsupported)'
+  hardware_id: ''
+  values:
+  - key: loop_closure
+    value: unsupported
+  - key: loop_closure_reason
+    value: S5 measured on synthetic data only and weakly against false candidates; no Webots-level run; owner decision pending (docs/phase-...
+  - key: keyframes
+    value: '31'
+  - key: scans_received
+    value: '298'
+  - key: registrations_received
+    value: '298'
+  - key: registrations_processed
+    value: '298'
+  - key: registrations_out_of_order
+    value: '0'
+  - key: scans_dropped_unjoined
+    value: '0'
+  - key: waiting_scans
+    value: '0'
+  - key: waiting_registrations
+    value: '0'
+  - key: edge_errors
+    value: '0'
+  - key: scans_malformed
+    value: '0'
+  - key: registrations_malformed
+    value: '0'
+  - key: loop_edges
+    value: '0'
+  - key: pose_frame
+    value: slam_origin
+  - key: tf_published
+    value: none
+  - key: map_published
+    value: none
+  - key: map_odom_published
+    value: none
+  - key: last_error
+    value: ''
+---

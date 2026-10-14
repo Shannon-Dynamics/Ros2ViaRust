@@ -1,0 +1,21 @@
+/scan_matcher_node
+  Subscribers:
+    /scan: sensor_msgs/msg/LaserScan
+  Publishers:
+    /diagnostics: diagnostic_msgs/msg/DiagnosticArray
+    /registration: geometry_msgs/msg/PoseWithCovarianceStamped
+    /rosout: rcl_interfaces/msg/Log
+    /scan_matched: sensor_msgs/msg/LaserScan
+  Service Servers:
+    /scan_matcher_node/describe_parameters: rcl_interfaces/srv/DescribeParameters
+    /scan_matcher_node/get_parameter_types: rcl_interfaces/srv/GetParameterTypes
+    /scan_matcher_node/get_parameters: rcl_interfaces/srv/GetParameters
+    /scan_matcher_node/list_parameters: rcl_interfaces/srv/ListParameters
+    /scan_matcher_node/set_parameters: rcl_interfaces/srv/SetParameters
+    /scan_matcher_node/set_parameters_atomically: rcl_interfaces/srv/SetParametersAtomically
+  Service Clients:
+
+  Action Servers:
+
+  Action Clients:
+

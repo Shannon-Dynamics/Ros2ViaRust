@@ -1,0 +1,8 @@
+PASS  R1 one registration per registered scan, same stamps  (844 node, 844 reference)
+PASS  R2 registrations equal the reference, row for row  (identical)
+PASS  K1 same keyframes at the same stamps  (83 node, 83 reference)
+PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 3.377e-15)
+PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.51 mm, max 7.58 mm, final 3.40 mm over 83 keyframes)
+FAIL  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.5496 mm, evidence 3.5496 mm)
+INFO  node vs evidence front end alone: ATE RMS 3.51 vs 3.55 mm, max 7.58 vs 6.20 mm (float32 scan metadata of the message)
+5 of 6 checks passed

@@ -1,0 +1,30 @@
+# the node's shutdown line: {'status': 'enabled', 'candidates': 182, 'accepted': 181, 'rejected': 1, 'edges': 181, 'maps': 63, 'map_odom': 844}
+# 83 keyframes, 182 loop candidates, 181 accepted at 62 keyframe(s)
+PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+PASS  loop closure on: the diagnostics say enabled
+PASS  loop closure on: candidates were proposed
+PASS  loop closure on: the node's final counters equal the verdict file's rows
+PASS  loop closure on: every accepted loop is a loop edge of the graph
+PASS  loop closure on: the loop_errors counter is zero
+PASS  the final file has the keyframes of the created file, one for one
+# largest keyframe displacement caused by loop closure: 9.885 mm
+PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+PASS  /map was published once per loop closure and once at the end (63)
+PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+PASS  the map has free and occupied cells
+PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+PASS  the node's final count of maps published equals what a subscriber received
+PASS  the last /slam/path has one pose per keyframe
+PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+PASS  /slam/path is in the frame map
+PASS  map -> odom is published for every registered scan
+PASS  map -> odom stamps never go back
+PASS  map -> odom: every registered scan was published, none dropped for want of odom -> sensor
+PASS  no second owner of the edge was seen
+PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+# map -> odom step between consecutive samples: median 35.08 mm, largest 45.64 mm
+passed 25, failed 0

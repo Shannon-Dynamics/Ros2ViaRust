@@ -1,0 +1,143 @@
+== environment: domain 91, cores 14,15, load 1.83 2.62 2.31, 2026-10-11T04:58:22Z
+== workspace /home/genta/slam_nodes_ws, repo /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics, commit 13e0076
+== webots running now: 0 process(es); this script starts none
+== A: the pieces exist and are installed
+PASS  A installed executable scan_matcher_node
+PASS  A installed executable pose_graph_node
+PASS  A installed executable scan_replayer
+PASS  A launch file installed
+PASS  A package.xml installed
+PASS  A ros2 sees the package's executables
+PASS  A in-process reference built
+== B: loop closure cannot be switched on
+PASS  B no code mentions propose_loops in pose_graph_node.rs or lib.rs
+PASS  B no code mentions process_loops in pose_graph_node.rs or lib.rs
+PASS  B no code mentions add_loop in pose_graph_node.rs or lib.rs
+PASS  B no code mentions \.verify\( in pose_graph_node.rs or lib.rs
+PASS  B no code mentions LoopConfig in pose_graph_node.rs or lib.rs
+PASS  B no code mentions Verification in pose_graph_node.rs or lib.rs
+PASS  B the source says unsupported
+== C and D: replay through the launch file
+-- replay-synthetic-2-eval-cross (568 scans at 20 Hz)
+PASS  D topic registration is PoseWithCovarianceStamped
+PASS  D topic scan_matched is LaserScan
+PASS  D topic slam/pose is PoseWithCovarianceStamped
+PASS  D topic slam/path is nav_msgs/Path
+PASS  D no /tf topic exists
+PASS  D no /tf_static topic exists
+PASS  D no /map topic exists
+PASS  D pose_graph_node publishes nothing named tf or map
+PASS  D scan_matcher_node publishes nothing named tf or map
+PASS  D pose_graph_node diagnostics say loop_closure: unsupported
+PASS  D diagnostics say no map and no map->odom is published
+PASS  D pose_graph_node has no parameter that mentions loop
+PASS  D the scan matcher takes no odometry input
+PASS  C replay-synthetic-2-eval-cross launch exited 0
+PASS  C replay-synthetic-2-eval-cross replayer published every scan
+    PASS  R1 one registration per registered scan, same stamps  (568 node, 568 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (55 node, 55 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 1.502e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.03 mm, max 5.71 mm, final 0.74 mm over 55 keyframes)
+    PASS  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.3137 mm, evidence 3.3137 mm)
+    INFO  node vs evidence front end alone: ATE RMS 3.03 vs 3.31 mm, max 5.71 vs 7.41 mm (float32 scan metadata of the message)
+    6 of 6 checks passed
+PASS  C replay-synthetic-2-eval-cross: nodes equal the in-process reference and are graded (6 checks)
+-- replay-synthetic-3-eval-diamond (814 scans at 20 Hz)
+PASS  C replay-synthetic-3-eval-diamond launch exited 0
+PASS  C replay-synthetic-3-eval-diamond replayer published every scan
+    PASS  R1 one registration per registered scan, same stamps  (814 node, 814 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (70 node, 70 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 1.735e-18)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.55 mm, max 7.21 mm, final 2.39 mm over 70 keyframes)
+    PASS  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.2745 mm, evidence 3.2745 mm)
+    INFO  node vs evidence front end alone: ATE RMS 3.55 vs 3.27 mm, max 7.21 vs 8.27 mm (float32 scan metadata of the message)
+    6 of 6 checks passed
+PASS  C replay-synthetic-3-eval-diamond: nodes equal the in-process reference and are graded (6 checks)
+-- replay-synthetic-4-eval-rectangle (844 scans at 20 Hz)
+PASS  C replay-synthetic-4-eval-rectangle launch exited 0
+PASS  C replay-synthetic-4-eval-rectangle replayer published every scan
+    PASS  R1 one registration per registered scan, same stamps  (844 node, 844 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (83 node, 83 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 3.377e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.51 mm, max 7.58 mm, final 3.40 mm over 83 keyframes)
+    FAIL  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.5496 mm, evidence 3.5496 mm)
+    INFO  node vs evidence front end alone: ATE RMS 3.51 vs 3.55 mm, max 7.58 vs 6.20 mm (float32 scan metadata of the message)
+    5 of 6 checks passed
+FAIL  C replay-synthetic-4-eval-rectangle: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-synthetic-4-eval-rectangle/check.console)
+-- replay-synthetic-1-dev-route-long (1829 scans at 20 Hz)
+PASS  C replay-synthetic-1-dev-route-long launch exited 0
+PASS  C replay-synthetic-1-dev-route-long replayer published every scan
+    PASS  R1 one registration per registered scan, same stamps  (1829 node, 1829 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (193 node, 193 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 9.930e-16)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.33 mm, max 7.26 mm, final 0.57 mm over 193 keyframes)
+    FAIL  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.3999 mm, evidence 3.3999 mm)
+    INFO  node vs evidence front end alone: ATE RMS 3.33 vs 3.40 mm, max 7.26 vs 8.16 mm (float32 scan metadata of the message)
+    5 of 6 checks passed
+FAIL  C replay-synthetic-1-dev-route-long: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-synthetic-1-dev-route-long/check.console)
+-- replay-recorded-1-dev-route-long (1312 scans at 20 Hz; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-1-dev-route-long launch exited 0
+PASS  C replay-recorded-1-dev-route-long replayer published every scan
+    Traceback (most recent call last):
+      File "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/scripts/phase5_node_replay_check.py", line 152, in <module>
+        sys.exit(main(sys.argv[1:]))
+                 ^^^^^^^^^^^^^^^^^^
+      File "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/scripts/phase5_node_replay_check.py", line 77, in main
+        nreg, rreg = rows(f"{node}/registrations.csv"), rows(f"{ref}/registrations.csv")
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      File "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/scripts/phase5_node_replay_check.py", line 40, in rows
+        with open(path) as f:
+             ^^^^^^^^^^
+    FileNotFoundError: [Errno 2] No such file or directory: '/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-recorded-1-dev-route-long/ref/registrations.csv'
+FAIL  C replay-recorded-1-dev-route-long: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-recorded-1-dev-route-long/check.console)
+    status counts: 
+-- replay-recorded-2-eval-cross (451 scans at 20 Hz; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-2-eval-cross launch exited 0
+PASS  C replay-recorded-2-eval-cross replayer published every scan
+    PASS  R1 one registration per registered scan, same stamps  (451 node, 451 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (34 node, 34 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 4.337e-18)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 10286.39 mm, max 17221.75 mm, final 17221.75 mm over 34 keyframes)
+    5 of 5 checks passed
+PASS  C replay-recorded-2-eval-cross: nodes equal the in-process reference and are graded (5 checks)
+    status counts: {'Initialized': 1, 'Tracked': 450}
+-- replay-recorded-3-eval-wall-lobes (454 scans at 20 Hz; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-3-eval-wall-lobes launch exited 0
+PASS  C replay-recorded-3-eval-wall-lobes replayer published every scan
+    FAIL  R1 one registration per registered scan, same stamps  (453 node, 454 reference)
+    FAIL  R2 registrations equal the reference, row for row  (first difference at row 379: {'status': ('Predicted', 'Tracked'), 'iterations': ('50', '42'), 'correspondences': ('209', '213'), 'rmse_m': ('0.5074466364841922', '0.45847806280065023'), 'dx': ('0.04275691012706445', '0.17271875484766117'), 'dy': ('-0.002591556455662447', '-0.5471692395692372'), 'dtheta': ('0.0009992369108522414', '-0.4534193597663997')})
+    FAIL  K1 same keyframes at the same stamps  (62 node, 59 reference)
+    FAIL  K2 keyframe poses agree with the reference to 1e-9  (max difference 0.000e+00)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 5481.33 mm, max 8537.11 mm, final 8169.59 mm over 62 keyframes)
+    1 of 5 checks passed
+FAIL  C replay-recorded-3-eval-wall-lobes: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-recorded-3-eval-wall-lobes/check.console)
+    status counts: {'Initialized': 1, 'Tracked': 414, 'Predicted': 38}
+-- replay-recorded-4-eval-diamond (527 scans at 20 Hz; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-4-eval-diamond launch exited 0
+PASS  C replay-recorded-4-eval-diamond replayer published every scan
+    PASS  R1 one registration per registered scan, same stamps  (527 node, 527 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (150 node, 150 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 5.403e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 12029.84 mm, max 15380.04 mm, final 12621.09 mm over 150 keyframes)
+    5 of 5 checks passed
+PASS  C replay-recorded-4-eval-diamond: nodes equal the in-process reference and are graded (5 checks)
+    status counts: {'Initialized': 1, 'Tracked': 485, 'Predicted': 41}
+== E: a second replay of the same stream gives the same files
+PASS  E keyframes.csv is identical on a second replay
+PASS  E registrations.csv is identical on a second replay, latency column aside
+== F: shutdown leaves nothing behind
+PASS  F no SLAM node or replayer process is left
+FAIL  F the launch logs of every replay show both nodes shutting down
+
+passed: 50   failed: 5
+failed: C replay-synthetic-4-eval-rectangle: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-synthetic-4-eval-rectangle/check.console)
+failed: C replay-synthetic-1-dev-route-long: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-synthetic-1-dev-route-long/check.console)
+failed: C replay-recorded-1-dev-route-long: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-recorded-1-dev-route-long/check.console)
+failed: C replay-recorded-3-eval-wall-lobes: replay check (see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-recorded-3-eval-wall-lobes/check.console)
+failed: F the launch logs of every replay show both nodes shutting down

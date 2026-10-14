@@ -1,0 +1,38 @@
+facts:
+  registrations_node: 844
+  registrations_reference: 844
+  keyframes_node: 83
+  keyframes_reference: 83
+  status_counts:
+    Initialized: 1
+    Tracked: 843
+  registration_latency_us_p50_p95_p99_max:
+  - 3282.0
+  - 6054.0
+  - 8213.0
+  - 19625.0
+  keyframe_pose_max_difference: 3.37661150723213e-15
+  ate_rms_m: 0.0035144865979271915
+  ate_max_m: 0.007584662603875363
+  final_error_m: 0.003399862513810975
+  evidence_ate_rms_m: 0.003549571551
+  evidence_ate_max_m: 0.006199789934
+checks:
+- name: R1 one registration per registered scan, same stamps
+  pass: true
+  detail: 844 node, 844 reference
+- name: R2 registrations equal the reference, row for row
+  pass: true
+  detail: identical
+- name: K1 same keyframes at the same stamps
+  pass: true
+  detail: 83 node, 83 reference
+- name: K2 keyframe poses agree with the reference to 1e-9
+  pass: true
+  detail: max difference 3.377e-15
+- name: G keyframe trajectory against ground truth (measured, not graded)
+  pass: true
+  detail: ATE RMS 3.51 mm, max 7.58 mm, final 3.40 mm over 83 keyframes
+- name: E1 the float64 reference reproduces the graded evidence run's front end alone
+  pass: true
+  detail: reference ATE RMS 3.5496 mm and 84 keyframes, evidence 3.5496 mm and 84

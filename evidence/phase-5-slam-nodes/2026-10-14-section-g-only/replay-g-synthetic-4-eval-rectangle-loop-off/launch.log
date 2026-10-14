@@ -1,0 +1,22 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-14-23-02-45-401853-LAPTOP-HJL1R3P6-45506
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source replay; loop_closure: unsupported; /map published; map -> odom owned by pose_graph_node
+[INFO] [pose_graph_node-1]: process started with pid [45510]
+[INFO] [scan_matcher_node-2]: process started with pid [45511]
+[INFO] [scan_replayer-3]: process started with pid [45512]
+[scan_matcher_node-2] [INFO] [1791993765.519372787] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[pose_graph_node-1] [INFO] [1791993765.529018958] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame map, keyframes every 0.5 m or 0.35 rad, loop_closure: unsupported, map: map, map -> odom: owned, 27 parameters
+[scan_replayer-3] [INFO] [1791993765.549499555] [scan_replayer]: scan_replayer up: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/v2-synthetic-4-eval-rectangle/scans.csv -> scan, lockstep true, stationary odometry identity, 14 parameters
+[scan_replayer-3] [INFO] [1791993765.599612758] [scan_replayer]: replaying 844 scans at 20 Hz, 1 subscriber(s) connected
+[scan_replayer-3] [INFO] [1791993807.749937962] [scan_replayer]: replay finished: 844 scans published
+[INFO] [scan_replayer-3]: process has finished cleanly [pid 45512]
+[INFO] [launch.user]: scan_replayer finished: shutting the SLAM nodes down
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[scan_matcher_node-2] [INFO] [1791993811.011469409] [scan_matcher_node]: scan_matcher_node shutting down: 844 scans received, 844 registrations published (843 tracked, 0 predicted, 0 retried wide, 0 tracked with fallback information), 0 not registered
+[pose_graph_node-1] [INFO] [1791993811.028935043] [pose_graph_node]: map rendered, at the end of the run: 83 of 83 keyframes integrated (0 without a stored scan, 0 rejected) in 16 ms
+[pose_graph_node-1] [INFO] [1791993811.035773329] [pose_graph_node]: wrote the final map to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-synthetic-4-eval-rectangle-loop-off/node/final-map.txt
+[pose_graph_node-1] [INFO] [1791993811.046334581] [pose_graph_node]: wrote the optimized keyframes to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-synthetic-4-eval-rectangle-loop-off/node/keyframes_final.csv
+[pose_graph_node-1] [INFO] [1791993811.046874595] [pose_graph_node]: pose_graph_node shutting down: 83 keyframes from 844 registrations (844 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: unsupported (0 candidates, 0 accepted, 0 rejected, 0 loop edges), 1 map(s), 844 map -> odom
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 45511]
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 45510]

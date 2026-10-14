@@ -1,0 +1,293 @@
+== environment: domain 91, cores 14,15, install space /home/genta/slam_nodes_ws/ros2_ws/install_release, load 1.67 1.80 1.08, 2026-10-14T15:35:07Z
+== workspace /home/genta/slam_nodes_ws, repo /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics, commit a573519
+== webots running now: 0 process(es); this script starts none
+== A: the pieces exist and are installed
+PASS  A installed executable scan_matcher_node
+PASS  A installed executable pose_graph_node
+PASS  A installed executable scan_replayer
+PASS  A launch file installed
+PASS  A the installed launch file knows lockstep (not a stale install)
+PASS  A package.xml installed
+PASS  A ros2 sees the package's executables
+PASS  A in-process reference built
+== B: loop closure is off unless a parameter turns it on
+FAIL  B the switch is a parameter whose default is false
+PASS  B the builder's configuration defaults to loop closure off
+PASS  B the status of a run that did not ask is still the word unsupported
+PASS  B the launch file's loop_closure argument defaults to false
+PASS  B nothing in the scan matcher or the replayer calls the loop detector
+== C and D: replay through the launch file
+-- replay-synthetic-2-eval-cross (568 scans, lockstep)
+PASS  C replay-synthetic-2-eval-cross launch exited 0
+PASS  C replay-synthetic-2-eval-cross replayer published every scan
+PASS  C replay-synthetic-2-eval-cross replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (568 node, 568 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (55 node, 55 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 1.502e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.03 mm, max 5.71 mm, final 0.74 mm over 55 keyframes)
+    PASS  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.3137 mm and 55 keyframes, evidence 3.3137 mm and 55)
+    INFO  node vs evidence front end alone: ATE RMS 3.03 vs 3.31 mm, max 5.71 vs 7.41 mm, keyframes 55 vs 55 (float32 scan metadata of the message: a keyframe threshold can flip)
+    6 of 6 checks passed
+PASS  C replay-synthetic-2-eval-cross: nodes equal the in-process reference and are graded (6 checks)
+-- replay-synthetic-3-eval-diamond (814 scans, lockstep)
+PASS  C replay-synthetic-3-eval-diamond launch exited 0
+PASS  C replay-synthetic-3-eval-diamond replayer published every scan
+PASS  C replay-synthetic-3-eval-diamond replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (814 node, 814 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (70 node, 70 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 1.735e-18)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.55 mm, max 7.21 mm, final 2.39 mm over 70 keyframes)
+    PASS  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.2745 mm and 70 keyframes, evidence 3.2745 mm and 70)
+    INFO  node vs evidence front end alone: ATE RMS 3.55 vs 3.27 mm, max 7.21 vs 8.27 mm, keyframes 70 vs 70 (float32 scan metadata of the message: a keyframe threshold can flip)
+    6 of 6 checks passed
+PASS  C replay-synthetic-3-eval-diamond: nodes equal the in-process reference and are graded (6 checks)
+-- replay-synthetic-4-eval-rectangle (844 scans, lockstep)
+PASS  C replay-synthetic-4-eval-rectangle launch exited 0
+PASS  C replay-synthetic-4-eval-rectangle replayer published every scan
+PASS  C replay-synthetic-4-eval-rectangle replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (844 node, 844 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (83 node, 83 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 3.377e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.51 mm, max 7.58 mm, final 3.40 mm over 83 keyframes)
+    PASS  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.5496 mm and 84 keyframes, evidence 3.5496 mm and 84)
+    INFO  node vs evidence front end alone: ATE RMS 3.51 vs 3.55 mm, max 7.58 vs 6.20 mm, keyframes 83 vs 84 (float32 scan metadata of the message: a keyframe threshold can flip)
+    6 of 6 checks passed
+PASS  C replay-synthetic-4-eval-rectangle: nodes equal the in-process reference and are graded (6 checks)
+-- replay-synthetic-1-dev-route-long (1829 scans, lockstep)
+PASS  C replay-synthetic-1-dev-route-long launch exited 0
+PASS  C replay-synthetic-1-dev-route-long replayer published every scan
+PASS  C replay-synthetic-1-dev-route-long replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (1829 node, 1829 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (193 node, 193 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 9.930e-16)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 3.33 mm, max 7.26 mm, final 0.57 mm over 193 keyframes)
+    PASS  E1 the float64 reference reproduces the graded evidence run's front end alone  (reference ATE RMS 3.3999 mm and 192 keyframes, evidence 3.3999 mm and 192)
+    INFO  node vs evidence front end alone: ATE RMS 3.33 vs 3.40 mm, max 7.26 vs 8.16 mm, keyframes 193 vs 192 (float32 scan metadata of the message: a keyframe threshold can flip)
+    6 of 6 checks passed
+PASS  C replay-synthetic-1-dev-route-long: nodes equal the in-process reference and are graded (6 checks)
+-- replay-recorded-1-dev-route-long (1312 scans, lockstep; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-1-dev-route-long launch exited 0
+PASS  C replay-recorded-1-dev-route-long replayer published every scan
+PASS  C replay-recorded-1-dev-route-long replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (1312 node, 1312 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (1191 node, 1191 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 3.282e-14)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 9063.39 mm, max 11992.77 mm, final 9532.97 mm over 1191 keyframes)
+    5 of 5 checks passed
+PASS  C replay-recorded-1-dev-route-long: nodes equal the in-process reference and are graded (5 checks)
+    status counts: {'Initialized': 1, 'Tracked': 1190, 'Predicted': 121}
+-- replay-recorded-2-eval-cross (451 scans, lockstep; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-2-eval-cross launch exited 0
+PASS  C replay-recorded-2-eval-cross replayer published every scan
+PASS  C replay-recorded-2-eval-cross replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (451 node, 451 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (34 node, 34 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 4.337e-18)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 10286.39 mm, max 17221.75 mm, final 17221.75 mm over 34 keyframes)
+    5 of 5 checks passed
+PASS  C replay-recorded-2-eval-cross: nodes equal the in-process reference and are graded (5 checks)
+    status counts: {'Initialized': 1, 'Tracked': 450}
+-- replay-recorded-3-eval-wall-lobes (454 scans, lockstep; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-3-eval-wall-lobes launch exited 0
+PASS  C replay-recorded-3-eval-wall-lobes replayer published every scan
+PASS  C replay-recorded-3-eval-wall-lobes replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (454 node, 454 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (59 node, 59 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 2.667e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 6051.41 mm, max 11056.52 mm, final 9374.75 mm over 59 keyframes)
+    5 of 5 checks passed
+PASS  C replay-recorded-3-eval-wall-lobes: nodes equal the in-process reference and are graded (5 checks)
+    status counts: {'Initialized': 1, 'Tracked': 435, 'Predicted': 18}
+-- replay-recorded-4-eval-diamond (527 scans, lockstep; the file has no turning scans, so the front end is expected to lose track at the gaps)
+PASS  C replay-recorded-4-eval-diamond launch exited 0
+PASS  C replay-recorded-4-eval-diamond replayer published every scan
+PASS  C replay-recorded-4-eval-diamond replayer really ran in lockstep
+    PASS  R1 one registration per registered scan, same stamps  (527 node, 527 reference)
+    PASS  R2 registrations equal the reference, row for row  (identical)
+    PASS  K1 same keyframes at the same stamps  (150 node, 150 reference)
+    PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 5.403e-15)
+    PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 12029.84 mm, max 15380.04 mm, final 12621.09 mm over 150 keyframes)
+    5 of 5 checks passed
+PASS  C replay-recorded-4-eval-diamond: nodes equal the in-process reference and are graded (5 checks)
+    status counts: {'Initialized': 1, 'Tracked': 485, 'Predicted': 41}
+== R: at the real-time rate (5 Hz, no lockstep: as lossy as a real driver)
+PASS  D topic registration is PoseWithCovarianceStamped
+PASS  D topic scan_matched is LaserScan
+PASS  D topic slam/pose is PoseWithCovarianceStamped
+PASS  D topic slam/path is nav_msgs/Path
+PASS  D no /tf topic exists
+PASS  D no /tf_static topic exists
+PASS  D no /map topic exists
+PASS  D pose_graph_node publishes nothing named tf or map
+PASS  D scan_matcher_node publishes nothing named tf or map
+PASS  D pose_graph_node diagnostics say loop_closure: unsupported
+PASS  D diagnostics say no map and no map->odom is published
+PASS  D loop_closure.enabled is a parameter of pose_graph_node and its value is false
+PASS  D the scan matcher takes no odometry input
+PASS  R cross at 5 Hz: every scan was registered (568 of 568)
+    INFO  registration latency at real time, us: median 3200, p95 5492, p99 7069, max 16907 (the scan period is 200000)
+    INFO  recorded diamond at 5 Hz without lockstep: 527 of 527 scans registered (the file has no turning scans: the front end loses track at its gaps, and a lost step costs far more than the scan period)
+== E: a second replay of the same stream gives the same files
+PASS  E keyframes.csv is identical on a second replay
+PASS  E registrations.csv is identical on a second replay, latency column aside
+== G: loop closure, /map and map -> odom ON, replayed through the launch file (lockstep)
+PASS  G the render_check example is built
+-- replay-g-synthetic-4-eval-rectangle-loop-on (844 scans, loop closure on)
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on launch exited 0
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on the nodes wrote the files of a run with a map
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on every keyframe's scan was found in the file for the render
+    # 74 keyframes, 155 loop candidates, 154 accepted at 53 keyframe(s)
+    PASS  loop closure on: the diagnostics say enabled
+    PASS  loop closure on: candidates were proposed
+    FAIL  loop closure on: the diagnostics' counters equal the verdict file's rows  152/151 vs 155/154
+    FAIL  loop closure on: every accepted loop is a loop edge of the graph  151
+    PASS  loop closure on: the loop_errors counter is zero
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 10.441 mm
+    PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+    PASS  /map was published once per loop closure and once at the end (54)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    FAIL  the diagnostics count the maps  52
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+    PASS  /slam/path is in the frame map
+    FAIL  map -> odom is published for (nearly) every registered scan  651 of 844
+    PASS  map -> odom stamps never go back
+    FAIL  nothing was dropped for want of odom -> sensor, and no second owner of the edge was seen  dropped 85, conflicts 0
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    FAIL  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)  got [146.94, -0.9969308321292488, 0.3952702864674271, -1.5729405911217214, 12.087350539], expected (1.2004431134706919, -0.8999694828701315, 0.00023886529014660596)
+    # map -> odom step between consecutive samples: median 35.20 mm, largest 792.59 mm
+    passed 17, failed 6
+FAIL  G replay-g-synthetic-4-eval-rectangle-loop-on: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-synthetic-4-eval-rectangle-loop-on/stage-b-check.console
+-- replay-g-synthetic-4-eval-rectangle-loop-off (844 scans, loop closure off)
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off launch exited 0
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off the nodes wrote the files of a run with a map
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off every keyframe's scan was found in the file for the render
+    # 83 keyframes, 0 loop candidates, 0 accepted at 0 keyframe(s)
+    PASS  loop closure off: the diagnostics say unsupported
+    PASS  loop closure off: no candidate was proposed and loops.csv has only its header
+    PASS  loop closure off: no optimization ran
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 0.000 mm
+    PASS  loop closure off: the optimized keyframes are the created ones, bit for bit
+    PASS  /map was published once per loop closure and once at the end (1)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    PASS  loop closure off: the map equals the one rendered from the keyframes as created
+    FAIL  the diagnostics count the maps  none
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path is in the frame map
+    PASS  map -> odom is published for (nearly) every registered scan
+    PASS  map -> odom stamps never go back
+    PASS  nothing was dropped for want of odom -> sensor, and no second owner of the edge was seen
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+    passed 20, failed 1
+FAIL  G replay-g-synthetic-4-eval-rectangle-loop-off: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-synthetic-4-eval-rectangle-loop-off/stage-b-check.console
+-- replay-g-webots-recording-loop-on (886 scans, loop closure on)
+PASS  G replay-g-webots-recording-loop-on launch exited 0
+PASS  G replay-g-webots-recording-loop-on the nodes wrote the files of a run with a map
+PASS  G replay-g-webots-recording-loop-on every keyframe's scan was found in the file for the render
+    # 82 keyframes, 179 loop candidates, 145 accepted at 52 keyframe(s)
+    PASS  loop closure on: the diagnostics say enabled
+    PASS  loop closure on: candidates were proposed
+    PASS  loop closure on: the diagnostics' counters equal the verdict file's rows
+    PASS  loop closure on: every accepted loop is a loop edge of the graph
+    PASS  loop closure on: the loop_errors counter is zero
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 28.738 mm
+    PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+    PASS  /map was published once per loop closure and once at the end (53)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    FAIL  the diagnostics count the maps  52
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+    PASS  /slam/path is in the frame map
+    FAIL  map -> odom is published for (nearly) every registered scan  653 of 886
+    PASS  map -> odom stamps never go back
+    FAIL  nothing was dropped for want of odom -> sensor, and no second owner of the edge was seen  dropped 176, conflicts 0
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    FAIL  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)  got [179.12, 0.5979677150511724, -0.8916534337262314, -0.021661753205887996, 11.31387090499993], expected (1.1410417181344155, -0.9047628083957493, -0.025292049988484777)
+    # map -> odom step between consecutive samples: median 35.12 mm, largest 1753.41 mm
+    passed 19, failed 4
+FAIL  G replay-g-webots-recording-loop-on: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-webots-recording-loop-on/stage-b-check.console
+-- replay-g-webots-recording-2-loop-on (889 scans, loop closure on)
+PASS  G replay-g-webots-recording-2-loop-on launch exited 0
+PASS  G replay-g-webots-recording-2-loop-on the nodes wrote the files of a run with a map
+PASS  G replay-g-webots-recording-2-loop-on every keyframe's scan was found in the file for the render
+    # 80 keyframes, 168 loop candidates, 150 accepted at 54 keyframe(s)
+    PASS  loop closure on: the diagnostics say enabled
+    PASS  loop closure on: candidates were proposed
+    PASS  loop closure on: the diagnostics' counters equal the verdict file's rows
+    PASS  loop closure on: every accepted loop is a loop edge of the graph
+    PASS  loop closure on: the loop_errors counter is zero
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 24.398 mm
+    PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+    PASS  /map was published once per loop closure and once at the end (55)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    FAIL  the diagnostics count the maps  54
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+    PASS  /slam/path is in the frame map
+    FAIL  map -> odom is published for (nearly) every registered scan  717 of 889
+    PASS  map -> odom stamps never go back
+    FAIL  nothing was dropped for want of odom -> sensor, and no second owner of the edge was seen  dropped 72, conflicts 0
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    FAIL  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)  got [169.94, -0.9923672231598782, -0.8368844103628337, -0.42720634743504726, 11.43803510700036], expected (1.1333720603627666, -0.9034976115861273, -0.02541604079199189)
+    # map -> odom step between consecutive samples: median 35.32 mm, largest 645.67 mm
+    passed 19, failed 4
+FAIL  G replay-g-webots-recording-2-loop-on: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-webots-recording-2-loop-on/stage-b-check.console
+    # 83 keyframes, 0 loop candidates, 0 accepted at 0 keyframe(s)
+    PASS  loop closure off: the diagnostics say unsupported
+    PASS  loop closure off: no candidate was proposed and loops.csv has only its header
+    PASS  loop closure off: no optimization ran
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 0.000 mm
+    PASS  loop closure off: the optimized keyframes are the created ones, bit for bit
+    PASS  map off: no /map message
+    PASS  map off: the diagnostics say none
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path is in the frame slam_origin
+    PASS  map -> odom off: no map -> odom on /tf
+    PASS  map -> odom off: the diagnostics say none
+    passed 12, failed 0
+PASS  G replay-g-switches-off: with the map and map -> odom off nothing of them is published
+== F: shutdown leaves nothing behind
+PASS  F no SLAM node or replayer process is left
+PASS  F no node needed escalating from SIGINT in any replay
+PASS  F the launch logs of every replay show both nodes shutting down
+
+passed: 77   failed: 5
+failed: B the switch is a parameter whose default is false
+failed: G replay-g-synthetic-4-eval-rectangle-loop-on: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-synthetic-4-eval-rectangle-loop-on/stage-b-check.console
+failed: G replay-g-synthetic-4-eval-rectangle-loop-off: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-synthetic-4-eval-rectangle-loop-off/stage-b-check.console
+failed: G replay-g-webots-recording-loop-on: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-webots-recording-loop-on/stage-b-check.console
+failed: G replay-g-webots-recording-2-loop-on: see /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-14/replay-g-webots-recording-2-loop-on/stage-b-check.console

@@ -1,0 +1,26 @@
+schema: phase5-slam-metrics/1
+run:
+  data_source: webots_recorded
+  ground_truth: webots_gated
+  role: evaluation
+  seed: 0
+  route: 2026-10-11-evaluation-2-wall-lobes/integrated-scans.csv max_gap_s=0.5
+  injected_yaw_bias_rad_per_keyframe: 0.0
+  info_inflation: 1.500000000000
+  robotics_mapping_dependency: false
+  build_profile: release
+# path travelled by the recorded sensor poses: 17.615 m over 454 scans
+s1a:
+  registrations_made: 441
+  registrations_graded: 441
+  translation_error_m: {median: 0.003273474417, p95: 0.030882607924, p99: 0.033005764283, max: 0.035069190051, count: 441}
+  rotation_error_rad: {median: 0.000689937376, p95: 0.002386367566, p99: 0.003307755175, max: 0.003789266310, count: 441}
+s2:
+  dof: 3
+  samples: 441
+  mean_nees: 21.508460143966
+s6:
+  replay_identical: true
+  scan_period_s: 0.2
+  registration_latency_s: {median: 0.000564116000, p95: 0.001036958000, p99: 0.004596551000, max: 0.006669221000, count: 441}
+  optimization_latency_s: {median: 0.000000000000, p95: 0.000000000000, p99: 0.000000000000, max: 0.000000000000, count: 0}

@@ -1,0 +1,2 @@
+Double value is: 0.0
+Double value is: 0.0

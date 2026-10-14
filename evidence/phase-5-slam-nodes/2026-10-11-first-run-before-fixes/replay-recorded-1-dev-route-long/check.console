@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/scripts/phase5_node_replay_check.py", line 152, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/scripts/phase5_node_replay_check.py", line 77, in main
+    nreg, rreg = rows(f"{node}/registrations.csv"), rows(f"{ref}/registrations.csv")
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/scripts/phase5_node_replay_check.py", line 40, in rows
+    with open(path) as f:
+         ^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam-nodes/2026-10-11/replay-recorded-1-dev-route-long/ref/registrations.csv'

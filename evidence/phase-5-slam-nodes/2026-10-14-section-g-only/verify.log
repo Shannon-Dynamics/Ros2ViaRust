@@ -1,0 +1,181 @@
+== environment: domain 91, cores 14,15, install space /home/genta/slam_nodes_ws/ros2_ws/install_release, load 0.35 0.62 0.85, 2026-10-14T16:01:48Z
+== workspace /home/genta/slam_nodes_ws, repo /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics, commit a573519
+== webots running now: 0 process(es); this script starts none
+== A: the pieces exist and are installed
+PASS  A installed executable scan_matcher_node
+PASS  A installed executable pose_graph_node
+PASS  A installed executable scan_replayer
+PASS  A launch file installed
+PASS  A the installed launch file knows lockstep (not a stale install)
+PASS  A package.xml installed
+PASS  A ros2 sees the package's executables
+PASS  A in-process reference built
+== B: loop closure is off unless a parameter turns it on
+PASS  B the switch is a parameter whose default is false
+PASS  B the builder's configuration defaults to loop closure off
+PASS  B the status of a run that did not ask is still the word unsupported
+PASS  B the launch file's loop_closure argument defaults to false
+PASS  B nothing in the scan matcher or the replayer calls the loop detector
+== G: loop closure, /map and map -> odom ON, replayed through the launch file (lockstep, at 20 Hz at most)
+PASS  G the render_check example is built
+-- replay-g-synthetic-4-eval-rectangle-loop-on (844 scans, loop closure on)
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on launch exited 0
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on the nodes wrote the files of a run with a map
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on every keyframe's scan was found in the file for the render
+    # the node's shutdown line: {'status': 'enabled', 'candidates': 182, 'accepted': 181, 'rejected': 1, 'edges': 181, 'maps': 63, 'map_odom': 844}
+    # 83 keyframes, 182 loop candidates, 181 accepted at 62 keyframe(s)
+    PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+    PASS  loop closure on: the diagnostics say enabled
+    PASS  loop closure on: candidates were proposed
+    PASS  loop closure on: the node's final counters equal the verdict file's rows
+    PASS  loop closure on: every accepted loop is a loop edge of the graph
+    PASS  loop closure on: the loop_errors counter is zero
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 9.885 mm
+    PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+    PASS  /map was published once per loop closure and once at the end (63)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    PASS  the node's final count of maps published equals what a subscriber received
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+    PASS  /slam/path is in the frame map
+    PASS  map -> odom is published for every registered scan
+    PASS  map -> odom stamps never go back
+    PASS  map -> odom: every registered scan was published, none dropped for want of odom -> sensor
+    PASS  no second owner of the edge was seen
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+    # map -> odom step between consecutive samples: median 35.08 mm, largest 45.64 mm
+    passed 25, failed 0
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-on: 25 checks on /map, map -> odom, the path and loop closure
+-- replay-g-synthetic-4-eval-rectangle-loop-off (844 scans, loop closure off)
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off launch exited 0
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off the nodes wrote the files of a run with a map
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off every keyframe's scan was found in the file for the render
+    # the node's shutdown line: {'status': 'unsupported', 'candidates': 0, 'accepted': 0, 'rejected': 0, 'edges': 0, 'maps': 1, 'map_odom': 844}
+    # 83 keyframes, 0 loop candidates, 0 accepted at 0 keyframe(s)
+    PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+    PASS  loop closure off: the diagnostics say unsupported
+    PASS  loop closure off: no candidate was proposed and loops.csv has only its header
+    PASS  loop closure off: no optimization ran
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 0.000 mm
+    PASS  loop closure off: the optimized keyframes are the created ones, bit for bit
+    PASS  /map was published once per loop closure and once at the end (1)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    PASS  loop closure off: the map equals the one rendered from the keyframes as created
+    PASS  the node's final count of maps published equals what a subscriber received
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path is in the frame map
+    PASS  map -> odom is published for every registered scan
+    PASS  map -> odom stamps never go back
+    PASS  map -> odom: every registered scan was published, none dropped for want of odom -> sensor
+    PASS  no second owner of the edge was seen
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+    passed 23, failed 0
+PASS  G replay-g-synthetic-4-eval-rectangle-loop-off: 23 checks on /map, map -> odom, the path and loop closure
+-- replay-g-webots-recording-loop-on (886 scans, loop closure on)
+PASS  G replay-g-webots-recording-loop-on launch exited 0
+PASS  G replay-g-webots-recording-loop-on the nodes wrote the files of a run with a map
+PASS  G replay-g-webots-recording-loop-on every keyframe's scan was found in the file for the render
+    # the node's shutdown line: {'status': 'enabled', 'candidates': 182, 'accepted': 147, 'rejected': 35, 'edges': 147, 'maps': 54, 'map_odom': 886}
+    # 83 keyframes, 182 loop candidates, 147 accepted at 53 keyframe(s)
+    PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+    PASS  loop closure on: the diagnostics say enabled
+    PASS  loop closure on: candidates were proposed
+    PASS  loop closure on: the node's final counters equal the verdict file's rows
+    PASS  loop closure on: every accepted loop is a loop edge of the graph
+    PASS  loop closure on: the loop_errors counter is zero
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 29.614 mm
+    PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+    PASS  /map was published once per loop closure and once at the end (54)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    PASS  the node's final count of maps published equals what a subscriber received
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+    PASS  /slam/path is in the frame map
+    PASS  map -> odom is published for every registered scan
+    PASS  map -> odom stamps never go back
+    PASS  map -> odom: every registered scan was published, none dropped for want of odom -> sensor
+    PASS  no second owner of the edge was seen
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+    # map -> odom step between consecutive samples: median 34.92 mm, largest 91.08 mm
+    passed 25, failed 0
+PASS  G replay-g-webots-recording-loop-on: 25 checks on /map, map -> odom, the path and loop closure
+-- replay-g-webots-recording-2-loop-on (889 scans, loop closure on)
+PASS  G replay-g-webots-recording-2-loop-on launch exited 0
+PASS  G replay-g-webots-recording-2-loop-on the nodes wrote the files of a run with a map
+PASS  G replay-g-webots-recording-2-loop-on every keyframe's scan was found in the file for the render
+    # the node's shutdown line: {'status': 'enabled', 'candidates': 180, 'accepted': 157, 'rejected': 23, 'edges': 157, 'maps': 58, 'map_odom': 889}
+    # 84 keyframes, 180 loop candidates, 157 accepted at 57 keyframe(s)
+    PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+    PASS  loop closure on: the diagnostics say enabled
+    PASS  loop closure on: candidates were proposed
+    PASS  loop closure on: the node's final counters equal the verdict file's rows
+    PASS  loop closure on: every accepted loop is a loop edge of the graph
+    PASS  loop closure on: the loop_errors counter is zero
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 24.297 mm
+    PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+    PASS  /map was published once per loop closure and once at the end (58)
+    PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+    PASS  the map has free and occupied cells
+    PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+    PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+    PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+    PASS  the node's final count of maps published equals what a subscriber received
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+    PASS  /slam/path is in the frame map
+    PASS  map -> odom is published for every registered scan
+    PASS  map -> odom stamps never go back
+    PASS  map -> odom: every registered scan was published, none dropped for want of odom -> sensor
+    PASS  no second owner of the edge was seen
+    PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+    PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+    # map -> odom step between consecutive samples: median 35.16 mm, largest 74.64 mm
+    passed 25, failed 0
+PASS  G replay-g-webots-recording-2-loop-on: 25 checks on /map, map -> odom, the path and loop closure
+    # the node's shutdown line: {'status': 'unsupported', 'candidates': 0, 'accepted': 0, 'rejected': 0, 'edges': 0, 'maps': 0, 'map_odom': 0}
+    # 83 keyframes, 0 loop candidates, 0 accepted at 0 keyframe(s)
+    PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+    PASS  loop closure off: the diagnostics say unsupported
+    PASS  loop closure off: no candidate was proposed and loops.csv has only its header
+    PASS  loop closure off: no optimization ran
+    PASS  the final file has the keyframes of the created file, one for one
+    # largest keyframe displacement caused by loop closure: 0.000 mm
+    PASS  loop closure off: the optimized keyframes are the created ones, bit for bit
+    PASS  map off: no /map message
+    PASS  map off: the node counts no map
+    PASS  the last /slam/path has one pose per keyframe
+    PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+    PASS  /slam/path is in the frame slam_origin
+    PASS  map -> odom off: no map -> odom on /tf
+    PASS  map -> odom off: the diagnostics say none
+    passed 13, failed 0
+PASS  G replay-g-switches-off: with the map and map -> odom off nothing of them is published
+== F: shutdown leaves nothing behind
+PASS  F no SLAM node or replayer process is left
+PASS  F no node needed escalating from SIGINT in any replay
+PASS  F the launch logs of every replay show both nodes shutting down
+
+passed: 34   failed: 0

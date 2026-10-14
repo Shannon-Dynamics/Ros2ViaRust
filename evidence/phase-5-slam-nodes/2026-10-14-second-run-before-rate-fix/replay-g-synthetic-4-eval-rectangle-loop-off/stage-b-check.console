@@ -1,0 +1,26 @@
+# the node's shutdown line: {'status': 'unsupported', 'candidates': 0, 'accepted': 0, 'rejected': 0, 'edges': 0, 'maps': 1, 'map_odom': 844}
+# 83 keyframes, 0 loop candidates, 0 accepted at 0 keyframe(s)
+PASS  loop closure off: the diagnostics say unsupported
+PASS  loop closure off: no candidate was proposed and loops.csv has only its header
+PASS  loop closure off: no optimization ran
+PASS  the final file has the keyframes of the created file, one for one
+# largest keyframe displacement caused by loop closure: 0.000 mm
+PASS  loop closure off: the optimized keyframes are the created ones, bit for bit
+PASS  /map was published once per loop closure and once at the end (1)
+PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+PASS  the map has free and occupied cells
+PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+PASS  loop closure off: the map equals the one rendered from the keyframes as created
+PASS  the node's final count of maps published equals what a subscriber received
+PASS  the last /slam/path has one pose per keyframe
+PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+PASS  /slam/path is in the frame map
+PASS  map -> odom is published for every registered scan
+PASS  map -> odom stamps never go back
+PASS  map -> odom: every registered scan was published, none dropped for want of odom -> sensor
+PASS  no second owner of the edge was seen
+PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+PASS  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)
+passed 22, failed 0

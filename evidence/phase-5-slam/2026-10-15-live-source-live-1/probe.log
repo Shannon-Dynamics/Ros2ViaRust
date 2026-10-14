@@ -1,0 +1,1 @@
+phase5_map_tf_probe: 54 map(s), 882 map->odom, 137 path message(s), edges ['LDS-01->lower', 'LDS-01->solid', 'base_link->left wheel', 'base_link->right wheel', 'map->odom', 'odom->base_link']

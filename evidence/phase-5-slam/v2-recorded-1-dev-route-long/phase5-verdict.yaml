@@ -1,0 +1,66 @@
+# Written by scripts/phase5_verdict.py from slam-metrics.yaml in this directory.
+# Every tolerance lives in that script, which was written before the first evidence run.
+run: v2-recorded-1-dev-route-long
+verdict_script_sha256: 579b561eb871f4a4251e50eaef8e419a4186805810a776765ca816b6c2f10de8
+metrics_sha256: 10820afa9e34d12dc662e50b86b10f0d1ec1f39a3b71c0fbe9774a476c6e5560
+valid: true
+data_source: webots_recorded
+ground_truth: webots_gated
+role: development
+seed: 0
+route: 2026-10-11-development-3-route-long/integrated-scans.csv max_gap_s=0.5
+injected_yaw_bias_rad_per_keyframe: 0.0
+info_inflation: 1.5
+build_profile: release
+claims:
+  S1a:
+    status: PASS
+    checks:
+      graded_fraction: {value: '1.0', limit: '0.95', op: '>=', pass: true}
+      translation_p95_m: {value: '0.031638151974', limit: '0.05', op: '<=', pass: true}
+      translation_max_m: {value: '0.034744449406', limit: '0.1', op: '<=', pass: true}
+      rotation_p95_rad: {value: '0.001955224201', limit: '0.015', op: '<=', pass: true}
+      rotation_max_rad: {value: '0.004218547846', limit: '0.03', op: '<=', pass: true}
+    notes:
+      - 'ground truth: webots_gated; graded 1290 of 1290 registrations made'
+      - translation median 0.003283289654 m, rotation median 0.000597414718 rad
+      - 'graded only where both scans pass the motion gate: a statement about that subset'
+  S1b:
+    status: NOT_GRADED
+    notes:
+      - no s1b section in this run
+  S2:
+    status: REPORTED
+    notes:
+      - 'OVERCONFIDENT: mean NEES 28.845738299862 against the chi-squared(3) mean interval [2.8678, 3.1351] for 1290 samples'
+      - 'never pass or fail: the information matrix is known to be overconfident (the beams are not independent), and info_inflation is set from the development run and frozen'
+      - the interval treats the samples as independent; consecutive scans are not, so it is optimistic
+  S3:
+    status: NOT_GRADED
+    notes:
+      - 'tests: cargo test -p robotics_slam'
+  S4:
+    status: NOT_GRADED
+    notes:
+      - 'this run has no pipeline sections: a recording of the scans the Phase 4 mapper integrated has no turns in it, so the front end cannot be run on it'
+  S5:
+    status: NOT_GRADED
+    notes:
+      - no s5 section in this run (no pipeline was run on it)
+  S6:
+    status: PASS
+    checks:
+      replay_identical: {value: True, limit: True, op: '==', pass: true}
+      registration_p99_s: {value: '0.005553143', limit: '0.1', op: '<=', pass: true}
+    notes:
+      - build profile release; registrations 1290, median 0.000698697 s, p95 0.001160091 s
+      - 'S1a translation p95 of the same run: 0.031638151974 m (accuracy next to speed)'
+      - 'no optimization ran (no loop was accepted): its latency is not graded'
+  S7:
+    status: NOT_GRADED
+    notes:
+      - no s7 section in this run
+  S8:
+    status: NOT_CLAIMABLE
+    notes:
+      - blocked on Phase 4's M1, a measured S5 on the evaluation runs, and the submap-rendering node

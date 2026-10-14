@@ -1,0 +1,31 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-13-07-27-968451-LAPTOP-HJL1R3P6-217443
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source replay; loop_closure: unsupported; no TF, no map, no map -> odom published
+[INFO] [pose_graph_node-1]: process started with pid [217455]
+[INFO] [scan_matcher_node-2]: process started with pid [217456]
+[INFO] [scan_replayer-3]: process started with pid [217457]
+[pose_graph_node-1] [INFO] [1791698848.089652569] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame slam_origin, keyframes every 0.5 m or 0.35 rad, loop_closure: unsupported, no TF, no map, 12 parameters
+[scan_matcher_node-2] [INFO] [1791698848.097249806] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[scan_replayer-3] [INFO] [1791698848.103606376] [scan_replayer]: scan_replayer up: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/v2-synthetic-2-eval-cross/scans.csv -> scan, lockstep false, 11 parameters
+[scan_replayer-3] [INFO] [1791698848.303688256] [scan_replayer]: replaying 568 scans at 5 Hz, 1 subscriber(s) connected
+[scan_replayer-3] [WARN] [1791698868.156352556] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791698868.156482832] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[pose_graph_node-1] [WARN] [1791698868.156600491] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_replayer-3] [WARN] [1791698901.198708259] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791698901.199051807] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[pose_graph_node-1] [WARN] [1791698901.199679364] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (2 time(s) so far)
+[scan_replayer-3] [WARN] [1791698934.237742346] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[pose_graph_node-1] [WARN] [1791698934.237816488] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791698934.238328291] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (3 time(s) so far)
+[scan_replayer-3] [INFO] [1791698964.068568053] [scan_replayer]: replay finished: 568 scans published
+[scan_replayer-3] [WARN] [1791698967.306995612] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[pose_graph_node-1] [WARN] [1791698967.454520180] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[scan_matcher_node-2] [WARN] [1791698967.462060920] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (4 time(s) so far)
+[INFO] [scan_replayer-3]: process has finished cleanly [pid 217457]
+[INFO] [launch.user]: scan_replayer finished: shutting the SLAM nodes down
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[scan_matcher_node-2] [INFO] [1791698968.253676994] [scan_matcher_node]: scan_matcher_node shutting down: 568 scans received, 568 registrations published (567 tracked, 0 predicted, 1 retried wide, 0 tracked with fallback information), 0 not registered
+[pose_graph_node-1] [INFO] [1791698968.254304749] [pose_graph_node]: pose_graph_node shutting down: 55 keyframes from 568 registrations (568 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: unsupported
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 217455]
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 217456]

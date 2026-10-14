@@ -1,0 +1,59 @@
+schema: phase5-slam-metrics/1
+run:
+  data_source: webots_recorded
+  ground_truth: webots_gated
+  role: evaluation
+  seed: 0
+  route: 2026-10-14-webots-rectangle-recording-2/integrated-scans.csv max_gap_s=0.5
+  injected_yaw_bias_rad_per_keyframe: 0.0
+# harness flags: pipeline true, emulate-motion-gate true; S1a pairs made 747
+  info_inflation: 1.500000000000
+  robotics_mapping_dependency: false
+  build_profile: release
+# path travelled by the recorded sensor poses: 25.380 m over 889 scans
+s1a:
+  registrations_made: 747
+  registrations_graded: 747
+  translation_error_m: {median: 0.003536613085, p95: 0.031728560357, p99: 0.032882844143, max: 0.036093610103, count: 747}
+  rotation_error_rad: {median: 0.000588402776, p95: 0.001953322974, p99: 0.002530516427, max: 0.063337927676, count: 747}
+s2:
+  dof: 3
+  samples: 747
+  mean_nees: 25.859460128593
+# front end: 0 of 889 registrations lost track (status Predicted)
+s4:
+  keyframes_made: 84
+  keyframes_graded: 84
+  path_length_m: 25.181937222487
+  odometry: {ate_rms_m: 0.021745990519, ate_max_m: 0.047556700542, final_error_m: 0.031286254994, drift_m_per_m: 0.001242408585, heading_drift_rad_per_m: 0.000073737714}
+  graph: {ate_rms_m: 0.015714616638, ate_max_m: 0.040060334566, final_error_m: 0.022160041827, drift_m_per_m: 0.000879997501, heading_drift_rad_per_m: 0.000141166829}
+s5:
+  candidates: 180
+  accepted_correct: 94
+  accepted_wrong: 63
+  true_loops_proposed: 179
+  true_loops_accepted: 157
+  keyframes_with_true_partner: 61
+  keyframes_with_accepted_loop: 57
+  wrong_constraint_error_m: 0.05
+  wrong_constraint_error_rad: 0.03
+  rejected_by_reason:
+    no_overlap: 0
+    not_converged: 0
+    poor_fit: 0
+    degenerate: 0
+    gate_exceeded: 23
+    ambiguous: 0
+  true_loops_missed_by_reason:
+    no_overlap: 0
+    not_converged: 0
+    poor_fit: 0
+    degenerate: 0
+    gate_exceeded: 22
+    ambiguous: 0
+s6:
+  replay_identical: true
+  scan_period_s: 0.2
+  registration_latency_s: {median: 0.002335159000, p95: 0.004987195000, p99: 0.006550534000, max: 0.017035510000, count: 889}
+  optimization_latency_s: {median: 0.106915419000, p95: 0.147099872000, p99: 0.197907637000, max: 0.197907637000, count: 57}
+harness exit code 0 after 19 s

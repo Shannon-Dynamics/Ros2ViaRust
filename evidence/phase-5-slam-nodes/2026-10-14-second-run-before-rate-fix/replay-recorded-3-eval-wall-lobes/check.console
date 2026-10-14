@@ -1,0 +1,6 @@
+PASS  R1 one registration per registered scan, same stamps  (454 node, 454 reference)
+PASS  R2 registrations equal the reference, row for row  (identical)
+PASS  K1 same keyframes at the same stamps  (59 node, 59 reference)
+PASS  K2 keyframe poses agree with the reference to 1e-9  (max difference 2.667e-15)
+PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 6051.41 mm, max 11056.52 mm, final 9374.75 mm over 59 keyframes)
+5 of 5 checks passed

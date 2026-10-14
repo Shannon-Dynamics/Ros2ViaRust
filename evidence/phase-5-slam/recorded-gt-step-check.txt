@@ -1,0 +1,17 @@
+evidence/phase-4-mapping/2026-10-11-development-3-route-long/integrated-scans.csv
+  consecutive pairs at most 0.5 s apart: 1290
+  stamp spacing 0.20 s: 177 pairs (13.7 per cent), ground-truth step min 36.0 / median 36.0 / max 36.0 mm
+  stamp spacing 0.22 s: 1113 pairs (86.3 per cent), ground-truth step min 26.3 / median 39.6 / max 39.6 mm
+evidence/phase-4-mapping/2026-10-11-evaluation-1-cross/integrated-scans.csv
+  consecutive pairs at most 0.5 s apart: 445
+  stamp spacing 0.20 s: 124 pairs (27.9 per cent), ground-truth step min 36.0 / median 36.0 / max 36.0 mm
+  stamp spacing 0.22 s: 321 pairs (72.1 per cent), ground-truth step min 22.7 / median 39.6 / max 39.6 mm
+evidence/phase-4-mapping/2026-10-11-evaluation-2-wall-lobes/integrated-scans.csv
+  consecutive pairs at most 0.5 s apart: 441
+  stamp spacing 0.20 s: 123 pairs (27.9 per cent), ground-truth step min 36.0 / median 36.0 / max 36.0 mm
+  stamp spacing 0.22 s: 318 pairs (72.1 per cent), ground-truth step min 22.7 / median 39.6 / max 39.6 mm
+evidence/phase-4-mapping/2026-10-11-evaluation-3-diamond-slow/integrated-scans.csv
+  consecutive pairs at most 0.5 s apart: 517
+  stamp spacing 0.20 s: 112 pairs (21.7 per cent), ground-truth step min 36.0 / median 36.0 / max 36.0 mm
+  stamp spacing 0.22 s: 404 pairs (78.1 per cent), ground-truth step min 36.0 / median 39.6 / max 43.2 mm
+  stamp spacing 0.24 s: 1 pairs (0.2 per cent), ground-truth step min 43.2 / median 43.2 / max 43.2 mm

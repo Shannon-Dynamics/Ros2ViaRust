@@ -1,0 +1,37 @@
+facts:
+  registrations_node: 352
+  registrations_reference: 454
+  keyframes_node: 42
+  keyframes_reference: 59
+  status_counts:
+    Initialized: 1
+    Tracked: 348
+    Predicted: 3
+  registration_latency_us_p50_p95_p99_max:
+  - 11464.0
+  - 38671.0
+  - 93875.0
+  - 117252.0
+  keyframe_pose_max_difference: 0.0
+  ate_rms_m: 4.536281379040887
+  ate_max_m: 6.978102097915674
+  final_error_m: 5.737491906345296
+checks:
+- name: R1 one registration per registered scan, same stamps
+  pass: false
+  detail: 352 node, 454 reference
+- name: R2 registrations equal the reference, row for row
+  pass: false
+  detail: 'first difference at row 197: {''iterations'': (''31'', ''7''), ''correspondences'':
+    (''136'', ''163''), ''rmse_m'': (''0.041706631335257156'', ''0.02910810363753052''),
+    ''dx'': (''-0.27398939974124337'', ''0.04709872470086507''), ''dy'': (''0.10847033119143235'',
+    ''-0.00708983695908838''), ''dtheta'': (''0.8276683356725794'', ''-0.002848778239127603'')}'
+- name: K1 same keyframes at the same stamps
+  pass: false
+  detail: 42 node, 59 reference
+- name: K2 keyframe poses agree with the reference to 1e-9
+  pass: false
+  detail: max difference 0.000e+00
+- name: G keyframe trajectory against ground truth (measured, not graded)
+  pass: true
+  detail: ATE RMS 4536.28 mm, max 6978.10 mm, final 5737.49 mm over 42 keyframes

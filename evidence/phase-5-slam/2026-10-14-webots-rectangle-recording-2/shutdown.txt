@@ -1,0 +1,3 @@
+ros2_launch: exit code 0
+webots_bin_left: 0
+route_driver_exit_code: 0

@@ -1,0 +1,8 @@
+# S1a-style comparison over the PAIRS A MOTION GATE WOULD HAVE REFUSED (recorded heading step above 0.015 rad). NOT GRADED.
+# What it measures: how far the front end's registration of two scans taken while turning is from the
+# recorded ground-truth relative pose. The registration does not use the recorded poses; if it is accurate
+# (S1a on gated pairs: millimetres), the disagreement here is the recorded pose's error at those scans.
+turning_pairs_registered: 128
+turning_pairs_settled: 128
+translation_error_m: {median: 0.001998891322, p95: 0.008550020102, p99: 0.014988260315, max: 0.018153312092, count: 128}
+rotation_error_rad: {median: 0.015731826861, p95: 0.137236102888, p99: 0.143752652916, max: 0.145039287027, count: 128}

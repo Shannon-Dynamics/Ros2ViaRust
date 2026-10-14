@@ -1,0 +1,26 @@
+schema: phase5-slam-metrics/1
+run:
+  data_source: webots_recorded
+  ground_truth: webots_gated
+  role: development
+  seed: 0
+  route: 2026-10-11-development-3-route-long/integrated-scans.csv max_gap_s=0.5
+  injected_yaw_bias_rad_per_keyframe: 0.0
+  info_inflation: 1.500000000000
+  robotics_mapping_dependency: false
+  build_profile: release
+# path travelled by the recorded sensor poses: 51.447 m over 1312 scans
+s1a:
+  registrations_made: 1290
+  registrations_graded: 1290
+  translation_error_m: {median: 0.003283289654, p95: 0.031638151974, p99: 0.033041105459, max: 0.034744449406, count: 1290}
+  rotation_error_rad: {median: 0.000597414718, p95: 0.001955224201, p99: 0.002783213305, max: 0.004218547846, count: 1290}
+s2:
+  dof: 3
+  samples: 1290
+  mean_nees: 28.845738299862
+s6:
+  replay_identical: true
+  scan_period_s: 0.2
+  registration_latency_s: {median: 0.000698697000, p95: 0.001160091000, p99: 0.005553143000, max: 0.007328430000, count: 1290}
+  optimization_latency_s: {median: 0.000000000000, p95: 0.000000000000, p99: 0.000000000000, max: 0.000000000000, count: 0}

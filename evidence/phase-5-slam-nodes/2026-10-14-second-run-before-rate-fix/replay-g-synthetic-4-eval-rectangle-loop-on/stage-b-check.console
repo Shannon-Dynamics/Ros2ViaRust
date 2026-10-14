@@ -1,0 +1,29 @@
+# the node's shutdown line: {'status': 'enabled', 'candidates': 155, 'accepted': 154, 'rejected': 1, 'edges': 154, 'maps': 54, 'map_odom': 732}
+# 74 keyframes, 155 loop candidates, 154 accepted at 53 keyframe(s)
+PASS  loop closure on: the diagnostics say enabled
+PASS  loop closure on: candidates were proposed
+PASS  loop closure on: the node's final counters equal the verdict file's rows
+PASS  loop closure on: every accepted loop is a loop edge of the graph
+PASS  loop closure on: the loop_errors counter is zero
+PASS  the final file has the keyframes of the created file, one for one
+# largest keyframe displacement caused by loop closure: 10.441 mm
+PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+PASS  /map was published once per loop closure and once at the end (54)
+PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+PASS  the map has free and occupied cells
+PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+PASS  the node's final count of maps published equals what a subscriber received
+PASS  the last /slam/path has one pose per keyframe
+PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+PASS  /slam/path is in the frame map
+FAIL  map -> odom is published for every registered scan  732 of 844
+PASS  map -> odom stamps never go back
+FAIL  map -> odom: every registered scan was published, none dropped for want of odom -> sensor  {'status': 'enabled', 'candidates': 155, 'accepted': 154, 'rejected': 1, 'edges': 154, 'maps': 54, 'map_odom': 732}, samples 732, dropped 4
+PASS  no second owner of the edge was seen
+PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+FAIL  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)  got [146.94, -0.9969308321292488, 0.3952702864674271, -1.5729405911217214, 11.913903794999896], expected (1.2004431134706919, -0.8999694828701315, 0.00023886529014660596)
+# map -> odom step between consecutive samples: median 35.06 mm, largest 183.70 mm
+passed 21, failed 3

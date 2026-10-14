@@ -1,0 +1,27 @@
+# 82 keyframes, 179 loop candidates, 145 accepted at 52 keyframe(s)
+PASS  loop closure on: the diagnostics say enabled
+PASS  loop closure on: candidates were proposed
+PASS  loop closure on: the diagnostics' counters equal the verdict file's rows
+PASS  loop closure on: every accepted loop is a loop edge of the graph
+PASS  loop closure on: the loop_errors counter is zero
+PASS  the final file has the keyframes of the created file, one for one
+# largest keyframe displacement caused by loop closure: 28.738 mm
+PASS  loop closure on: an accepted loop moved at least one keyframe that had been published
+PASS  /map was published once per loop closure and once at the end (53)
+PASS  every /map is in the frame map, 240 x 240 cells of 0.05 m
+PASS  the map has free and occupied cells
+PASS  the render integrated every keyframe's scan: none rejected, none without a scan
+PASS  the node's own render integrated every keyframe too (its diagnostics report no skipped keyframe)
+PASS  the map the node wrote at the end equals a render from files alone (final poses + recorded scans), byte for byte
+FAIL  the diagnostics count the maps  52
+PASS  the last /slam/path has one pose per keyframe
+PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+PASS  /slam/path was published again after the closures (more messages than keyframes' creation alone)
+PASS  /slam/path is in the frame map
+FAIL  map -> odom is published for (nearly) every registered scan  653 of 886
+PASS  map -> odom stamps never go back
+FAIL  nothing was dropped for want of odom -> sensor, and no second owner of the edge was seen  dropped 176, conflicts 0
+PASS  the only publisher of the edge map -> odom is the node: no map -> base_link or other map edge
+FAIL  the last map -> odom equals the estimate recomputed from the files (the keyframe composed with the increments after it)  got [179.12, 0.5979677150511724, -0.8916534337262314, -0.021661753205887996, 11.31387090499993], expected (1.1410417181344155, -0.9047628083957493, -0.025292049988484777)
+# map -> odom step between consecutive samples: median 35.12 mm, largest 1753.41 mm
+passed 19, failed 4

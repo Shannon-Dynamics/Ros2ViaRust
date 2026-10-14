@@ -1,0 +1,126 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-15-00-05-20-468840-LAPTOP-HJL1R3P6-12749
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source live; loop_closure: enabled; /map published; map -> odom owned by pose_graph_node
+[INFO] [launch.user]: source:=live expects a driver publishing /scan and, for map -> odom, odom -> base_link
+[INFO] [pose_graph_node-1]: process started with pid [12775]
+[INFO] [scan_matcher_node-2]: process started with pid [12776]
+[scan_matcher_node-2] [INFO] [1791997520.606567784] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[pose_graph_node-1] [INFO] [1791997520.610563846] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame map, keyframes every 0.5 m or 0.35 rad, loop_closure: enabled, map: map, map -> odom: owned, 27 parameters
+[pose_graph_node-1] [INFO] [1791997577.562172214] [pose_graph_node]: loop closure at keyframe 22: 2 of 2 candidate(s) accepted, graph optimized (2 loop edges)
+[pose_graph_node-1] [INFO] [1791997577.567987210] [pose_graph_node]: map rendered, after a loop closure: 23 of 23 keyframes integrated (0 without a stored scan, 0 rejected) in 5 ms
+[pose_graph_node-1] [INFO] [1791997580.214495167] [pose_graph_node]: loop closure at keyframe 23: 1 of 3 candidate(s) accepted, graph optimized (3 loop edges)
+[pose_graph_node-1] [INFO] [1791997580.220721496] [pose_graph_node]: map rendered, after a loop closure: 24 of 24 keyframes integrated (0 without a stored scan, 0 rejected) in 5 ms
+[pose_graph_node-1] [INFO] [1791997582.337206080] [pose_graph_node]: loop closure at keyframe 24: 3 of 3 candidate(s) accepted, graph optimized (6 loop edges)
+[pose_graph_node-1] [INFO] [1791997582.343305975] [pose_graph_node]: map rendered, after a loop closure: 25 of 25 keyframes integrated (0 without a stored scan, 0 rejected) in 6 ms
+[pose_graph_node-1] [INFO] [1791997582.869472620] [pose_graph_node]: loop closure at keyframe 25: 2 of 3 candidate(s) accepted, graph optimized (8 loop edges)
+[pose_graph_node-1] [INFO] [1791997582.875792418] [pose_graph_node]: map rendered, after a loop closure: 26 of 26 keyframes integrated (0 without a stored scan, 0 rejected) in 5 ms
+[pose_graph_node-1] [INFO] [1791997583.535734570] [pose_graph_node]: loop closure at keyframe 26: 2 of 3 candidate(s) accepted, graph optimized (10 loop edges)
+[pose_graph_node-1] [INFO] [1791997583.541747574] [pose_graph_node]: map rendered, after a loop closure: 27 of 27 keyframes integrated (0 without a stored scan, 0 rejected) in 5 ms
+[pose_graph_node-1] [INFO] [1791997586.609489617] [pose_graph_node]: loop closure at keyframe 27: 3 of 3 candidate(s) accepted, graph optimized (13 loop edges)
+[pose_graph_node-1] [INFO] [1791997586.615686900] [pose_graph_node]: map rendered, after a loop closure: 28 of 28 keyframes integrated (0 without a stored scan, 0 rejected) in 6 ms
+[pose_graph_node-1] [INFO] [1791997589.491891764] [pose_graph_node]: loop closure at keyframe 28: 3 of 3 candidate(s) accepted, graph optimized (16 loop edges)
+[pose_graph_node-1] [INFO] [1791997589.498605034] [pose_graph_node]: map rendered, after a loop closure: 29 of 29 keyframes integrated (0 without a stored scan, 0 rejected) in 6 ms
+[pose_graph_node-1] [INFO] [1791997592.345683614] [pose_graph_node]: loop closure at keyframe 29: 3 of 3 candidate(s) accepted, graph optimized (19 loop edges)
+[pose_graph_node-1] [INFO] [1791997592.352387766] [pose_graph_node]: map rendered, after a loop closure: 30 of 30 keyframes integrated (0 without a stored scan, 0 rejected) in 6 ms
+[pose_graph_node-1] [INFO] [1791997595.170863289] [pose_graph_node]: loop closure at keyframe 30: 3 of 3 candidate(s) accepted, graph optimized (22 loop edges)
+[pose_graph_node-1] [INFO] [1791997595.177996846] [pose_graph_node]: map rendered, after a loop closure: 31 of 31 keyframes integrated (0 without a stored scan, 0 rejected) in 6 ms
+[pose_graph_node-1] [INFO] [1791997601.107385962] [pose_graph_node]: loop closure at keyframe 34: 3 of 3 candidate(s) accepted, graph optimized (25 loop edges)
+[pose_graph_node-1] [INFO] [1791997601.115214674] [pose_graph_node]: map rendered, after a loop closure: 35 of 35 keyframes integrated (0 without a stored scan, 0 rejected) in 7 ms
+[pose_graph_node-1] [INFO] [1791997603.939405700] [pose_graph_node]: loop closure at keyframe 35: 3 of 3 candidate(s) accepted, graph optimized (28 loop edges)
+[pose_graph_node-1] [INFO] [1791997603.947263521] [pose_graph_node]: map rendered, after a loop closure: 36 of 36 keyframes integrated (0 without a stored scan, 0 rejected) in 7 ms
+[pose_graph_node-1] [INFO] [1791997606.791127537] [pose_graph_node]: loop closure at keyframe 36: 3 of 3 candidate(s) accepted, graph optimized (31 loop edges)
+[pose_graph_node-1] [INFO] [1791997606.799079579] [pose_graph_node]: map rendered, after a loop closure: 37 of 37 keyframes integrated (0 without a stored scan, 0 rejected) in 7 ms
+[pose_graph_node-1] [INFO] [1791997608.761588454] [pose_graph_node]: loop closure at keyframe 37: 3 of 3 candidate(s) accepted, graph optimized (34 loop edges)
+[pose_graph_node-1] [INFO] [1791997608.770300529] [pose_graph_node]: map rendered, after a loop closure: 38 of 38 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997609.421227110] [pose_graph_node]: loop closure at keyframe 38: 3 of 3 candidate(s) accepted, graph optimized (37 loop edges)
+[pose_graph_node-1] [INFO] [1791997609.431330336] [pose_graph_node]: map rendered, after a loop closure: 39 of 39 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997609.846921766] [pose_graph_node]: loop closure at keyframe 39: 2 of 3 candidate(s) accepted, graph optimized (39 loop edges)
+[pose_graph_node-1] [INFO] [1791997609.855689602] [pose_graph_node]: map rendered, after a loop closure: 40 of 40 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997613.141800933] [pose_graph_node]: loop closure at keyframe 40: 3 of 3 candidate(s) accepted, graph optimized (42 loop edges)
+[pose_graph_node-1] [INFO] [1791997613.150400595] [pose_graph_node]: map rendered, after a loop closure: 41 of 41 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997616.208173615] [pose_graph_node]: loop closure at keyframe 41: 3 of 3 candidate(s) accepted, graph optimized (45 loop edges)
+[pose_graph_node-1] [INFO] [1791997616.217244625] [pose_graph_node]: map rendered, after a loop closure: 42 of 42 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997619.263288536] [pose_graph_node]: loop closure at keyframe 42: 3 of 3 candidate(s) accepted, graph optimized (48 loop edges)
+[pose_graph_node-1] [INFO] [1791997619.272396621] [pose_graph_node]: map rendered, after a loop closure: 43 of 43 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997622.349989460] [pose_graph_node]: loop closure at keyframe 43: 3 of 3 candidate(s) accepted, graph optimized (51 loop edges)
+[pose_graph_node-1] [INFO] [1791997622.359223194] [pose_graph_node]: map rendered, after a loop closure: 44 of 44 keyframes integrated (0 without a stored scan, 0 rejected) in 8 ms
+[pose_graph_node-1] [INFO] [1791997622.981486767] [pose_graph_node]: loop closure at keyframe 44: 3 of 3 candidate(s) accepted, graph optimized (54 loop edges)
+[pose_graph_node-1] [INFO] [1791997622.990910747] [pose_graph_node]: map rendered, after a loop closure: 45 of 45 keyframes integrated (0 without a stored scan, 0 rejected) in 9 ms
+[pose_graph_node-1] [INFO] [1791997623.671511271] [pose_graph_node]: loop closure at keyframe 45: 3 of 3 candidate(s) accepted, graph optimized (57 loop edges)
+[pose_graph_node-1] [INFO] [1791997623.680907567] [pose_graph_node]: map rendered, after a loop closure: 46 of 46 keyframes integrated (0 without a stored scan, 0 rejected) in 9 ms
+[pose_graph_node-1] [INFO] [1791997624.338484904] [pose_graph_node]: loop closure at keyframe 46: 3 of 3 candidate(s) accepted, graph optimized (60 loop edges)
+[pose_graph_node-1] [INFO] [1791997624.348292390] [pose_graph_node]: map rendered, after a loop closure: 47 of 47 keyframes integrated (0 without a stored scan, 0 rejected) in 9 ms
+[pose_graph_node-1] [INFO] [1791997627.377981476] [pose_graph_node]: loop closure at keyframe 47: 3 of 3 candidate(s) accepted, graph optimized (63 loop edges)
+[pose_graph_node-1] [INFO] [1791997627.388765623] [pose_graph_node]: map rendered, after a loop closure: 48 of 48 keyframes integrated (0 without a stored scan, 0 rejected) in 10 ms
+[pose_graph_node-1] [INFO] [1791997630.220277538] [pose_graph_node]: loop closure at keyframe 48: 3 of 3 candidate(s) accepted, graph optimized (66 loop edges)
+[pose_graph_node-1] [INFO] [1791997630.230578470] [pose_graph_node]: map rendered, after a loop closure: 49 of 49 keyframes integrated (0 without a stored scan, 0 rejected) in 9 ms
+[pose_graph_node-1] [INFO] [1791997633.060215469] [pose_graph_node]: loop closure at keyframe 49: 3 of 3 candidate(s) accepted, graph optimized (69 loop edges)
+[pose_graph_node-1] [INFO] [1791997633.070472720] [pose_graph_node]: map rendered, after a loop closure: 50 of 50 keyframes integrated (0 without a stored scan, 0 rejected) in 10 ms
+[pose_graph_node-1] [INFO] [1791997635.046778433] [pose_graph_node]: loop closure at keyframe 50: 3 of 3 candidate(s) accepted, graph optimized (72 loop edges)
+[pose_graph_node-1] [INFO] [1791997635.057553274] [pose_graph_node]: map rendered, after a loop closure: 51 of 51 keyframes integrated (0 without a stored scan, 0 rejected) in 10 ms
+[pose_graph_node-1] [INFO] [1791997635.705018862] [pose_graph_node]: loop closure at keyframe 51: 3 of 3 candidate(s) accepted, graph optimized (75 loop edges)
+[pose_graph_node-1] [INFO] [1791997635.716481798] [pose_graph_node]: map rendered, after a loop closure: 52 of 52 keyframes integrated (0 without a stored scan, 0 rejected) in 11 ms
+[pose_graph_node-1] [INFO] [1791997636.355553691] [pose_graph_node]: loop closure at keyframe 52: 3 of 3 candidate(s) accepted, graph optimized (78 loop edges)
+[pose_graph_node-1] [INFO] [1791997636.366717273] [pose_graph_node]: map rendered, after a loop closure: 53 of 53 keyframes integrated (0 without a stored scan, 0 rejected) in 10 ms
+[pose_graph_node-1] [INFO] [1791997639.612849942] [pose_graph_node]: loop closure at keyframe 53: 3 of 3 candidate(s) accepted, graph optimized (81 loop edges)
+[pose_graph_node-1] [INFO] [1791997639.623866914] [pose_graph_node]: map rendered, after a loop closure: 54 of 54 keyframes integrated (0 without a stored scan, 0 rejected) in 10 ms
+[pose_graph_node-1] [INFO] [1791997642.678810979] [pose_graph_node]: loop closure at keyframe 54: 3 of 3 candidate(s) accepted, graph optimized (84 loop edges)
+[pose_graph_node-1] [INFO] [1791997642.690200610] [pose_graph_node]: map rendered, after a loop closure: 55 of 55 keyframes integrated (0 without a stored scan, 0 rejected) in 11 ms
+[pose_graph_node-1] [INFO] [1791997648.682297944] [pose_graph_node]: loop closure at keyframe 56: 3 of 3 candidate(s) accepted, graph optimized (87 loop edges)
+[pose_graph_node-1] [INFO] [1791997648.694303974] [pose_graph_node]: map rendered, after a loop closure: 57 of 57 keyframes integrated (0 without a stored scan, 0 rejected) in 11 ms
+[pose_graph_node-1] [INFO] [1791997649.358328064] [pose_graph_node]: loop closure at keyframe 57: 3 of 3 candidate(s) accepted, graph optimized (90 loop edges)
+[pose_graph_node-1] [INFO] [1791997649.371231407] [pose_graph_node]: map rendered, after a loop closure: 58 of 58 keyframes integrated (0 without a stored scan, 0 rejected) in 12 ms
+[pose_graph_node-1] [INFO] [1791997650.023737572] [pose_graph_node]: loop closure at keyframe 58: 3 of 3 candidate(s) accepted, graph optimized (93 loop edges)
+[pose_graph_node-1] [INFO] [1791997650.036136650] [pose_graph_node]: map rendered, after a loop closure: 59 of 59 keyframes integrated (0 without a stored scan, 0 rejected) in 12 ms
+[pose_graph_node-1] [INFO] [1791997650.708168272] [pose_graph_node]: loop closure at keyframe 59: 3 of 3 candidate(s) accepted, graph optimized (96 loop edges)
+[pose_graph_node-1] [INFO] [1791997650.721383697] [pose_graph_node]: map rendered, after a loop closure: 60 of 60 keyframes integrated (0 without a stored scan, 0 rejected) in 12 ms
+[pose_graph_node-1] [INFO] [1791997653.829102375] [pose_graph_node]: loop closure at keyframe 60: 3 of 3 candidate(s) accepted, graph optimized (99 loop edges)
+[pose_graph_node-1] [INFO] [1791997653.841561119] [pose_graph_node]: map rendered, after a loop closure: 61 of 61 keyframes integrated (0 without a stored scan, 0 rejected) in 12 ms
+[pose_graph_node-1] [INFO] [1791997656.740118811] [pose_graph_node]: loop closure at keyframe 61: 3 of 3 candidate(s) accepted, graph optimized (102 loop edges)
+[pose_graph_node-1] [INFO] [1791997656.754063978] [pose_graph_node]: map rendered, after a loop closure: 62 of 62 keyframes integrated (0 without a stored scan, 0 rejected) in 13 ms
+[pose_graph_node-1] [INFO] [1791997659.629503593] [pose_graph_node]: loop closure at keyframe 62: 3 of 3 candidate(s) accepted, graph optimized (105 loop edges)
+[pose_graph_node-1] [INFO] [1791997659.642882155] [pose_graph_node]: map rendered, after a loop closure: 63 of 63 keyframes integrated (0 without a stored scan, 0 rejected) in 13 ms
+[pose_graph_node-1] [INFO] [1791997661.414197170] [pose_graph_node]: loop closure at keyframe 63: 3 of 3 candidate(s) accepted, graph optimized (108 loop edges)
+[pose_graph_node-1] [INFO] [1791997661.427965309] [pose_graph_node]: map rendered, after a loop closure: 64 of 64 keyframes integrated (0 without a stored scan, 0 rejected) in 13 ms
+[pose_graph_node-1] [INFO] [1791997662.082486006] [pose_graph_node]: loop closure at keyframe 64: 3 of 3 candidate(s) accepted, graph optimized (111 loop edges)
+[pose_graph_node-1] [INFO] [1791997662.096030671] [pose_graph_node]: map rendered, after a loop closure: 65 of 65 keyframes integrated (0 without a stored scan, 0 rejected) in 13 ms
+[pose_graph_node-1] [INFO] [1791997662.765257486] [pose_graph_node]: loop closure at keyframe 65: 3 of 3 candidate(s) accepted, graph optimized (114 loop edges)
+[pose_graph_node-1] [INFO] [1791997662.779711740] [pose_graph_node]: map rendered, after a loop closure: 66 of 66 keyframes integrated (0 without a stored scan, 0 rejected) in 14 ms
+[pose_graph_node-1] [INFO] [1791997665.887033661] [pose_graph_node]: loop closure at keyframe 66: 3 of 3 candidate(s) accepted, graph optimized (117 loop edges)
+[pose_graph_node-1] [INFO] [1791997665.900738143] [pose_graph_node]: map rendered, after a loop closure: 67 of 67 keyframes integrated (0 without a stored scan, 0 rejected) in 13 ms
+[pose_graph_node-1] [INFO] [1791997669.012412668] [pose_graph_node]: loop closure at keyframe 67: 3 of 3 candidate(s) accepted, graph optimized (120 loop edges)
+[pose_graph_node-1] [INFO] [1791997669.027858718] [pose_graph_node]: map rendered, after a loop closure: 68 of 68 keyframes integrated (0 without a stored scan, 0 rejected) in 14 ms
+[pose_graph_node-1] [INFO] [1791997671.905616271] [pose_graph_node]: loop closure at keyframe 68: 3 of 3 candidate(s) accepted, graph optimized (123 loop edges)
+[pose_graph_node-1] [INFO] [1791997671.923441964] [pose_graph_node]: map rendered, after a loop closure: 69 of 69 keyframes integrated (0 without a stored scan, 0 rejected) in 14 ms
+[pose_graph_node-1] [INFO] [1791997674.765671219] [pose_graph_node]: loop closure at keyframe 69: 1 of 3 candidate(s) accepted, graph optimized (124 loop edges)
+[pose_graph_node-1] [INFO] [1791997674.779454641] [pose_graph_node]: map rendered, after a loop closure: 70 of 70 keyframes integrated (0 without a stored scan, 0 rejected) in 13 ms
+[pose_graph_node-1] [INFO] [1791997676.385588384] [pose_graph_node]: loop closure at keyframe 71: 3 of 3 candidate(s) accepted, graph optimized (127 loop edges)
+[pose_graph_node-1] [INFO] [1791997676.400482393] [pose_graph_node]: map rendered, after a loop closure: 72 of 72 keyframes integrated (0 without a stored scan, 0 rejected) in 14 ms
+[pose_graph_node-1] [INFO] [1791997677.056322053] [pose_graph_node]: loop closure at keyframe 72: 3 of 3 candidate(s) accepted, graph optimized (130 loop edges)
+[pose_graph_node-1] [INFO] [1791997677.071040893] [pose_graph_node]: map rendered, after a loop closure: 73 of 73 keyframes integrated (0 without a stored scan, 0 rejected) in 14 ms
+[pose_graph_node-1] [INFO] [1791997680.204387246] [pose_graph_node]: loop closure at keyframe 73: 3 of 3 candidate(s) accepted, graph optimized (133 loop edges)
+[pose_graph_node-1] [INFO] [1791997680.219751389] [pose_graph_node]: map rendered, after a loop closure: 74 of 74 keyframes integrated (0 without a stored scan, 0 rejected) in 15 ms
+[pose_graph_node-1] [INFO] [1791997683.095669299] [pose_graph_node]: loop closure at keyframe 74: 3 of 3 candidate(s) accepted, graph optimized (136 loop edges)
+[pose_graph_node-1] [INFO] [1791997683.114108401] [pose_graph_node]: map rendered, after a loop closure: 75 of 75 keyframes integrated (0 without a stored scan, 0 rejected) in 15 ms
+[pose_graph_node-1] [INFO] [1791997685.979005632] [pose_graph_node]: loop closure at keyframe 75: 3 of 3 candidate(s) accepted, graph optimized (139 loop edges)
+[pose_graph_node-1] [INFO] [1791997685.994573565] [pose_graph_node]: map rendered, after a loop closure: 76 of 76 keyframes integrated (0 without a stored scan, 0 rejected) in 15 ms
+[pose_graph_node-1] [INFO] [1791997687.814954429] [pose_graph_node]: loop closure at keyframe 76: 3 of 3 candidate(s) accepted, graph optimized (142 loop edges)
+[pose_graph_node-1] [INFO] [1791997687.830520992] [pose_graph_node]: map rendered, after a loop closure: 77 of 77 keyframes integrated (0 without a stored scan, 0 rejected) in 15 ms
+[pose_graph_node-1] [INFO] [1791997689.176766061] [pose_graph_node]: loop closure at keyframe 78: 3 of 3 candidate(s) accepted, graph optimized (145 loop edges)
+[pose_graph_node-1] [INFO] [1791997689.193424494] [pose_graph_node]: map rendered, after a loop closure: 79 of 79 keyframes integrated (0 without a stored scan, 0 rejected) in 16 ms
+[pose_graph_node-1] [INFO] [1791997692.251844150] [pose_graph_node]: loop closure at keyframe 79: 3 of 3 candidate(s) accepted, graph optimized (148 loop edges)
+[pose_graph_node-1] [INFO] [1791997692.269015575] [pose_graph_node]: map rendered, after a loop closure: 80 of 80 keyframes integrated (0 without a stored scan, 0 rejected) in 17 ms
+[pose_graph_node-1] [INFO] [1791997695.180764019] [pose_graph_node]: loop closure at keyframe 80: 3 of 3 candidate(s) accepted, graph optimized (151 loop edges)
+[pose_graph_node-1] [INFO] [1791997695.197925757] [pose_graph_node]: map rendered, after a loop closure: 81 of 81 keyframes integrated (0 without a stored scan, 0 rejected) in 16 ms
+[pose_graph_node-1] [INFO] [1791997701.201949327] [pose_graph_node]: loop closure at keyframe 82: 3 of 3 candidate(s) accepted, graph optimized (154 loop edges)
+[pose_graph_node-1] [INFO] [1791997701.219029918] [pose_graph_node]: map rendered, after a loop closure: 83 of 83 keyframes integrated (0 without a stored scan, 0 rejected) in 16 ms
+[WARNING] [launch]: user interrupted with ctrl-c (SIGINT)
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[scan_matcher_node-2] [INFO] [1791997715.390469184] [scan_matcher_node]: scan_matcher_node shutting down: 884 scans received, 884 registrations published (883 tracked, 0 predicted, 0 retried wide, 0 tracked with fallback information), 0 not registered
+[pose_graph_node-1] [INFO] [1791997715.401724373] [pose_graph_node]: map rendered, at the end of the run: 83 of 83 keyframes integrated (0 without a stored scan, 0 rejected) in 17 ms
+[pose_graph_node-1] [INFO] [1791997715.410267730] [pose_graph_node]: wrote the final map to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/2026-10-15-live-source-live-1/node/final-map.txt
+[pose_graph_node-1] [INFO] [1791997715.412202687] [pose_graph_node]: wrote the optimized keyframes to /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/2026-10-15-live-source-live-1/node/keyframes_final.csv
+[pose_graph_node-1] [INFO] [1791997715.412256954] [pose_graph_node]: pose_graph_node shutting down: 83 keyframes from 884 registrations (884 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: enabled (182 candidates, 154 accepted, 28 rejected, 154 loop edges), 55 map(s), 884 map -> odom
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 12776]
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 12775]

@@ -1,0 +1,92 @@
+# Written by scripts/phase5_verdict.py from slam-metrics.yaml in this directory.
+# Every tolerance lives in that script, which was written before the first evidence run.
+run: synthetic-1c-dev-route-long-injected
+verdict_script_sha256: 579b561eb871f4a4251e50eaef8e419a4186805810a776765ca816b6c2f10de8
+metrics_sha256: c06c26dabddc48a4612fbb146ff60d3ed0104c50fd423a2c033aedb56d86714f
+valid: true
+data_source: synthetic
+ground_truth: exact
+role: development
+seed: 1
+route: route_long.yaml laps=1 angular_rad_s=0.8
+injected_yaw_bias_rad_per_keyframe: 0.004
+info_inflation: 1.5
+build_profile: release
+claims:
+  S1a:
+    status: PASS
+    checks:
+      graded_fraction: {value: '1.0', limit: '0.95', op: '>=', pass: true}
+      translation_p95_m: {value: '0.005295903092', limit: '0.02', op: '<=', pass: true}
+      translation_max_m: {value: '0.00984211911', limit: '0.05', op: '<=', pass: true}
+      rotation_p95_rad: {value: '0.002505069697', limit: '0.01', op: '<=', pass: true}
+      rotation_max_rad: {value: '0.004161532562', limit: '0.03', op: '<=', pass: true}
+    notes:
+      - 'ground truth: exact; graded 1828 of 1828 registrations made'
+      - translation median 0.002496432399 m, rotation median 0.000775966307 rad
+  S1b:
+    status: PASS
+    checks:
+      wilson_lower[0.05m,0.05rad]: {value: '0.9630065012310038', limit: '0.9', op: '>=', pass: true}
+      wilson_lower[0.1m,0.1rad]: {value: '0.9630065012310038', limit: '0.9', op: '>=', pass: true}
+    notes:
+      - 'offset 0.05 m / 0.05 rad: 100/100, Wilson 95% [0.9630, 1.0000] (graded)'
+      - 'offset 0.1 m / 0.1 rad: 100/100, Wilson 95% [0.9630, 1.0000] (graded)'
+      - 'offset 0.2 m / 0.15 rad: 100/100, Wilson 95% [0.9630, 1.0000] (reported, not graded)'
+      - 'offset 0.3 m / 0.25 rad: 100/100, Wilson 95% [0.9630, 1.0000] (reported, not graded)'
+      - 'offset 0.5 m / 0.4 rad: 99/100, Wilson 95% [0.9455, 0.9982] (reported, not graded)'
+      - 'offset 1 m / 0.8 rad: 44/100, Wilson 95% [0.3467, 0.5377] (reported, not graded)'
+      - 'model level: not comparable with a Webots number, and not extrapolated to one'
+  S2:
+    status: REPORTED
+    notes:
+      - 'CONSISTENT: mean NEES 3.021897977773 against the chi-squared(3) mean interval [2.8888, 3.1133] for 1828 samples'
+      - 'never pass or fail: the information matrix is known to be overconfident (the beams are not independent), and info_inflation is set from the development run and frozen'
+      - the interval treats the samples as independent; consecutive scans are not, so it is optimistic
+  S3:
+    status: NOT_GRADED
+    notes:
+      - 'tests: cargo test -p robotics_slam'
+  S4:
+    status: FAIL
+    checks:
+      graph_ate_rms_m: {value: '0.592646405636', limit: '0.05', op: '<=', pass: false}
+      graph_final_error_m: {value: '0.067551718189', limit: '0.1', op: '<=', pass: true}
+      graph_ate_rms_over_odometry: {value: '1.0', limit: '1.05', op: '<=', pass: true}
+    notes:
+      - graded 192 of 192 keyframes, path 53.110684031988 m
+      - odometry ATE RMS 0.592646405636 m, drift 0.001271904503 m/m
+      - 'an error was INJECTED into the odometry edges (0.004 rad per keyframe): the odometry drift is not the scan matcher''s and is not graded; this run is model-level evidence for the loop machinery only'
+      - 'no loop closure was accepted: the graph is the odometry chain and the comparison with it is vacuous (problem.md section 4, S4)'
+  S5:
+    status: PASS
+    checks:
+      accepted_wrong: {value: 0, limit: 0, op: '==', pass: true}
+    notes:
+      - 'candidates 486, accepted 0 (correct 0, wrong 0), rejected by reason {''no_overlap'': 0, ''not_converged'': 4, ''poor_fit'': 0, ''degenerate'': 5, ''gate_exceeded'': 477, ''ambiguous'': 0}'
+      - no candidate was accepted
+      - 'true loops proposed 473, accepted 0: recall of what the DETECTOR PROPOSED (loops it never proposed are not counted); reported, never required'
+      - 'keyframes that had a true-loop partner by ground truth: 161; of those, with an accepted loop edge: 0'
+      - 'true loops the detector proposed and the verifier rejected, by reason: {''no_overlap'': 0, ''not_converged'': 4, ''poor_fit'': 0, ''degenerate'': 5, ''gate_exceeded'': 464, ''ambiguous'': 0}'
+      - a PASS here is a statement about the candidates this run produced; the candidates designed to be rejected are in the unit and integration tests, not in this file
+  S6:
+    status: PASS
+    checks:
+      replay_identical: {value: True, limit: True, op: '==', pass: true}
+      registration_p99_s: {value: '0.007693157', limit: '0.1', op: '<=', pass: true}
+    notes:
+      - build profile release; registrations 1829, median 0.003246103 s, p95 0.005826551 s
+      - 'S1a translation p95 of the same run: 0.005295903092 m (accuracy next to speed)'
+      - 'no optimization ran (no loop was accepted): its latency is not graded'
+  S7:
+    status: REPORTED
+    notes:
+      - 'synthetic odometry fed to both back ends: {''trans_frac'': 0.02, ''trans_floor_m'': 0.001, ''lateral_frac'': 0.01, ''lateral_floor_m'': 0.001, ''rot_per_rad'': 0.03, ''rot_per_m'': 0.005, ''rot_floor_rad'': 0.002, ''yaw_bias_rad_per_m'': 0.005}; Webots'' own odometry has no noise model, so this is a statement about that setting and no other'
+      - 'dead reckoning of that odometry: ATE RMS 0.314551391999 m, max 0.825837816874 m, final 0.258952344512 m'
+      - 'EKF-SLAM (pillar detections of the same scans): ATE RMS 0.016331407162 m, max 0.037164860871 m, final 0.004994975551 m; mean pose NEES 3.450062896275 over 1828 steps (chi-squared(3) mean is 3), 0.945295404814 of steps within the 97.5 per cent bound; 46 landmarks on 4 distinct pillars, worst landmark error 2.405441002766 m'
+      - 'grid RBPF (30 particles, no scan-matching proposal): ATE RMS 1.582297824501 m, max 3.387758261938 m, final 1.748003434206 m; 573 resamples, mean N_eff before resampling 17.312721318125'
+      - 'informative and non-blocking: no ranking of the back ends is claimed'
+  S8:
+    status: NOT_CLAIMABLE
+    notes:
+      - blocked on Phase 4's M1, a measured S5 on the evaluation runs, and the submap-rendering node

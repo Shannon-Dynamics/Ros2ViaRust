@@ -1,0 +1,34 @@
+facts:
+  registrations_node: 454
+  registrations_reference: 454
+  keyframes_node: 59
+  keyframes_reference: 59
+  status_counts:
+    Initialized: 1
+    Tracked: 435
+    Predicted: 18
+  registration_latency_us_p50_p95_p99_max:
+  - 12662.0
+  - 89776.0
+  - 148344.0
+  - 153405.0
+  keyframe_pose_max_difference: 2.666847220714599e-15
+  ate_rms_m: 6.051405409825393
+  ate_max_m: 11.05652099075682
+  final_error_m: 9.374745376040568
+checks:
+- name: R1 one registration per registered scan, same stamps
+  pass: true
+  detail: 454 node, 454 reference
+- name: R2 registrations equal the reference, row for row
+  pass: true
+  detail: identical
+- name: K1 same keyframes at the same stamps
+  pass: true
+  detail: 59 node, 59 reference
+- name: K2 keyframe poses agree with the reference to 1e-9
+  pass: true
+  detail: max difference 2.667e-15
+- name: G keyframe trajectory against ground truth (measured, not graded)
+  pass: true
+  detail: ATE RMS 6051.41 mm, max 11056.52 mm, final 9374.75 mm over 59 keyframes

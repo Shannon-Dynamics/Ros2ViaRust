@@ -1,0 +1,71 @@
+schema: phase5-slam-metrics/1
+run:
+  data_source: synthetic
+  ground_truth: exact
+  role: development
+  seed: 1
+  route: route_long.yaml laps=1 angular_rad_s=0.8
+  injected_yaw_bias_rad_per_keyframe: 0.000000000000
+  info_inflation: 1.500000000000
+  robotics_mapping_dependency: false
+  build_profile: release
+s1a:
+  registrations_made: 1828
+  registrations_graded: 1828
+  translation_error_m: {median: 0.002496432399, p95: 0.005295903092, p99: 0.006540043550, max: 0.009842119110, count: 1828}
+  rotation_error_rad: {median: 0.000775966307, p95: 0.002505069697, p99: 0.003338969536, max: 0.004161532562, count: 1828}
+s2:
+  dof: 3
+  samples: 1828
+  mean_nees: 3.021897977773
+s1b:
+  success_error_m: 0.02
+  success_error_rad: 0.01
+  ranges:
+    - {offset_m: 0.05, offset_rad: 0.05, trials: 100, successes: 100}
+    - {offset_m: 0.1, offset_rad: 0.1, trials: 100, successes: 100}
+    - {offset_m: 0.2, offset_rad: 0.15, trials: 100, successes: 100}
+    - {offset_m: 0.3, offset_rad: 0.25, trials: 100, successes: 100}
+    - {offset_m: 0.5, offset_rad: 0.4, trials: 100, successes: 99}
+    - {offset_m: 1, offset_rad: 0.8, trials: 100, successes: 44}
+s4:
+  keyframes_made: 192
+  keyframes_graded: 192
+  path_length_m: 53.110684031988
+  odometry: {ate_rms_m: 0.003399855053, ate_max_m: 0.008156685748, final_error_m: 0.004272257618, drift_m_per_m: 0.000080440644, heading_drift_rad_per_m: 0.000029335868}
+  graph: {ate_rms_m: 0.009959506797, ate_max_m: 0.018044894042, final_error_m: 0.002873743996, drift_m_per_m: 0.000054108586, heading_drift_rad_per_m: 0.000053594636}
+s5:
+  candidates: 484
+  accepted_correct: 481
+  accepted_wrong: 0
+  true_loops_proposed: 483
+  true_loops_accepted: 480
+  keyframes_with_true_partner: 161
+  keyframes_with_accepted_loop: 161
+  wrong_constraint_error_m: 0.05
+  wrong_constraint_error_rad: 0.03
+  rejected_by_reason:
+    no_overlap: 0
+    not_converged: 0
+    poor_fit: 0
+    degenerate: 0
+    gate_exceeded: 2
+    ambiguous: 1
+  true_loops_missed_by_reason:
+    no_overlap: 0
+    not_converged: 0
+    poor_fit: 0
+    degenerate: 0
+    gate_exceeded: 2
+    ambiguous: 1
+s6:
+  replay_identical: true
+  scan_period_s: 0.2
+  registration_latency_s: {median: 0.003226361000, p95: 0.005884512000, p99: 0.008104597000, max: 0.019414547000, count: 1829}
+  optimization_latency_s: {median: 0.194387440000, p95: 0.342893303000, p99: 0.398157879000, max: 0.402355785000, count: 162}
+# pipeline: 1829 scans, 0 registrations lost to prediction
+s7:
+  odometry_noise: {trans_frac: 0.02, trans_floor_m: 0.001, lateral_frac: 0.01, lateral_floor_m: 0.001, rot_per_rad: 0.03, rot_per_m: 0.005, rot_floor_rad: 0.002, yaw_bias_rad_per_m: 0.005}
+  dead_reckoning: {ate_rms_m: 0.314551391999, ate_max_m: 0.825837816874, final_error_m: 0.258952344512}
+  ekf_slam: {ate_rms_m: 0.016331407162, ate_max_m: 0.037164860871, final_error_m: 0.004994975551, mean_nees: 3.450062896275, nees_samples: 1828, nees_within_975_bound_fraction: 0.945295404814, landmarks: 46, distinct_pillars: 4, landmark_error_max_m: 2.405441002766, provisional_left: 8}
+  rbpf: {particles: 30, ate_rms_m: 1.582297824501, ate_max_m: 3.387758261938, final_error_m: 1.748003434206, resamples: 573, mean_n_eff_before: 17.312721318125}

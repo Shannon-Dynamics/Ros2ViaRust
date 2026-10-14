@@ -1,0 +1,5 @@
+
+thread 'main' (114533) panicked at crates/robotics_slam/examples/common/mod.rs:280:50:
+called `Result::unwrap()` on an `Err` value: SingularSystem("increment information")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+harness exit code 101 after 3 s

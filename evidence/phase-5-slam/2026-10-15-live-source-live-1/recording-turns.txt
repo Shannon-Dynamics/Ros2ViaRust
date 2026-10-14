@@ -1,0 +1,19 @@
+/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/2026-10-15-live-source-live-1/integrated-scans.csv
+  scans: 896   duration: 192.9 s   consecutive pairs <= 0.5 s apart: 895
+  turning scans (heading step > 0.015 rad): 129 (14.4 per cent of steps)
+  |heading rate| over turning scans: min 0.073 / median 0.800 / max 0.802 rad/s
+  turns (runs of turning scans of one sign): 13
+     1. from    19.60 s:  5 scans, angle   -35.9 deg, median rate -0.801 rad/s, largest step 0.176 rad
+     2. from    28.62 s: 13 scans, angle   125.6 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     3. from    40.86 s: 11 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     4. from    55.00 s: 10 scans, angle    90.7 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     5. from    66.74 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     6. from    80.88 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     7. from    92.66 s: 10 scans, angle    89.1 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     8. from   106.58 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     9. from   118.38 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    10. from   132.38 s: 10 scans, angle    89.0 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    11. from   144.18 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    12. from   158.18 s: 10 scans, angle    90.8 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    13. from   170.00 s: 10 scans, angle    89.0 deg, median rate +0.800 rad/s, largest step 0.176 rad
+  turn angle (abs): min 35.9 / median 89.9 / max 125.6 deg; total 1150 deg

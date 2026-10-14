@@ -1,0 +1,17 @@
+# the node's shutdown line: {'status': 'unsupported', 'candidates': 0, 'accepted': 0, 'rejected': 0, 'edges': 0, 'maps': 0, 'map_odom': 0}
+# 83 keyframes, 0 loop candidates, 0 accepted at 0 keyframe(s)
+PASS  the pose graph node processed every registration the scan matcher made (no backlog was cut off by the shutdown)
+PASS  loop closure off: the diagnostics say unsupported
+PASS  loop closure off: no candidate was proposed and loops.csv has only its header
+PASS  loop closure off: no optimization ran
+PASS  the final file has the keyframes of the created file, one for one
+# largest keyframe displacement caused by loop closure: 0.000 mm
+PASS  loop closure off: the optimized keyframes are the created ones, bit for bit
+PASS  map off: no /map message
+PASS  map off: the node counts no map
+PASS  the last /slam/path has one pose per keyframe
+PASS  the last /slam/path equals the optimized keyframes (the closure's moves reached the subscriber)
+PASS  /slam/path is in the frame slam_origin
+PASS  map -> odom off: no map -> odom on /tf
+PASS  map -> odom off: the diagnostics say none
+passed 13, failed 0

@@ -1,0 +1,22 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-12-06-34-216977-LAPTOP-HJL1R3P6-172732
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source replay; loop_closure: unsupported; no TF, no map, no map -> odom published
+[INFO] [pose_graph_node-1]: process started with pid [172736]
+[INFO] [scan_matcher_node-2]: process started with pid [172737]
+[INFO] [scan_replayer-3]: process started with pid [172738]
+[scan_matcher_node-2] [INFO] [1791695194.333701827] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[pose_graph_node-1] [INFO] [1791695194.345148870] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame slam_origin, keyframes every 0.5 m or 0.35 rad, loop_closure: unsupported, no TF, no map, 12 parameters
+[scan_replayer-3] [INFO] [1791695194.379560308] [scan_replayer]: scan_replayer up: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-4-mapping/2026-10-11-evaluation-3-diamond-slow/integrated-scans.csv -> scan, 8 parameters
+[scan_replayer-3] [INFO] [1791695194.429715513] [scan_replayer]: replaying 527 scans at 20 Hz, 1 subscriber(s) connected
+[scan_matcher_node-2] [WARN] [1791695212.359448493] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_replayer-3] [WARN] [1791695212.359579031] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[pose_graph_node-1] [WARN] [1791695212.359671007] [robotics_ros_bridge.spin]: rcl_wait returned a spurious timeout (DDS graph change); resumed spinning (1 time(s) so far)
+[scan_replayer-3] [INFO] [1791695222.176834503] [scan_replayer]: replay finished: 527 scans published
+[INFO] [scan_replayer-3]: process has finished cleanly [pid 172738]
+[INFO] [launch.user]: scan_replayer finished: shutting the SLAM nodes down
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[scan_matcher_node-2] [INFO] [1791695225.387188339] [scan_matcher_node]: scan_matcher_node shutting down: 527 scans received, 527 registrations published (485 tracked, 41 predicted, 2 retried wide), 0 not registered
+[pose_graph_node-1] [INFO] [1791695225.387544361] [pose_graph_node]: pose_graph_node shutting down: 150 keyframes from 527 registrations (527 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: unsupported
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 172737]
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 172736]

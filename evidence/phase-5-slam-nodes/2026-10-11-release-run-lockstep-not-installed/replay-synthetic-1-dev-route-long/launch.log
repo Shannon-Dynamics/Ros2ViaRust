@@ -1,0 +1,19 @@
+[INFO] [launch]: All log files can be found below /home/genta/.ros/log/2026-10-11-12-48-27-045572-LAPTOP-HJL1R3P6-206322
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [launch.user]: phase 5 SLAM: source replay; loop_closure: unsupported; no TF, no map, no map -> odom published
+[INFO] [pose_graph_node-1]: process started with pid [206326]
+[INFO] [scan_matcher_node-2]: process started with pid [206327]
+[INFO] [scan_replayer-3]: process started with pid [206328]
+[pose_graph_node-1] [INFO] [1791697707.158268823] [pose_graph_node]: pose_graph_node up: registration + scan_matched -> slam/pose / slam/path, poses in frame slam_origin, keyframes every 0.5 m or 0.35 rad, loop_closure: unsupported, no TF, no map, 12 parameters
+[scan_matcher_node-2] [INFO] [1791697707.160282040] [scan_matcher_node]: scan_matcher_node up: scan -> registration / scan_matched, scan only (no odometry input), no TF, 28 parameters, info_inflation 1.5
+[scan_replayer-3] [INFO] [1791697707.201500815] [scan_replayer]: scan_replayer up: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/v2-synthetic-1-dev-route-long/scans.csv -> scan, lockstep false, 11 parameters
+[scan_replayer-3] [INFO] [1791697707.206573322] [scan_replayer]: replaying 1829 scans at 200 Hz, 1 subscriber(s) connected
+[scan_replayer-3] [INFO] [1791697716.346616715] [scan_replayer]: replay finished: 1829 scans published
+[INFO] [scan_replayer-3]: process has finished cleanly [pid 206328]
+[INFO] [launch.user]: scan_replayer finished: shutting the SLAM nodes down
+[INFO] [scan_matcher_node-2]: sending signal 'SIGINT' to process[scan_matcher_node-2]
+[INFO] [pose_graph_node-1]: sending signal 'SIGINT' to process[pose_graph_node-1]
+[scan_matcher_node-2] [INFO] [1791697719.561731944] [scan_matcher_node]: scan_matcher_node shutting down: 1829 scans received, 1829 registrations published (1828 tracked, 0 predicted, 0 retried wide, 0 tracked with fallback information), 0 not registered
+[pose_graph_node-1] [INFO] [1791697719.562971930] [pose_graph_node]: pose_graph_node shutting down: 193 keyframes from 1829 registrations (1829 processed, 0 out of order, 0 scans dropped unjoined), loop_closure: unsupported
+[INFO] [scan_matcher_node-2]: process has finished cleanly [pid 206327]
+[INFO] [pose_graph_node-1]: process has finished cleanly [pid 206326]

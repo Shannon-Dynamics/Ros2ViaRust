@@ -1,0 +1,13 @@
+  buffer.max_scans
+  diagnostics_period_s
+  frames.slam
+  graph.prior_sigma
+  keyframe.downsample_m
+  keyframe.rotation_rad
+  keyframe.translation_m
+  output.keyframes_csv
+  topics.path
+  topics.pose
+  topics.registration
+  topics.scan_matched
+  use_sim_time

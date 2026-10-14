@@ -1,0 +1,15 @@
+date: 2026-10-14T17:01:49Z
+host: LAPTOP-HJL1R3P6
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+kernel: 6.18.54.1-microsoft-standard-WSL2
+rustc: rustc 1.97.1 (8bab26f4f 2026-07-14)
+governor: unavailable
+source_git_commit: a573519a24ef0fb5aeb62762e3ff3e423d3f592d
+source_git_dirty_paths:  M Cargo.toml; M crates/robotics_slam/Cargo.toml; M crates/robotics_slam/examples/slam_synthetic_run.rs; M crates/robotics_slam/src/icp.rs; M crates/robotics_slam/src/odometry.rs; M crates/robotics_slam/tests/front_end_it.rs; M scripts/phase5_verdict.py; M scripts/phase5_verdict_selftest.py;?? crates/robotics_slam/examples/common/;?? crates/robotics_slam/examples/slam_recorded_run.rs;?? crates/robotics_slam/examples/slam_replay_reference.rs;?? scripts/run_phase5_slam.sh;
+harness_binary: /home/genta/ros2-rust-robotics/target/release/examples/slam_recorded_run
+harness_binary_sha256: 5bcf1015244256c1d3ae03a0acae6b048b7f2901794fe7fae695a3d5de1379a3
+verdict_script_sha256: 579b561eb871f4a4251e50eaef8e419a4186805810a776765ca816b6c2f10de8
+input: evidence/phase-5-slam/2026-10-14-webots-rectangle-recording/integrated-scans.csv
+input_sha256: 1748b5eb7e78f50dfbac8c80b659d5a3ad3337e72d1e9be40f8fa551e18133e6
+harness_args: --scans evidence/phase-5-slam/2026-10-14-webots-rectangle-recording/integrated-scans.csv --role evaluation --pipeline --emulate-motion-gate --info-inflation 1.5 --turning-report /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/v2-recorded-5a-eval-rectangle-recording/turning-report.txt
+mode: recorded

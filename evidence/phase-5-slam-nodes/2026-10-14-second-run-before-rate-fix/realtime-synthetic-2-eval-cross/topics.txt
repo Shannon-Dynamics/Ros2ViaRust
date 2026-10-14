@@ -1,0 +1,8 @@
+/diagnostics [diagnostic_msgs/msg/DiagnosticArray]
+/parameter_events [rcl_interfaces/msg/ParameterEvent]
+/registration [geometry_msgs/msg/PoseWithCovarianceStamped]
+/rosout [rcl_interfaces/msg/Log]
+/scan [sensor_msgs/msg/LaserScan]
+/scan_matched [sensor_msgs/msg/LaserScan]
+/slam/path [nav_msgs/msg/Path]
+/slam/pose [geometry_msgs/msg/PoseWithCovarianceStamped]

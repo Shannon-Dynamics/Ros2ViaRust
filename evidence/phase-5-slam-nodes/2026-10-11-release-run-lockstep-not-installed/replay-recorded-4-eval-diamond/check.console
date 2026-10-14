@@ -1,0 +1,6 @@
+FAIL  R1 one registration per registered scan, same stamps  (497 node, 527 reference)
+FAIL  R2 registrations equal the reference, row for row  (identical)
+FAIL  K1 same keyframes at the same stamps  (119 node, 150 reference)
+FAIL  K2 keyframe poses agree with the reference to 1e-9  (max difference 0.000e+00)
+PASS  G keyframe trajectory against ground truth (measured, not graded)  (ATE RMS 11871.45 mm, max 15380.04 mm, final 11887.15 mm over 119 keyframes)
+1 of 5 checks passed

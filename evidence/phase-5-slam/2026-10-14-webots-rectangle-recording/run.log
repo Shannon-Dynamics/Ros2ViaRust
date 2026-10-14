@@ -1,0 +1,26 @@
+[phase5 record] starting the world, the ground-truth adapter and the recording mapper (gate and filter off)
+[phase5 record] controllers are active; letting the adapter and the mapper settle
+[phase5 record] driving route /home/genta/ros2-rust-robotics/sim/webots/config/route_slam_eval_rectangle.yaml (3 lap(s))
+[phase5 record] route_driver exited with code 0
+[phase5 record] route finished, letting the last scans be recorded
+[phase5 record] stopping with SIGINT: the mapper closes its recording at shutdown
+/mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/2026-10-14-webots-rectangle-recording/integrated-scans.csv
+  scans: 886   duration: 190.6 s   consecutive pairs <= 0.5 s apart: 885
+  turning scans (heading step > 0.015 rad): 128 (14.5 per cent of steps)
+  |heading rate| over turning scans: min 0.070 / median 0.800 / max 0.802 rad/s
+  turns (runs of turning scans of one sign): 13
+     1. from    18.10 s:  4 scans, angle   -35.8 deg, median rate -0.728 rad/s, largest step 0.176 rad
+     2. from    26.90 s: 14 scans, angle   125.6 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     3. from    39.36 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     4. from    53.50 s:  9 scans, angle    89.0 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     5. from    65.24 s: 10 scans, angle    89.1 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     6. from    79.16 s: 11 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     7. from    90.94 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     8. from   105.08 s:  9 scans, angle    89.0 deg, median rate +0.800 rad/s, largest step 0.176 rad
+     9. from   116.66 s: 11 scans, angle    91.6 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    10. from   130.84 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    11. from   142.66 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    12. from   156.66 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+    13. from   168.48 s: 10 scans, angle    89.9 deg, median rate +0.800 rad/s, largest step 0.176 rad
+  turn angle (abs): min 35.8 / median 89.9 / max 125.6 deg; total 1149 deg
+[phase5 record] done: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/2026-10-14-webots-rectangle-recording
