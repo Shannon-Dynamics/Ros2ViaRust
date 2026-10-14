@@ -45,6 +45,7 @@ LAPS=${LAPS:-1}
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO=$(cd "$SCRIPT_DIR/.." && pwd)
+source "$SCRIPT_DIR/build_cache.sh"
 source "$SCRIPT_DIR/phase3_guards.sh"
 source "$SCRIPT_DIR/evidence_root.sh"
 if [ "$RELEASE" = 1 ]; then
@@ -64,7 +65,7 @@ else
 fi
 LAUNCH="$REPO/sim/webots/launch/localization_world.launch.py"
 MAP="$REPO/sim/webots/config/landmarks.yaml"
-TRIALS_BIN="$REPO/target/release/examples/global_trials"
+TRIALS_BIN="${CARGO_TARGET_DIR:-$REPO/target}/release/examples/global_trials"
 ( cd "$REPO" && cargo build --release -p robotics_localization --example global_trials ) \
     > /dev/null 2>&1 || { echo "cannot build global_trials" >&2; exit 2; }
 

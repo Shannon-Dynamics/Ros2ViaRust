@@ -45,7 +45,7 @@ done
     || { echo "missing:$missing (run scripts/setup_interfaces_underlay.sh)"; record "4 underlay" FAIL; }
 
 echo "=== 5. colcon build (ros2_ws) ==="
-( cd ros2_ws && colcon build --event-handlers console_cohesion+ desktop_notification- status- ) > "$OUT/colcon.log" 2>&1
+( cd ros2_ws && colcon build ${COLCON_BUILD_BASE_ROOT:+--build-base "$COLCON_BUILD_BASE_ROOT/build"} --event-handlers console_cohesion+ desktop_notification- status- ) > "$OUT/colcon.log" 2>&1
 grep -E "^(Finished|Failed|Summary)|packages failed" "$OUT/colcon.log"
 grep -q "^Summary: .* packages finished" "$OUT/colcon.log" && ! grep -q "packages failed" "$OUT/colcon.log" \
     && record "5 colcon" PASS || record "5 colcon" FAIL

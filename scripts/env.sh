@@ -31,4 +31,6 @@ export ROS_DISTRO="${ROS_DISTRO:-jazzy}"
 if [ -f "$_HERE/../ros2_ws/install/setup.bash" ]; then
     source "$_HERE/../ros2_ws/install/setup.bash"
 fi
+# Heavy build output (cargo target, colcon build base) goes to D:, see build_cache.sh.
+[ -f "$_HERE/build_cache.sh" ] && source "$_HERE/build_cache.sh"
 unset _HERE

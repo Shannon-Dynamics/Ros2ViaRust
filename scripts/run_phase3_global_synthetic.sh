@@ -41,7 +41,7 @@ fi
 mkdir -p "$OUT_ROOT"
 ( cd "$REPO" && cargo build --release -p robotics_localization --example global_trials ) \
     > "$OUT_ROOT/build.log" 2>&1 || { echo "build failed, see $OUT_ROOT/build.log" >&2; exit 1; }
-BIN="$REPO/target/release/examples/global_trials"
+BIN="${CARGO_TARGET_DIR:-$REPO/target}/release/examples/global_trials"
 MAP="$REPO/sim/webots/config/landmarks.yaml"
 {
     echo "date_utc: $(date -u +%Y-%m-%dT%H:%M:%SZ)"

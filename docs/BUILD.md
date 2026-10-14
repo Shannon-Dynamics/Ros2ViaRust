@@ -105,6 +105,23 @@ wsl.exe -d Ubuntu-24.04 -- bash "$S/fmt_sync_back.sh"                    # cargo
 `sync_to_wsl.sh` mirrors Windows → WSL with `rsync --delete` (excluding `target/` and the
 colcon spaces); only formatted sources and `Cargo.lock` ever flow back.
 
+## Build output lives on D:
+
+The WSL distro's disk image (`ext4.vhdx`) sits on C: and grows when cargo and colcon write, but does not shrink
+when they delete. `source scripts/env.sh` therefore (through `scripts/build_cache.sh`) points the heavy, disposable
+output at `/mnt/d/build-cache` when that directory exists: `CARGO_TARGET_DIR=/mnt/d/build-cache/cargo-target/<workspace>`,
+`COLCON_LOG_PATH` and, for `scripts/build_release.sh` and the gates, `--build-base /mnt/d/build-cache/colcon/<workspace>/...`.
+One sub-directory per workspace (the mirror, `~/slam_nodes_ws`), never one shared target directory. The colcon
+**install** base stays in the workspace on purpose: it is small and `ros2_ws/.cargo/config.toml` patch paths point at it.
+
+* A shell that has not sourced `env.sh` still builds in-tree (`~/.bashrc` returns early for non-interactive shells,
+  so nothing there would reach a script). Source `env.sh` first, as above.
+* Measured cost, `cargo build --release -p robotics_slam_ros --example render_check`: cold 1m02s on the WSL
+  filesystem and 1m16s on D:; one-file rebuild 4.1 s and 12.9 s; no-op 0.1 s and 2.8 s. A cold colcon release build of
+  `robotics_slam_ros` into the D: build base took 84 s (no cold colcon baseline on the WSL filesystem exists).
+* Deleting an old in-tree `target/` or `build/` frees space inside the distro only. The vhdx on C: stays as large as it
+  grew until it is compacted, or until sparse mode (`wsl --manage <distro> --set-sparse true`, distro shut down) is on.
+
 ## Troubleshooting
 
 * `cannot find type SetParametersResult` while compiling rclrs → the underlay lacks

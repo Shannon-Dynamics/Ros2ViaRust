@@ -13,6 +13,7 @@
 # Exit code is non-zero if any gate fails; a summary is printed at the end.
 set +u
 cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1
+source scripts/build_cache.sh
 declare -A RESULT
 run() {
     local name="$1"; shift
@@ -26,7 +27,7 @@ cargo test --workspace 2>&1 | tee /tmp/gates_test.log | grep -E "^test result|FA
 if grep -q "FAILED\|error\[" /tmp/gates_test.log; then RESULT[test]=FAIL; else RESULT[test]=PASS; fi
 awk '/^test result/ {p+=$4; f+=$6} END {print "total tests: passed=" p " failed=" f}' /tmp/gates_test.log
 echo "=== colcon: colcon build (ros2_ws) ==="
-( cd ros2_ws && colcon build --event-handlers console_cohesion+ desktop_notification- status- ) > /tmp/gates_colcon.log 2>&1
+( cd ros2_ws && colcon build ${COLCON_BUILD_BASE_ROOT:+--build-base "$COLCON_BUILD_BASE_ROOT/build"} --event-handlers console_cohesion+ desktop_notification- status- ) > /tmp/gates_colcon.log 2>&1
 if grep -q "^Summary: .* packages finished" /tmp/gates_colcon.log && ! grep -q "packages failed" /tmp/gates_colcon.log; then RESULT[colcon]=PASS; else RESULT[colcon]=FAIL; fi
 grep -E "^(Finished|Failed|Summary)|packages failed" /tmp/gates_colcon.log
 echo "=== docs: the global localization tables match the evidence ==="
