@@ -1,0 +1,541 @@
+---
+title: "EKF Localization: Tracking a Known Pose"
+description: How a robot that knows roughly where it is keeps its error bounded by matching lidar clusters to a map of pillars, what the data association and the χ² gate decide, how to tell whether the filter is honest about its error, and why a single Gaussian cannot recover when it is carried away.
+chapter: 5
+phase: 3
+phaseTitle: Localization
+difficulty: Intermediate
+readingTime: 75 min
+quote: "The estimates are probabilistic in nature, an advance over the previous, very conservative, worst-case approaches to the problem."
+quoteAuthor: R. Smith, M. Self and P. Cheeseman
+quoteSource: Estimating Uncertain Spatial Relationships in Robotics (1990), abstract
+---
+
+import { DriftVsCorrection } from '@/components/ch/ch05/drift-vs-correction';
+import { Detector } from '@/components/ch/ch05/detector';
+import { Association } from '@/components/ch/ch05/association';
+import { HonestFilter } from '@/components/ch/ch05/honest-filter';
+import { Kidnap } from '@/components/ch/ch05/kidnap';
+
+<Overview
+  goals={[
+    'say why dead reckoning cannot be fixed by calibration alone, and what a map of known pillars adds',
+    'turn a lidar scan into range and bearing observations of pillars, and say what the detector gets wrong',
+    'explain maximum-likelihood data association and the χ² gate, and predict how far off a belief can be before the gate stops helping',
+    'write the EKF prediction and correction on SE(2), with the Jacobian that makes the right perturbation work',
+    'tell whether a filter is honest about its error with NEES, and say why overconfidence makes a filter less accurate',
+    'say precisely why one Gaussian cannot recover from being carried away, and find each of these in the repository',
+  ]}
+  prerequisites={[
+    'Chapter 1 (poses on SE(2), the ⊞ step, the Kalman filter), Chapter 2 (NEES and NIS, drift) and Chapter 3 (the range–bearing landmark model and its Jacobian)',
+    'The note on seeds in Chapter 2: a seed names different noise on this page than on the robot',
+  ]}
+>
+
+Every sensor the TurtleBot3 has told it so far is *relative*: the wheels say how far it moved, the gyro how much it turned. Integrate a relative measurement and its error
+accumulates with nothing to stop it, because dead reckoning has no second opinion. A relative sensor can be calibrated until the drift is small, and it will still grow.
+
+This chapter adds the first *absolute* evidence: the lidar, against a map. The room has four pillars at known positions, and when the robot sees one it learns where it is, not how it moved.
+The question is how much that is worth, and the answer has three parts that this chapter keeps apart. First, does the error stay bounded, and is the filter any better than the
+odometry it started from? Second, does the filter know how wrong it is? Third, what can it not do? That last one is the reason particle filters exist, and this book has not reached them yet.
+
+</Overview>
+
+## The problem
+
+The robot's odometry is smooth, available at the full rate of the wheels, and never jumps. It is also wrong, and it gets wronger. In the Webots simulation of the repository's TurtleBot3 the official driver's odometry is a deterministic
+integrator with no noise at all, and its error is centimetres, because upstream calibrated one constant (`wheel_separation_multiplier: 1.112`) to cancel the slip of this specific world. The widget below is *Rusty*, the repository's own simulator, with deliberately uncalibrated wheels: 2 % slip per step and a right wheel 0.2 % larger than the left, the values of Chapter 2. It drives the 21-waypoint route of
+`route_long.yaml` in the room of `landmarks.yaml`, steered closed-loop on its true pose as the Webots route driver is.
+
+<DriftVsCorrection />
+
+The orange line is what the wheels say. The purple line is the localization node's filter, which runs the same prediction and then corrects it with every pillar it sees. Over eight seeds on this page the wheels are
+0.3762 to 0.4895 m off in RMS over the 51 m of the route and reach 0.9 m or more; the filter is 0.0076 to 0.0080 m off and never strays more than 2 cm. The filter's error does not grow with the distance driven and the wheels' does. That is
+problem **P1**, position tracking, stated as the repository states it: *the error stays bounded instead of growing with distance, and is strictly better than the drift of `/odom` on the same run.*
+
+Two things in this widget are as important as the headline. Drag both sliders to zero: the wheels become exact, and now the *odometry* is the better estimate, under a millimetre against the filter's more than 5 mm, on every seed tried.
+A correction is not free: it brings the detector's noise and bias into a pose that did not need them. And the Webots numbers, from the repository's recorded run on the same route (51.540 m), are not the Rusty numbers:
+
+| | Webots, recorded | Rusty, this page |
+|---|---|---|
+| odometry, position RMSE | 0.015186 m | 0.3762 to 0.4895 m |
+| filter, position RMSE | 0.008945 m | 0.0076 to 0.0080 m |
+| odometry, 95th percentile / maximum | 0.029591 m / 0.037599 m | the maximum is 0.9 m or more |
+| filter, 95th percentile / maximum | 0.015877 m / 0.026104 m | maximum under 2 cm |
+| error growth, last quarter over first | filter 1.167, odometry 3.130 | |
+
+The Webots filter is *better than the odometry by a factor of 1.7* (RMSE ratio 0.589), not by the factor of 40 or more that Rusty's wheels give it, and the reason is in the left column of the first row: the odometry there is already good. The
+recorded growth factors are the honest summary: the filter's error is flat (×1.167), the odometry's is still climbing (×3.130). The repository's own verdict on this run is **PASS** for P1. Its NEES half is
+**not evaluated**: the evaluator's CSV carries only `sigma_xy`, not the full covariance NEES needs. This page can compute NEES in Rusty, because there the covariance is at hand (w5.4), and says so when it does.
+
+<Callout type="warn" title="Same Rust, different noise, again">
+
+The note at the start of Chapter 2 applies. The simulator's lidar and slip streams come from `robotics_core::seeded_rng`, and a seed names different noise in this 32-bit WebAssembly module than on the robot. For
+seed 1 the odometry's RMSE is 0.4383 m here and 0.4179 m where the repository runs natively; the build pins both. The numbers in this chapter that come from a Rusty drive are **this page's draw** and say so; the numbers that come from Webots are
+recorded files, quoted with their names. What has no random stream (the map, the route, the detector on noise-free scans, the gate, the association properties) is the same on both targets and is asserted on both.
+
+</Callout>
+
+## Building intuition
+
+### What the lidar gives the filter
+
+The filter does not take a scan. It takes a short list of range and bearing pairs, one per pillar it believes it sees, and the program that makes the list is the *pillar detector*. It splits the scan into clusters of
+neighbouring beams with no range jump above 0.12 m, throws away clusters longer than 0.6 m (walls), and reports each remaining cluster as the centroid of its points pushed away from the sensor by one pillar radius, 0.15 m, because
+the laser sees the near surface and the map holds the centre.
+
+<Detector />
+
+Look at what the rings and the dotted lines say. The detector *overshoots*: the reported centre is a little farther away than the true one. On a grid of 1176 noise-free scans it reports 2823 pillar centres, and the reported range is too long **every time**,
+by 2.5 to 3.0 cm in the median and 5.3 cm at the worst, and by about that much whether the pillar is 1 m away or 3.5 m (the median in each metre of range stays between 2.3 and 3.1 cm). The cause is the centroid: the visible arc of a round pillar
+is not evenly spread around the nearest point, so its centroid lies behind the near surface and adding the full radius overshoots the centre. Nothing in the repository's documentation says this; it was measured here, and it sits inside the 5 cm the filter assumes for
+range noise, which is why it does not break the filter. It enters the pose through every correction, and it is a candidate for why the exact-wheels case above favours the odometry (the chapter has not isolated it from the lidar's own noise).
+
+The black crosses are the second failure. The same scans contain 225 clusters that are not pillars, and the number is 1087 on this page's draw once the lidar has its 1.5 cm of noise. Every one of them lies on a wall (the build asserts it, with and without noise): a short run of beams on
+a wall, or at a corner, that passes the detector's three tests and looks like a pillar. The detector cannot tell. That is not its job; the next section is.
+
+### Which pillar is which
+
+A detection has a range and a bearing and no name. The four pillars are identical. Before the filter can use a detection it has to decide which pillar it is, and the rule is *maximum likelihood association*: predict what each pillar would look like from the current belief,
+score the detection against each prediction with the normalized innovation squared $\nu^{\T}S^{-1}\nu$, take the pillar with the smallest, and accept the detection only if that score is inside a χ² gate. For two degrees of freedom and a probability of 0.99 the gate is
+$-2\ln 0.01 = 9.21$.
+
+<Association />
+
+The sweep shows the whole mechanism. While the belief is right to within a few centimetres every detection is accepted, and it is the right pillar. With the node's own 5 cm of uncertainty the filter, in the widget's default scene, accepts all four detections at
+0.2 m of error, two of four at 0.3 m, and none at 0.4 m, 0.5 m or a metre, and then it stays exactly where it was: the update has nothing it is willing to use (the table below; in other scenes and directions a belief 0.5 m off can still have one detection accepted, and the build asserts that it is never more than one). The reach of the gate is not a property of the room. It is a property of the belief. Take the belief's σ to
+0.3 m and the same filter pulls itself in from a full metre away. The cost of a wide gate shows when the belief is wide *and* far: a belief 1.2 m off with σ = 0.3 m accepts a **wrong** pillar, and the correction moves it further from the truth (asserted for six noise seeds).
+
+The worked example, with the pillar detector and the filter as the page runs them. The scene is the widget's default, the belief is wrong in $x$ by the amount in the first column, and the seed is the widget's own (re-roll 0):
+
+```text
+belief error   σ of the belief   accepted / rejected   position error before → after the scan
+0.0 m          0.05 m            4 / 0                 0.0000 m → 0.0046 m
+0.1 m          0.05 m            4 / 0                 0.1000 m → 0.0268 m
+0.2 m          0.05 m            4 / 0                 0.2000 m → 0.0572 m
+0.3 m          0.05 m            2 / 2                 0.3000 m → 0.1994 m
+0.4 m          0.05 m            0 / 4                 0.4000 m → 0.4000 m
+0.5 m          0.05 m            0 / 4                 0.5000 m → 0.5000 m
+1.0 m          0.30 m            4 / 0                 1.0000 m → 0.0248 m
+```
+
+A belief right to 0.1 m is not corrected to zero in one scan, only to 0.0268 m: the filter gives its belief (σ = 0.05 m) and each detection (σ = 0.05 m) the same weight, so the scan takes most of the error away, not all of it.
+
+### Is the filter honest?
+
+A filter reports a covariance, and the covariance is a claim: *the error is smaller than this, three times in a thousand it is not.* The claim can be tested, and the test is the one of Chapter 2: the normalized estimation error squared, $\mathrm{NEES} = e^{\T}P^{-1}e$ with
+$e = x_{\text{true}} \bminus \hat x$, has mean 3 for a consistent filter on a pose, and its running mean has a band that narrows with the number of samples. Rusty can compute it, because it knows the truth.
+
+<HonestFilter />
+
+At the node's setting (σ = 0.05 m and 0.05 rad assumed for every observation) the mean NEES is between 0.5 and 0.65 on every seed: well under 3, so the filter is *pessimistic*. Its ellipse is bigger than it needs to be, the truth is inside it at every scan,
+and it costs nothing, because a pessimistic filter is a safe one. Make it four times more pessimistic and it is still accurate, under 1 cm RMSE, with a mean NEES under 0.35.
+
+Now drag the other way. If the filter assumes a tenth of the noise it has, the mean NEES rises above 20, the truth is inside the filter's own 3σ ellipse in under 5 % of the scans, and the part that does not read as a reporting problem: the filter is more than twice as inaccurate as the honest
+one (on four seeds) and rejects more than three times as many observations. The gate is built from the covariance. A filter that thinks it is certain has a small gate, and it throws away the very observations that would have corrected it. **Overconfidence is not only a way of misreporting the
+error. It makes the error.**
+
+### What a Gaussian cannot do
+
+The last widget is the reason particle filters exist. The robot is carried to another place without being told, as the Webots supervisor does in the repository's kidnap scenario: to $(-1.5, -1.5)$, turned to 2.0 rad, after 120 s.
+
+<Kidnap />
+
+Before the carry the filter is tracking to under 5 cm. After it, on each of four seeds, the filter's error is above 3 m in every scan for the rest of the route. And look at what it does: it *rejects* more than five times
+as many as it accepts. The filter has noticed that something is wrong, in the only way a single Gaussian can: nothing fits. But its update has no way to use a rejected observation, so it keeps its belief, and its belief is where the robot was. The few observations that
+are accepted are the ones that happen to fit the wrong belief, and they do not bring it back.
+
+The repository's own result in Webots is the same, with its own numbers. In the recorded kidnap run the EKF's position RMSE is 0.008385 m before the teleport; afterwards its final error is 2.874910 m and its maximum 3.329230 m, and the verdict file says
+`DID_NOT_RECOVER`. Over twenty real Webots sessions of one fixed teleport (the same target, seeds 1001 to 1020 of the *other* filter) the EKF recovered **0 of 20**, with a 95 % Wilson interval of 0.0000 to 0.1611. That interval describes this one kidnap, not all kidnaps: the twenty sessions differ only in the other filter's seed and the simulator's timing, so they are twenty looks at one failure, not twenty chances to recover from different carries.
+What the failure shows is a property of the representation, not of a tuning: one Gaussian says "I am here, give or take", and a carry makes "here" wrong with nothing in the belief to say "or somewhere else".
+
+## The mathematics
+
+### Prediction on SE(2)
+
+The state is a pose $x\in\SEtwo$, the control is the *relative* motion between two odometry samples, $u = \hat x^{\text{odom}\,-1}_{k-1}\,\hat x^{\text{odom}}_k$ (in the body frame of the earlier one), and the robot moves by composing on the right: $x_k = x_{k-1}\circ u$. For a right (body-frame) perturbation
+$x \bplus \delta = x\exp(\delta)$ the error propagates through the adjoint of the *inverse* of $u$.
+
+<Derivation title="Why the Jacobian of the prediction is the adjoint of the inverse" result="F = Ad(u⁻¹)">
+
+Perturb the previous pose on the right, $x_{k-1}\exp(\delta)$, and compose with $u$: $x_{k-1}\exp(\delta)\,u$. Insert $u\,u^{-1}$: $x_{k-1}\,u\,\bigl(u^{-1}\exp(\delta)\,u\bigr)$. The bracket is a conjugation, and conjugating an exponential by a group element is the exponential
+of the adjoint-transformed vector, $u^{-1}\exp(\delta)\,u = \exp\bigl(\Ad_{u^{-1}}\delta\bigr)$. So $x_{k-1}\exp(\delta)\circ u = (x_{k-1}\circ u)\exp(\Ad_{u^{-1}}\delta)$: a perturbation $\delta$ of the old pose is a perturbation
+$\Ad_{u^{-1}}\delta$ of the new one, in the *new* body frame. The Jacobian with respect to the old state is $F=\Ad_{u^{-1}}$, and the odometry noise, which is generated in the body frame of the motion, is added to $P$ directly, with no Jacobian.
+
+</Derivation>
+
+The covariance, in the body frame of the estimate, is therefore
+
+$$
+P_k = \Ad_{u^{-1}}\, P_{k-1}\, \Ad_{u^{-1}}^{\T} + R(u),
+$$
+
+with $R(u)$ the odometry motion model of Thrun's chapter 5 expressed in the body frame: $R=\diag(\sigma_\parallel^2,\sigma_\perp^2,\sigma_\theta^2)$ with $\sigma_\parallel^2 = \alpha_3 d^2 + \alpha_4\theta^2 + \sigma_{\min}^2$, $\sigma_\perp^2$ a tenth of the along-track variance plus the floor, and
+$\sigma_\theta^2 = \alpha_1\theta^2 + \alpha_2 d^2 + \sigma_{\min}^2$, where $d$ and $\theta$ are the distance and the rotation of $u$. A robot that has not moved adds no noise.
+
+### Measurement and correction
+
+For a pillar at $p_j$ in the map the laser, mounted at $T_{\text{base}\to\text{laser}} = (-0.03, 0, 0)$, sees the range and bearing of Chapter 3's landmark model, $h(x, p_j) = (r, \varphi)$, with the Jacobian $H$ for a right perturbation derived there and the bearing residual wrapped to
+$(-\pi,\pi]$. Its noise is $Q = \diag(\sigma_r^2, \sigma_\varphi^2)$, both $0.05$ in the node. The correction is the Joseph form of Chapter 1:
+
+$$
+S = HPH^{\T} + Q,\qquad K = PH^{\T}S^{-1},\qquad \hat x \leftarrow \hat x \bplus K\nu,\qquad P \leftarrow (I-KH)\,P\,(I-KH)^{\T} + KQK^{\T},
+$$
+
+with $\nu = z \bminus h(\hat x, p_j)$. Because $P$ lives in the tangent space at the *estimate*, the update is applied with $\bplus$, and the covariance is not re-expressed afterwards: that is the point of the error-state form.
+
+### Association and the gate
+
+Given one observation $z$ the filter evaluates, for every pillar $j$, $\nu_j$, $S_j$ and
+$$
+\mathrm{NIS}_j = \nu_j^{\T}S_j^{-1}\nu_j,\qquad j^{*} = \arg\min_j \mathrm{NIS}_j,
+$$
+and accepts $z$ only if $\mathrm{NIS}_{j^*}\le\gamma$, $\gamma=\chi^2_2(0.99)=-2\ln 0.01 = 9.21034$. This is Thrun's table 7.2 with unknown correspondences. $S_j$ contains $P$, which is the whole story of the sweep above: the gate is the ellipse of the innovation, and the innovation's
+covariance is $Q$ plus however uncertain the belief says it is. A small $P$ gives a small gate, and a gate that small is a filter that has talked itself out of listening.
+
+### Consistency
+
+If the model is right, the error of an estimate is a draw from $\Normal(0, P)$ and so $\mathrm{NEES} = e^{\T}P^{-1}e$ is $\chi^2_3$ with mean 3; the normalized innovation squared of each accepted observation is $\chi^2_2$ with mean 2.
+The mean of $n$ independent such values has a two-sided band that narrows as $n$ grows, which Chapter 2 computes with `chi2_mean_interval`. Successive filter outputs are correlated, so the band is indicative, not a test with the stated level, and the chapter uses it that way.
+
+## The algorithm
+
+<Algorithm name="EKF_localization(x̂, P; u, z₁…z_m, map)">
+
+1. predict: $\hat x \leftarrow \hat x \circ u$, $\ P \leftarrow \Ad_{u^{-1}}\,P\,\Ad_{u^{-1}}^{\T} + R(u)$ (skip if the robot did not move)
+2. for each observation $z_i = (r_i,\varphi_i)$ of the scan, in order:
+3. $\quad$ for every pillar $j$: $\hat z_j = h(\hat x, p_j)$, $\ H_j$, $\ \nu_j = z_i \bminus \hat z_j$, $\ S_j = H_jPH_j^{\T}+Q$, $\ \mathrm{NIS}_j = \nu_j^{\T}S_j^{-1}\nu_j$
+4. $\quad$ $j^* = \arg\min_j \mathrm{NIS}_j$
+5. $\quad$ if $\mathrm{NIS}_{j^*} > \gamma$: count $z_i$ as rejected and go to the next observation
+6. $\quad$ $K = PH_{j^*}^{\T}S_{j^*}^{-1}$, $\ \hat x \leftarrow \hat x \bplus K\nu_{j^*}$, $\ P \leftarrow (I-KH_{j^*})P(I-KH_{j^*})^{\T} + KQK^{\T}$
+7. return $\hat x$, $P$, the number accepted and rejected, and the mean NIS of the accepted
+
+</Algorithm>
+
+Step 1 runs once per odometry sample (50 Hz here) and steps 2 to 6 once per scan (5 Hz). The observations of one scan are applied one after another, so each is judged against a belief the previous ones have already moved; the widget above judges each detection against the belief the scan *starts*
+from, and says so.
+
+## Implementation in Rust
+
+The EKF is `robotics_filters::ekf::Ekf`, generic over the manifold; Part 3 adds only the two models and the association. Everything below is `robotics_localization`, which does not know ROS exists. The node (`localization_node`) converts messages and calls it. Every
+listing is an excerpt of the file named in its title; the book's build fails if a line is not in that file, in that order.
+
+### The prediction
+
+```rust title="crates/robotics_localization/src/ekf.rs"
+impl ProcessModel<Se2, Se2, 3> for OdometryMotion {
+    fn propagate(&self, x: &Se2, u: &Se2) -> Se2 {
+        x.compose(u)
+    }
+
+    fn process_noise(&self, _x: &Se2, u: &Se2) -> Matrix3<f64> {
+        let trans = u.translation().norm();
+        let rot = u.theta().abs();
+        let [a1, a2, a3, a4] = self.alphas;
+        let var_along = a3 * trans * trans + a4 * rot * rot + self.min_translation_sigma.powi(2);
+        let var_lateral = self.lateral_fraction * var_along + self.min_translation_sigma.powi(2);
+        let var_rot = a1 * rot * rot + a2 * trans * trans + self.min_rotation_sigma.powi(2);
+        Matrix3::from_diagonal(&nalgebra::Vector3::new(var_along, var_lateral, var_rot))
+    }
+}
+
+impl ProcessJacobian<Se2, Se2, 3> for OdometryMotion {
+    fn jacobian(&self, _x: &Se2, u: &Se2) -> Matrix3<f64> {
+        u.inverse().adjoint()
+    }
+}
+```
+
+The control is not a velocity. It is the relative pose of the odometry between two samples, `EkfLocalizer::relative_motion(previous, current)`, which is `previous.between(current)`, and the Jacobian is the adjoint of the inverse of that, as derived above.
+
+### The detector
+
+```rust title="crates/robotics_localization/src/pillars.rs"
+        if chord > cfg.max_chord {
+            continue; // a wall, or two things the detector cannot separate
+        }
+        let (mut cx, mut cy) = (0.0, 0.0);
+        for &i in &run {
+            let (x, y) = point(i);
+            cx += x;
+            cy += y;
+        }
+        cx /= run.len() as f64;
+        cy /= run.len() as f64;
+        let surface = (cx * cx + cy * cy).sqrt();
+        if surface <= 0.0 {
+            continue;
+        }
+        out.push(Detection {
+            z: RangeBearing {
+                range: surface + cfg.radius,
+                bearing: cy.atan2(cx),
+            },
+            beams: run.len(),
+            chord,
+        });
+    }
+    out
+```
+
+The chord test and the centroid are the two decisions of section "What the lidar gives the filter". The line `range: surface + cfg.radius` is where the 2.5 to 3.0 cm overshoot comes from: `surface` is the distance to the centroid of the points, not to the nearest one.
+
+### The map
+
+```rust title="crates/robotics_localization/src/map.rs"
+    pub fn landmark_map(&self) -> LandmarkMap {
+        let landmarks = self
+            .landmarks
+            .iter()
+            .enumerate()
+            .map(|(i, l)| Landmark {
+                id: i as u32,
+                position: nalgebra::Vector2::new(l.x, l.y),
+            })
+            .collect();
+        // Ids are the enumeration index, so they are unique and the positions were parsed
+        // as finite numbers; `LandmarkMap::new` cannot fail here.
+        LandmarkMap::new(landmarks).expect("file order gives unique ids and finite positions")
+```
+
+The map is the file the simulator is built from, read by a deliberately small reader that rejects anything it does not understand (`a_malformed_landmark_is_an_error_not_a_skipped_line`). In the browser the same `MapFile::parse` is given a copy of `landmarks.yaml` that the build includes, so the page and the robot cannot hold different maps.
+
+### Association, gate and correction
+
+```rust title="crates/robotics_localization/src/ekf.rs"
+        for z in observations {
+            if !(z.range.is_finite() && z.bearing.is_finite()) {
+                report.rejected += 1;
+                continue;
+            }
+            let zv = Vector2::new(z.range, z.bearing);
+            let pose = self.pose();
+            let p = self.covariance();
+
+            // Maximum likelihood association: the landmark with the smallest NIS.
+            let mut best: Option<(u32, Vector2<f64>, f64)> = None;
+            for landmark in self.map.landmarks() {
+                let (Ok(predicted), Ok(h)) = (
+                    self.model.predict(&pose, &landmark.position),
+                    self.model.jacobian(&pose, &landmark.position),
+                ) else {
+                    continue;
+                };
+                let nu = LandmarkModel::residual(z, &predicted);
+                let s = h * p * h.transpose() + self.model.covariance();
+                let Some(s_inv) = s.try_inverse() else {
+                    continue;
+                };
+                let nis = (nu.transpose() * s_inv * nu)[(0, 0)];
+                if !nis.is_finite() {
+                    continue;
+                }
+                if best.map(|(_, _, b)| nis < b).unwrap_or(true) {
+                    best = Some((landmark.id, landmark.position, nis));
+                }
+            }
+
+            let Some((id, position, nis)) = best else {
+                report.rejected += 1;
+                continue;
+            };
+            if nis > self.gate {
+                report.rejected += 1;
+                continue;
+            }
+            let measurement = LandmarkMeasurement {
+                model: self.model,
+                position,
+            };
+            match self.ekf.correct(&measurement, &zv) {
+                Ok(c) => {
+                    report.accepted += 1;
+                    report.associations.push((id, c.nis));
+                    nis_sum += c.nis;
+                    self.stats.nis_sum += c.nis;
+                }
+                Err(_) => report.rejected += 1,
+            }
+        }
+```
+
+The three decisions of the algorithm are on the page: the smallest NIS over the map (`best`), the gate (`if nis > self.gate`), and the Joseph-form correction (`self.ekf.correct`), whose own NIS is what `associations` returns. An observation no pillar explains inside the gate is *skipped and counted*. It is never an error, and the
+filter cannot tell a detection of a wall from a detection of a pillar the belief has wrong.
+
+### The harness, which is not crate code
+
+The page does not call the node. It calls the node's functions in the node's order, at the node's rates, on a simulated robot. That pipeline, from `ch05.rs` in the WebAssembly crate (a harness, marked as such in its header, and not code the robot runs):
+
+```rust title="crates/robotics_wasm/src/ch05.rs"
+        if let Some(w) = s.wheel {
+            if self.odom.update_from_wheel_angles(w.left_angle, w.right_angle, w.stamp).is_some() {
+                let now = self.odom.pose();
+                let u = EkfLocalizer::relative_motion(&self.prev_odom, &now);
+                self.prev_odom = now;
+                // As the node does: a robot that did not move adds no noise.
+                if u.translation().norm() >= 1e-9 || u.theta().abs() >= 1e-9 {
+                    self.loc.predict(&self.motion, &u).map_err(err)?;
+                }
+            }
+        }
+
+```
+
+and per scan:
+
+```rust title="crates/robotics_wasm/src/ch05.rs"
+        let scan = self.lidar.scan(&self.world, &truth, stamp);
+        let detections = detect(&scan, &self.detector);
+        let observations: Vec<RangeBearing> = detections.iter().map(|d| d.z).collect();
+        let report = if self.correct {
+            self.loc.observe(&observations)
+        } else {
+            UpdateReport {
+                observed: observations.len(),
+                ..Default::default()
+```
+
+Three pieces of that file are not the repository's algorithms, and each says so where it lives: the route follower (a restatement of the control law of `route_driver.rs`, because that node is an rclrs process), the 24-sided polygon that stands in for each round pillar
+(Rusty's world holds line segments), and the carry (a rigid transform applied once to the truth, as the Webots supervisor's teleport).
+
+## Putting it together
+
+The problem was drift. In Webots, the filter's position error over the 51.540 m route is 0.008945 m RMS, against 0.015186 m for the odometry, and it grows by a factor of 1.167 from the first quarter of the run to the last where the odometry's grows by 3.130; the repository's verdict is **PASS**, with the NEES part
+not evaluated. On this page, in Rusty, with wheels that are far worse than the Webots ones, the same filter holds 0.0076 to 0.0080 m on every one of eight seeds where the wheels are 0.3762 to 0.4895 m off.
+
+The reading of that, with its limits:
+
+* **The filter bounds the error; it does not remove it.** Its error stays under 2 cm in Rusty, and with exact wheels it is the worse estimate, by more than 5 mm: the detector's noise and its 3 cm overshoot enter the pose through every correction. (The chapter has not isolated which of the two dominates.)
+* **The gate is the filter's judgement, and its reach is its own uncertainty.** A belief 0.4 m off with the node's σ is out of reach of the map; a belief that admits more reaches farther and can then associate the wrong pillar.
+* **The covariance is a claim that can be tested.** The node's σ is pessimistic here (mean NEES between 0.5 and 0.65), which is safe. An optimistic filter is less accurate as well as mis-calibrated.
+* **One Gaussian cannot be carried away and recover.** In Rusty: above 3 m off in every scan after the carry, on each of four seeds. In Webots: 0 of 20.
+
+None of that is a defect of this filter to be tuned away. It is what a single Gaussian is: the repository's own comment at the top of `ekf.rs` says so, and its test `a_teleported_robot_is_not_recovered_by_a_single_gaussian` is the proof. What would recover is a belief that can hold "I might be somewhere else":
+a population of hypotheses: Monte Carlo localization, which this book has not reached yet.
+
+Where the node sits in ROS 2: `localization_node` subscribes to `/scan` and `/odom`, publishes `/localization/pose` and, since 2026-10-10, owns the `map → odom` correction, so that `odom → base_link` stays continuous and the pose a consumer wants global is
+read through the chain `map → odom → base_link` (REP 105). That is `docs/phase-3-localization/ros-graph.md`; this chapter is about what is inside the node.
+
+## Exercises
+
+<Exercises>
+
+<Exercise level="F" difficulty={2} title="The Jacobian of the prediction">
+
+Show that composing on the right, $x_k = x_{k-1}\circ u$, gives the error-state Jacobian $\Ad_{u^{-1}}$ with respect to a right perturbation of $x_{k-1}$.
+
+<details>
+<summary>Solution</summary>
+
+$x_{k-1}\exp(\delta)\circ u = x_{k-1}\circ u\circ\bigl(u^{-1}\exp(\delta)u\bigr)$ and $u^{-1}\exp(\delta)\,u = \exp(\Ad_{u^{-1}}\delta)$, the definition of the adjoint of $u^{-1}$ applied to a tangent vector. The new pose perturbed on the right by $\Ad_{u^{-1}}\delta$ is the old one perturbed by $\delta$ and then composed.
+
+</details>
+
+</Exercise>
+
+<Exercise level="F" difficulty={2} title="How big a range error the gate allows">
+
+Suppose the belief were perfectly certain, so that $S = Q = \diag(0.05^2, 0.05^2)$. How far can an observation's range differ from the prediction, with a zero bearing residual, before the 99 % gate rejects it?
+
+<details>
+<summary>Solution</summary>
+
+With a zero bearing residual $\mathrm{NIS} = \nu_r^2/0.0025$, and the gate is $9.21034$, so $\lvert\nu_r\rvert\le\sqrt{9.21034\times 0.0025} = 0.1517$ m. A belief that admits some uncertainty widens it, because $S = HPH^{\T}+Q$ grows with $P$.
+
+</details>
+
+</Exercise>
+
+<Exercise level="C" difficulty={1} title="How far off can the belief be">
+
+<Predict
+  id="ch05-q-capture"
+  question="In the association widget, leave the belief's σ at 0.05 m and drag the error up from 0. Roughly how far off can it be before the filter accepts nothing?"
+  options={[
+    { label: 'About 5 cm: the σ it assumes', because: 'The gate is on the innovation, not on the belief alone; the innovation also carries the observation noise Q, which is another 5 cm in each of range and bearing, and a bearing error grows with distance to the pillar.' },
+    { label: 'About 30 to 40 cm: all four accepted at 0.2 m, two of four at 0.3 m, none at 0.4 m', correct: true, because: 'The build asserts 4, 2 and 0 accepted at 0.2, 0.3 and 0.4 m on the default scene; beyond that it accepts at most one, and the error stays.' },
+    { label: 'As far as the room is wide: a lidar sees everything', because: 'The lidar sees everything and the filter believes almost none of it: the gate depends on the belief, and a belief that is certain and wrong rejects the evidence that it is wrong.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Assuming less noise than there is">
+
+<Predict
+  id="ch05-q-overconfident"
+  question="In the honesty widget, drag the assumed σ down to a tenth of the node's. Is the filter's error larger or smaller than with the node's setting?"
+  options={[
+    { label: 'Smaller: it trusts the sensor more', because: 'Trusting more helps only if it hears more. A smaller σ makes a smaller gate, and the filter rejects several times as many observations, which are the ones that would have corrected it.' },
+    { label: 'Larger, by more than a factor of two, on every seed tried', correct: true, because: 'The build asserts it on four seeds, together with a mean NEES over 20 and the truth inside the filter\'s own 3σ ellipse in under 5 % of the scans.' },
+    { label: 'The same: the filter\'s estimate does not depend on what it assumes about the noise', because: 'The mean does depend on it, through the Kalman gain and through the gate; only the sign of the correction is independent.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Exact wheels">
+
+<Predict
+  id="ch05-q-exact"
+  question="In the first widget, set the wheel radius error and the slip to 0. Which is closer to the truth, the wheel odometry or the filter?"
+  options={[
+    { label: 'The filter: it uses more information', because: 'More information helps only if it is better than what it replaces. Here the wheels are exact, and the extra information is a detector that is noisy and biased by about 3 cm.' },
+    { label: 'The odometry: under a millimetre, against more than 5 mm for the filter', correct: true, because: 'Asserted on four seeds: the exact wheels reproduce the truth to well under a millimetre and the filter is at least five times worse.' },
+    { label: 'They are equal, because the filter\'s prediction is the odometry', because: 'The prediction is the odometry; the correction then moves it by what the detector says, and that is where the millimetres come from.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="P" difficulty={2} title="Does the range bias depend on the distance">
+
+In `crates/robotics_localization/src/pillars.rs`, add a test that places a pillar at 1, 2 and 3 m from a noise-free sensor (build the scan the way the file's own tests do, or with `robotics_sim`) and asserts that the reported range is longer than the true range by between 2 and 4 cm at each distance. Does the bias depend on the distance?
+
+<details>
+<summary>Solution</summary>
+
+It hardly does: on the 1176-scan grid the median bias in each metre of true range is between 2.3 and 3.1 cm. The cause is the centroid of the visible arc, which lies behind the near surface, and not the distance. A correction would add less than the whole radius to the cluster's distance; whether that is worth doing is a design decision for the detector, and it would have to be re-measured on the Webots detector, which this page does not run.
+
+</details>
+
+</Exercise>
+
+</Exercises>
+
+## References
+
+<References>
+  <Reference authors="Smith, R., Self, M. and Cheeseman, P." year={1990}
+    title="Estimating uncertain spatial relationships in robotics"
+    venue="Autonomous Robot Vehicles (Cox and Wilfong, eds.), Springer, 167–193" doi="10.1007/978-1-4613-8997-2_14"
+    note="The stochastic map: estimates of spatial relationships together with their uncertainties, within state estimation and filtering theory. The source of the epigraph." />
+  <Reference authors="Leonard, J. J. and Durrant-Whyte, H. F." year={1991}
+    title="Mobile robot localization by tracking geometric beacons"
+    venue="IEEE Transactions on Robotics and Automation 7(3), 376–382" doi="10.1109/70.88147"
+    note="Localization of a mobile robot against a map of geometric beacons, which is this chapter's setting. Cited for the setting; the chapter does not rely on a particular result of it." />
+  <Reference authors="Thrun, S., Burgard, W. and Fox, D." year={2005}
+    title="Probabilistic Robotics"
+    venue="MIT Press, Intelligent Robotics and Autonomous Agents series" url="https://mitpress.mit.edu/9780262201629/probabilistic-robotics/"
+    note="Chapter 7, 'Mobile Robot Localization: Markov and Gaussian': section 7.4 (EKF localization) and 7.5 (estimating correspondences, with the maximum-likelihood association this chapter uses) are the tables this chapter follows; chapter 5 is the odometry motion model." />
+  <Reference authors="Solà, J., Deray, J. and Atchuthan, D." year={2018}
+    title="A micro Lie theory for state estimation in robotics"
+    venue="arXiv:1812.01537" url="https://arxiv.org/abs/1812.01537"
+    note="Why the right perturbation and the adjoint of the inverse appear in the prediction Jacobian." />
+  <Reference authors="Barrau, A. and Bonnabel, S." year={2017}
+    title="The invariant extended Kalman filter as a stable observer"
+    venue="IEEE Transactions on Automatic Control 62(4), 1797–1812" doi="10.1109/TAC.2016.2594085"
+    note="Includes mobile-robotics examples in which the standard EKF can diverge where an invariant EKF with the same tuning keeps converging: the linearization this chapter uses is a choice, not a given." />
+  <Reference authors="van Goor, P., Hamel, T. and Mahony, R." year={2023}
+    title="Equivariant filter (EqF)"
+    venue="IEEE Transactions on Automatic Control 68(6), 3501–3512" doi="10.1109/TAC.2022.3194094"
+    note="An EKF-style filter built on a symmetry group, which its authors report outperforms the extended Kalman filter in simulation through smaller linearization error: where the filter of this chapter could go." />
+  <Reference authors="Macenski, S., Moore, T., Lu, D., Merzlyakov, A. and Ferguson, M." year={2023}
+    title="From the desks of ROS maintainers: A survey of modern and capable mobile robotics algorithms in the Robot Operating System 2"
+    venue="Robotics and Autonomous Systems 168, 104493" doi="10.1016/j.robot.2023.104493"
+    note="A survey organized by problem by the maintainers of the ROS 2 navigation stack: the context in which a ROS 2 reader will meet the localization methods of Part 3." />
+  <Reference authors="Macenski, S., Martín, F., White, R. and Ginés Clavero, J." year={2020}
+    title="The Marathon 2: A navigation system"
+    venue="2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2718–2725" doi="10.1109/IROS45743.2020.9341207"
+    note="Describes Navigation2, the ROS 2 navigation system whose nav2_amcl the repository's roadmap names as the benchmark reference for Part 3. Cited for that context, not for a result." />
+</References>

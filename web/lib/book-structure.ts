@@ -55,12 +55,13 @@ export const PHASES: Phase[] = [
   {
     phase: 3,
     title: 'Localization',
-    // Closed in docs/ROADMAP.md (2026-10-10) and written once, as a Chapter 4 on the EKF (archived: the number was given to
-    // Mapping on the maintainer's decision, 2026-10-11, design/TOC.md §3). Its chapters are unwritten and unnumbered until they are.
-    status: 'planned',
+    // Closed in docs/ROADMAP.md (2026-10-10). Written as Chapter 5 (EKF localization); it was first written as Chapter 4, archived
+    // when that number went to Mapping (2026-10-11), and restored under the next free number the same day (design/TOC.md §3).
+    // The Monte Carlo chapter is not written.
+    status: 'published',
     scope: 'EKF localization and Monte Carlo localization on the Webots TurtleBot3.',
     sources: 'Ch. 11–12',
-    chapters: [],
+    chapters: [{ n: 5, slug: 'ch05-ekf-localization', title: 'EKF Localization: Tracking a Known Pose' }],
   },
   {
     phase: 4,

@@ -240,7 +240,7 @@ for (const f of walk(WEB, ['.ts', '.tsx', '.mdx']).filter((p) => !p.includes(`${
 }
 // the algorithm crates must have no OS-entropy entry point (the wasm_js backend is linked, never reached)
 const ENTROPY = /\b(thread_rng|from_os_rng|from_entropy|OsRng)\b|rand::rng\s*\(|rand::random\b|getrandom::/;
-for (const c of ['robotics_core', 'robotics_models', 'robotics_filters', 'robotics_sim', 'robotics_mapping']) {
+for (const c of ['robotics_core', 'robotics_models', 'robotics_filters', 'robotics_sim', 'robotics_mapping', 'robotics_localization']) {
   for (const f of walk(join(REPO, 'crates', c, 'src'), ['.rs'])) {
     read(f).split('\n').forEach((l, i) => {
       if (!l.trim().startsWith('//') && ENTROPY.test(l)) fail(`${relative(REPO, f)}:${i + 1}`, `OS entropy entry point: ${l.trim().slice(0, 60)}`);

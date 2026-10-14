@@ -30,7 +30,7 @@ export default function HomePage() {
 
       <h2 className="mt-14 text-2xl font-semibold tracking-tight">Parts 1–4</h2>
       <p className="mt-1 text-sm text-fd-muted-foreground">
-        Part 3 is localization and is planned; Part 4 is mapping and contains Chapter 4.
+        Part 3 is localization and contains Chapter 5 (the EKF half); Part 4 is mapping and contains Chapter 4.
       </p>
       <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {currentParts.map((part) => (
