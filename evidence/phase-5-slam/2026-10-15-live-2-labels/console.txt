@@ -1,0 +1,11 @@
+# 894 scans; dense track 4.00 to 196.98 s; lidar mount read from the first scan: (-0.02999999912460675, -1.0273391817295052e-09, 1.7037300903410824e-08)
+# 108 turning scans in 13 turns
+# per-scan fits kept: calibration 25 of 25, validation 83 of 83
+calibration: phase 0.0014 s, resultant 0.9925, sd 3.9 ms, lags [-0.018, +0.164] s, window lower edge -0.0270 s
+validation: phase 0.0018 s (differs +0.4 ms), resultant 0.9903, sd 4.4 ms, 1 of 83 lags outside the calibration window
+validation PASSED (phase within 5 ms: True, resultant >= 0.95: True, lags inside the window >= 95%: True)
+calibration_turning: 25 scans; range residual vs the room, median / p95 (mm): recorded labels 49.4 / 72.6, instant labels 14.5 / 21.2
+straight: 786 scans; range residual vs the room, median / p95 (mm): recorded labels 14.3 / 20.0, instant labels 12.8 / 16.0
+validation_turning: 83 scans; range residual vs the room, median / p95 (mm): recorded labels 53.4 / 75.3, instant labels 17.2 / 22.5
+scans the dense track does not cover (keep their recorded pose): 0
+# wrote evidence/phase-5-slam/2026-10-15-live-2-labels/integrated-scans.csv: 894 of 894 poses replaced

@@ -1,0 +1,36 @@
+header:
+  stamp:
+    sec: 1792002690
+    nanosec: 754579986
+  frame_id: ''
+status:
+- level: "\0"
+  name: 'route_driver: waypoint follower'
+  message: DRIVING
+  hardware_id: ''
+  values:
+  - key: route
+    value: slam-eval-rectangle
+  - key: leg
+    value: drive
+  - key: lap
+    value: 1/3
+  - key: waypoint
+    value: 3/5
+  - key: target_x
+    value: '-1.000'
+  - key: target_y
+    value: '0.900'
+  - key: distance_travelled_m
+    value: '4.420'
+  - key: rotation_turned_rad
+    value: '4.412'
+  - key: corners
+    value: '3'
+  - key: leg_timeouts
+    value: '0'
+  - key: commands
+    value: '620'
+  - key: last_error
+    value: ''
+---

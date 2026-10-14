@@ -1,0 +1,58 @@
+schema: phase5-slam-metrics/1
+run:
+  data_source: webots_recorded
+  ground_truth: webots_gated
+  role: evaluation
+  seed: 0
+  route: 2026-10-15-live-source-live-2/integrated-scans.csv max_gap_s=0.5
+  injected_yaw_bias_rad_per_keyframe: 0.0
+# harness flags: pipeline true, emulate-motion-gate true; S1a pairs made 752
+  info_inflation: 1.500000000000
+  robotics_mapping_dependency: false
+  build_profile: release
+# path travelled by the recorded sensor poses: 25.404 m over 894 scans
+s1a:
+  registrations_made: 752
+  registrations_graded: 752
+  translation_error_m: {median: 0.003578638204, p95: 0.031876077447, p99: 0.032965106489, max: 0.033482455019, count: 752}
+  rotation_error_rad: {median: 0.000538457213, p95: 0.001909671912, p99: 0.002932117819, max: 0.049341487420, count: 752}
+s2:
+  dof: 3
+  samples: 752
+  mean_nees: 31.974988557557
+# front end: 0 of 894 registrations lost track (status Predicted)
+s4:
+  keyframes_made: 83
+  keyframes_graded: 83
+  path_length_m: 25.213425806839
+  odometry: {ate_rms_m: 0.026575321362, ate_max_m: 0.050485216612, final_error_m: 0.016378450012, drift_m_per_m: 0.000649592409, heading_drift_rad_per_m: 0.000058148755}
+  graph: {ate_rms_m: 0.015634617596, ate_max_m: 0.044105295073, final_error_m: 0.013306272967, drift_m_per_m: 0.000527745538, heading_drift_rad_per_m: 0.000281493529}
+s5:
+  candidates: 182
+  accepted_correct: 110
+  accepted_wrong: 54
+  true_loops_proposed: 180
+  true_loops_accepted: 162
+  keyframes_with_true_partner: 61
+  keyframes_with_accepted_loop: 59
+  wrong_constraint_error_m: 0.05
+  wrong_constraint_error_rad: 0.03
+  rejected_by_reason:
+    no_overlap: 0
+    not_converged: 0
+    poor_fit: 0
+    degenerate: 0
+    gate_exceeded: 18
+    ambiguous: 0
+  true_loops_missed_by_reason:
+    no_overlap: 0
+    not_converged: 0
+    poor_fit: 0
+    degenerate: 0
+    gate_exceeded: 18
+    ambiguous: 0
+s6:
+  replay_identical: true
+  scan_period_s: 0.2
+  registration_latency_s: {median: 0.002509516000, p95: 0.005243723000, p99: 0.007745211000, max: 0.016509795000, count: 894}
+  optimization_latency_s: {median: 0.109922768000, p95: 0.144261278000, p99: 0.194688298000, max: 0.194688298000, count: 59}

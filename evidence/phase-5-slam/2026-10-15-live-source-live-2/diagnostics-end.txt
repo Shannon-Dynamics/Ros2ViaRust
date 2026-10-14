@@ -1,0 +1,46 @@
+header:
+  stamp:
+    sec: 1792002841
+    nanosec: 41923764
+  frame_id: ''
+status:
+- level: "\0"
+  name: scan_matcher_node
+  message: RUNNING
+  hardware_id: ''
+  values:
+  - key: scans_received
+    value: '880'
+  - key: registrations_published
+    value: '880'
+  - key: initialized
+    value: '1'
+  - key: tracked
+    value: '879'
+  - key: predicted
+    value: '0'
+  - key: retried_at_wide_threshold
+    value: '0'
+  - key: tracked_with_fallback_information
+    value: '0'
+  - key: skipped_malformed
+    value: '0'
+  - key: skipped_few_points
+    value: '0'
+  - key: publish_errors
+    value: '0'
+  - key: threshold_m
+    value: '0.4399'
+  - key: inputs
+    value: scan only, no odometry
+  - key: tf_published
+    value: none
+  - key: last_error
+    value: ''
+  - key: registration_latency_us_p50
+    value: '2856'
+  - key: registration_latency_us_p95
+    value: '5471'
+  - key: registration_latency_us_p99
+    value: '7675'
+---

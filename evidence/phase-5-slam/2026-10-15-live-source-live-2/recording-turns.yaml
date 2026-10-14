@@ -1,0 +1,24 @@
+recording: /mnt/d/shannon/ROS2 via RUST/ros2-rust-robotics/evidence/phase-5-slam/2026-10-15-live-source-live-2/integrated-scans.csv
+scans: 894
+duration_s: 192.520
+turn_step_threshold_rad: 0.015
+turning_scans: 128
+turning_scan_share: 0.1433
+turn_count: 13
+abs_rate_rad_s_min: 0.0730
+abs_rate_rad_s_median: 0.8002
+abs_rate_rad_s_max: 0.8022
+turns:
+  - {start_stamp_s: 19.600, scans: 4, angle_rad: -0.6253, median_rate_rad_s: -0.8009}
+  - {start_stamp_s: 28.400, scans: 14, angle_rad: 2.1927, median_rate_rad_s: 0.8001}
+  - {start_stamp_s: 40.860, scans: 10, angle_rad: 1.5687, median_rate_rad_s: 0.8002}
+  - {start_stamp_s: 55.000, scans: 10, angle_rad: 1.5682, median_rate_rad_s: 0.8002}
+  - {start_stamp_s: 66.740, scans: 10, angle_rad: 1.5560, median_rate_rad_s: 0.8002}
+  - {start_stamp_s: 80.660, scans: 10, angle_rad: 1.5690, median_rate_rad_s: 0.8002}
+  - {start_stamp_s: 92.440, scans: 10, angle_rad: 1.6010, median_rate_rad_s: 0.8002}
+  - {start_stamp_s: 106.580, scans: 10, angle_rad: 1.5545, median_rate_rad_s: 0.8001}
+  - {start_stamp_s: 118.160, scans: 11, angle_rad: 1.5694, median_rate_rad_s: 0.8002}
+  - {start_stamp_s: 132.380, scans: 10, angle_rad: 1.5686, median_rate_rad_s: 0.8001}
+  - {start_stamp_s: 144.180, scans: 10, angle_rad: 1.5695, median_rate_rad_s: 0.8001}
+  - {start_stamp_s: 158.180, scans: 10, angle_rad: 1.5681, median_rate_rad_s: 0.8001}
+  - {start_stamp_s: 170.000, scans: 9, angle_rad: 1.5690, median_rate_rad_s: 0.8002}

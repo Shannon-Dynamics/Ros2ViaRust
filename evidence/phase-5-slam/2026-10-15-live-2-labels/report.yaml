@@ -1,0 +1,23 @@
+# Written by scripts/phase5_lattice_from_ranges.py; reads scans' ranges, the dense track and the analytic room only.
+scans: 894
+turning_scans: 108
+turns: 13
+calibration_turns: 3
+calibration_fits: 25
+calibration_phase_s: 0.00140
+calibration_resultant: 0.99248
+calibration_phase_sd_s: 0.00391
+lag_min_s: -0.01800
+lag_max_s: 0.16400
+window_lower_edge_s: -0.02700
+validation_fits: 83
+validation_phase_s: 0.00177
+validation_phase_difference_s: 0.00037
+validation_resultant: 0.99026
+validation_lags_outside_window: 1
+validation_passed: true
+uncovered_scans: 0
+range_residual_vs_room:
+  - "calibration_turning: 25 scans; range residual vs the room, median / p95 (mm): recorded labels 49.4 / 72.6, instant labels 14.5 / 21.2"
+  - "straight: 786 scans; range residual vs the room, median / p95 (mm): recorded labels 14.3 / 20.0, instant labels 12.8 / 16.0"
+  - "validation_turning: 83 scans; range residual vs the room, median / p95 (mm): recorded labels 53.4 / 75.3, instant labels 17.2 / 22.5"

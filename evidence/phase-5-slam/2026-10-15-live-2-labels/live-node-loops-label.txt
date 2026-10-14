@@ -1,0 +1,6 @@
+== evidence/phase-5-slam/2026-10-15-live-source-live-2/integrated-scans.csv
+accepted 156 (no label for 0), rejected 25, accepted_wrong 50
+error of accepted constraints: max 38.7 mm, 0.1307 rad; median 7.5 mm, 0.0107 rad
+== evidence/phase-5-slam/2026-10-15-live-2-labels/integrated-scans.csv
+accepted 156 (no label for 0), rejected 25, accepted_wrong 0
+error of accepted constraints: max 25.8 mm, 0.0142 rad; median 4.2 mm, 0.0020 rad

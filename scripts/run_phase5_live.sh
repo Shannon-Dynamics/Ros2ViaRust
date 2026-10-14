@@ -131,12 +131,17 @@ log "route_driver exited with code $ROUTE_RC"
 sleep 8
 timeout 8 ros2 topic echo --once /diagnostics > "$OUT/diagnostics-end.txt" 2>&1
 
-log "stopping: the probes, then the SLAM nodes (they write their final files at shutdown), then Webots"
+# Order, changed on 2026-10-15 from "probe, then SLAM nodes" (run live-1): the nodes publish their last /map and
+# their last map -> odom while they shut down, and a probe that is already gone cannot count them (three of the five
+# Stage B checks that failed on live-1 were that). The scan and ground-truth recorders stop first because nothing
+# after the route is graded on them; the probe stops last.
+log "stopping: the scan and ground-truth recorders, then the SLAM nodes (they write their final files at shutdown), then the probe, then Webots"
 kill -INT "$REC_PID" "$GT_PID" 2>/dev/null; wait "$REC_PID" "$GT_PID" 2>/dev/null
-kill -INT "$PROBE_PID" 2>/dev/null; wait "$PROBE_PID" 2>/dev/null
 kill -INT -- "-$SLAM_PID" 2>/dev/null || kill -INT "$SLAM_PID" 2>/dev/null
 for _ in $(seq 1 120); do kill -0 "$SLAM_PID" 2>/dev/null || break; sleep 1; done
 if kill -0 "$SLAM_PID" 2>/dev/null; then echo "slam_launch: still alive 120 s after SIGINT" >> "$OUT/shutdown.txt"; kill -9 -- "-$SLAM_PID" 2>/dev/null; else wait "$SLAM_PID"; echo "slam_launch: exit code $?" >> "$OUT/shutdown.txt"; fi
+sleep 2
+kill -INT "$PROBE_PID" 2>/dev/null; wait "$PROBE_PID" 2>/dev/null
 kill -INT -- "-$WORLD_PID" 2>/dev/null || kill -INT "$WORLD_PID" 2>/dev/null
 for _ in $(seq 1 60); do kill -0 "$WORLD_PID" 2>/dev/null || break; sleep 1; done
 kill -0 "$WORLD_PID" 2>/dev/null && kill -9 -- "-$WORLD_PID" 2>/dev/null

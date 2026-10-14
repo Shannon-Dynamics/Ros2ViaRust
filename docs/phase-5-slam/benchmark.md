@@ -306,3 +306,126 @@ A rough check outside the protocol, not graded: the 83 keyframes of the live run
 recorded with its scans (same lag caveat as above) have translation error rms 1.6 cm, max 4.1 cm, final 1.1 cm. S4 and S5
 were **not graded on the live run itself**: its `integrated-scans.csv` has the same stamp-lag problem as the recordings, and
 a corrected copy needs the dense track and a lattice estimate that were not made for it.
+
+### 7.2 The lattice-phase discrepancy explained, and the protocol of the fresh live run (written 2026-10-15, before that run)
+
+Written after the existing data were re-analysed and **before** the fresh run it ends with was made. Nothing in 7 or
+7.1 is edited; where this section disagrees with 7.1 it is a correction of 7.1 and says so.
+
+**What the two numbers are.** Both are the phase of the Webots lidar's 0.2 s measurement lattice, in simulation time, on the
+clock of the `/ground_truth/pose` stamps (modulo 0.2 s; a phase of 0.198 s is -0.002 s). Neither is wall-clock and neither
+includes queueing or dispatch: both are read from message stamps.
+
+* **0.0603 s** (`evidence/phase-4-mapping/2026-10-10-scan-skew-probe`, `phase4_scan_skew_analysis.py`): for each turning scan, fit the
+  constant offset `d` between the stamp and the instant the beams were measured, by matching the 360 ranges to the exact
+  room seen from the dense ground-truth track; take the phase of `stamp + d` modulo 0.2 s. One run, 53 turning scans, the
+  probe's own recorder driving the robot.
+* **0.198 s** (`phase5_gt_instants.py`, `2026-10-15-gt-instants-recording-2`): choose the phase (and the edge of the lag window) at
+  which the dense track at the lattice instants best reproduces **the scan matcher's rotation between consecutive scans**,
+  over turning pairs. A different quantity from a different run (recording 2 of 2026-10-14), estimated from SLAM output.
+
+**What the discrepancy was.** I ran the probe's own per-scan fit (its `fit_scan`, imported unchanged) on the turning scans of
+recording 2 and of the first live run, which use ranges and the exact room and read no SLAM output. Result:
+
+| run | method | phase of the measurement lattice | resultant length R | turning scans |
+|---|---|---|---|---|
+| probe, 2026-10-10 | per-scan range fit | **0.0603 s** | 0.995 | 53 |
+| recording 2, 2026-10-14 | per-scan range fit | **0.0016 s** (first third 0.0017, last third 0.0015) | 0.991 | 111 |
+| recording 2, 2026-10-14 | matcher agreement (`phase5_gt_instants.py`) | 0.198 s = **-0.002 s** | | 122 pairs |
+| first live run, 2026-10-15 | per-scan range fit | **0.0017 s** (first third 0.0017, last third 0.0012) | 0.973 | 110 |
+
+(`scripts/phase5_lattice_from_ranges.py` reproduces the range-fit rows with its own, stricter protocol: 0.0011 s and 0.0012 s on the
+calibration turns, 0.0018 s on the others, for both runs.) So:
+
+1. **The two measurements did not disagree about one thing.** 0.0603 s is the phase of the probe's run, and 0.198 s the phase of recording 2;
+   the same method (range fit) on recording 2 gives 0.0016 s, 3 ms from the matcher-based 0.198 s (-0.002 s), inside the width
+   of the minimum, which is flat to about 10 ms (`phase5_gt_instants.py`'s report: rotation disagreement 0.0035 rad at 0.198, 0.0075 at 0.02).
+   Within a run the phase is stable to a few milliseconds (sd 4 ms over three laps; first and last third differ by 0.2 to 0.5 ms).
+2. **7.1 was wrong to treat 0.0603 s as a reference the recording should agree with.** It is the phase of one run, and
+   `docs/phase-4-mapping/implementation.md` 5.2 item 2 (and a note of mine that quoted "sim time 0.0603 + 0.2k") stated it as if it were a property of
+   the driver. The lag distribution *is* a property of the driver and agrees across all three runs (mean 0.061, 0.0645 and 0.071 s; range about
+   -0.02 to 0.17 s, apart from one outlier fit at -0.115 s in the live run); the phase of the lattice against the ground-truth clock is not. **Why the probe's run differs from the two later ones is not known.** The world, the
+   launch file and the supervisor are unchanged between them (same `world_sha256`; no commit touches `sim/webots` between the probe and the
+   recordings). A candidate, **untested**: the lattice starts when the lidar is enabled, which happens when the extern controller connects,
+   and the number of 20 ms steps simulated before that can differ from run to run (0.0603 is three steps, 0.0016 is none). The fresh run adds one
+   more value; three runs agreeing or not would not settle the mechanism, and it is not claimed.
+3. **Neither measurement was a units, clock or dispatch mismatch**, which is what a factor of three suggests. The 3x is `0.0603 / 0.198`,
+   and the numbers are on a circle (0.198 is 0.002 short of the period), so a ratio of them means nothing; the distance on the circle is 0.062 s.
+
+**Was the correction applied in 7.1 principled?** In kind, yes; in how it was fitted and what it was compared with, it was not safe, and 7.1 did not
+earn the right to call it a result.
+
+* The stamp-lag error in the pose labels is real and independent of any fit: with the recorded labels (the track at `stamp - 0.06 s`), a
+  turning scan is explained by the exact room worse than a straight one (range residual median 63 mm, p95 76 mm, against 15 mm and 20 mm,
+  recording 2, `phase5_lattice_from_ranges.py`), and with the labels at the lattice instants it is not (16 and 22 mm on turns not used to estimate the phase).
+  That is a measurement of the labels against the room, not against the matcher.
+* The phase the correction used was fitted on the matcher's own rotations, so a rotation bias shared by matcher and labels would have been
+  absorbed. It was not (the range fit agrees to 3 ms and reads nothing from SLAM), but 7.1 could not know that, and its comparison with 0.0603 s,
+  which looked like a disagreement, was a comparison between runs.
+* **The correction did not change what the verifier decided, and that is as it should be, not a flaw.** Loop acceptance reads scans and relative
+  poses from odometry and never the ground truth (the same 157 of 180 accepted in 5b and 5c). Only the labels, which are the ground truth the
+  claim is graded against, changed. A relabelling that moved the verifier's decisions would be the suspicious one. What does remain true is that S5's
+  "zero wrong constraints" on recording 2 was graded against labels that had been chosen after the fact, on the one recording that could be relabelled.
+
+**Protocol of the fresh run.** One new live run of `source:=live loop_closure:=true` (`scripts/run_phase5_live.sh`, the rectangle route, three laps,
+with the dense track, the scans and the ground truth recorded by the harness) named `2026-10-15-live-source-live-2`. Graded exactly as in section 7 (the
+flags of `slam_recorded_run`, `phase5_verdict.py` unchanged, `info_inflation` 1.5), on **two** copies of the same recording, both reported:
+
+* **R, recorded labels:** `integrated-scans.csv` as the harness wrote it (the pose columns are the track at `stamp - 0.06 s`).
+* **L, lattice labels:** a copy whose pose columns are the dense track at the measurement instants, from `scripts/phase5_lattice_from_ranges.py`: phase and lag
+  window **estimated on the first three turns of the run only, from the scans' ranges against the exact room, reading no SLAM output**, and
+  **validated on the other ten**, with the thresholds in that script's docstring (phase within 5 ms, R at least 0.95, 95 per cent of lags in the window). **If
+  the validation fails the L copy is not graded**, and the report says so. No threshold is changed after the run.
+
+Which of R and L a claim rests on, said now: **L**, because the S5 definition grades a constraint against the sensor's true relative pose and R's label of a scan taken in a turn
+is wrong by more than S5's own tolerance (7.1: 0.14 rad p95; the range residual above is the independent evidence). R is reported because S5 on R is what the original
+protocol graded, and it is expected to fail for the label's sake, not the verifier's: **if R fails and L passes, the text will say exactly that and will not call it a clean pass of R.** If
+L fails, the number is the result. The run's S5 on the **live nodes' own** accepted loops (`node/loops.csv`) is compared with the offline replay of the same scans, to check that
+the recorded-stream grading is of what the nodes did.
+
+**Stage B recheck.** `scripts/phase5_stage_b_check.py` is rerun on live-1 unchanged, and on live-2 whose shutdown order was changed (`run_phase5_live.sh`: probe stops after the SLAM nodes),
+which tests the explanation of the three end-of-run failures by removing the cause.
+
+### 7.3 Results of the fresh live run (2026-10-15, written after the run; the protocol is 7.2, unchanged)
+
+`evidence/phase-5-slam/2026-10-15-live-source-live-2` (`scripts/run_phase5_live.sh`, rectangle route, three laps, 894 scans, 13 turns, dense track,
+clean shutdown, `webots_bin_left: 0`), graded offline on two copies of its recording as 7.2 fixed:
+`v2-recorded-6a-live-2-recorded-labels` (R) and `v2-recorded-6b-live-2-lattice-labels` (L; the labels and their validation are in
+`2026-10-15-live-2-labels/`). `scripts/phase5_verdict.py` is the same file as in 7.1 (sha256 `579b561e...`); `info_inflation` 1.5.
+
+**The lattice estimate and its validation (it passed; no threshold was changed).** Phase 0.0014 s from the first three turns (R = 0.9925, sd 3.9 ms), 0.0018 s on the
+other ten (0.4 ms apart, R = 0.9903), 1 of 83 validation lags outside the calibration window. Against the exact room, the range residual of the turning scans not
+used for the estimate is median 53 mm (p95 75 mm) with the recorded labels and 17 mm (p95 22 mm) with the lattice labels; straight scans: 14 and 13 mm.
+**So the label of a scan taken in a turn is wrong on the recorded pose and not on the lattice one, by a measurement that reads no SLAM output.**
+
+| | R: recorded labels | L: lattice labels |
+|---|---|---|
+| S5 candidates / accepted (offline replay) | 182 / 164 | 182 / 164 |
+| **S5 accepted wrong (limit 0)** | **54** | **0** |
+| **S5 verdict** | **FAIL** | **PASS** |
+| S4 graph ATE RMS / chain ATE RMS (ratio, limit 1.05) | 0.0156 / 0.0266 m (0.59) | 0.0132 / 0.0242 m (0.54) |
+| S4 verdict | PASS (the verdict file also notes that S5 failed) | PASS |
+| S1a (gated pairs; translation p95) | FAIL (0.032 m) | PASS (0.0024 m) |
+| S5 on the **live nodes' own** accepted loops (`node/loops.csv`, 181 candidates, 156 accepted), `scripts/phase5_live_loops_label.py` | 50 wrong | **0 wrong** (worst accepted error 25.8 mm and 0.0142 rad, limits 0.05 and 0.03) |
+
+The verifier decided the same thing in R and L (identical counts). The offline replay of the recorded stream and the live nodes are not the same run of the
+algorithm (182 candidates / 164 accepted against 181 / 156; the first live run had 182 / 154): both are graded and both pass on L.
+
+**What this does and does not establish.**
+
+* **It is not a clean pass of the criterion as it was first written.** S5 graded on the labels the protocol originally used (R) fails, as it did on both earlier recordings, with 54 wrong; on the live
+  nodes' own loops 50. What passes is S5 graded on labels that are the ground truth at the instant the scan was measured (L). The case that R's failure is the label's and not the verifier's rests
+  on the independent range residual above and on the verifier's decisions not depending on labels; it does not rest on S5 having passed. Whether that makes S5 met is the owner's call, as it was in 7.1.
+* **The correction is no longer fitted to the outcome.** Phase and window come from ranges, from the first three turns, with a held-out validation fixed in advance. That removes the circularity of 7.1; it does not make L the same thing as R.
+* **The mechanism of the phase is still unknown.** Four runs: the Phase 4 probe 0.0603 s; recording 2, the first live run and this one 0.001 to 0.002 s. The three Phase 5 runs agree to under a millisecond (0.0011, 0.0012 and 0.0014 s on their calibration turns), so the lattice phase was **not**
+  random across them; why the probe's run differs is untested (the "enabled three steps later" candidate of 7.2 stays a candidate). A fifth run with a different startup could show a different phase, and the validation exists for that case.
+* **The pass is about the candidates this run produced** (164 accepted, 18 rejected, all for `gate_exceeded`; 0 wrong in 164 supports a wrong-accept rate below about 1.8 per cent at 95 per cent in this world). The loop candidates designed to be rejected are in the tests.
+* S8 stays not claimable. Phase 5 is **not** marked closed by this section.
+
+**Stage B recheck (the five failures of live-1).** `phase5_stage_b_check.py` rerun unchanged on live-1: **the same five fail (20 of 25)**. On live-2, whose probe stops after the SLAM nodes: **22 of 25, three fail.**
+* The two `/map` count failures (54 received of 55) are **gone**: the end-of-run explanation was right for them. The probe now receives the last `/map`.
+* `map -> odom` for every registered scan, and "none dropped": these two still fail in live-2, **with a different cause**. The probe now receives every message the node published (881 of 881), but the node published 881 for 882 registrations and counts one dropped:
+  the very first scan (stamp 7.08 s), whose `odom -> base_link` lookup at `stamp - 0.06 s` falls before the start of the TF history (`last_error: lookup ... outside its history [7.06, 7.56]`). That is a startup race of the node, counted in its
+  diagnostics, not harness noise; in live-1 it did not happen (dropped 0), so it depends on the run. Live-1's "882 of 884" was the probe's shutdown order (the node had published all 884), as explained; live-2's drop is a second, different finding and is not fixed.
+* The last `map -> odom` against the recomputed estimate fails in both and **is the checker's assumption** (stationary odometry, as its own source says): live-2's last sample is (0.022, -0.007, 0.008 rad), the constant offset the geometry gives (0.03, 0, 0) to within 0.01 m and 0.01 rad, while the check expects the sensor's SLAM pose (1.14, -0.91).
+* S1a on R fails on `rotation_max` (0.049 rad against 0.03) only; on L it passes.

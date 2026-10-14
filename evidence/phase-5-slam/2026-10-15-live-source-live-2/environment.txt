@@ -1,0 +1,19 @@
+date_utc: 2026-10-14T18:30:30Z
+host: LAPTOP-HJL1R3P6
+kernel: 6.18.54.1-microsoft-standard-WSL2
+cpu: AMD Ryzen 7 5800H with Radeon Graphics
+ros_distro: jazzy
+ros_domain_id: 92
+rmw: rmw_cyclonedds_cpp
+webots: Webots version: R2025a
+world_sha256: 614757cfe21d48828cf5a5a4df91c8807179903de2743826937671997d36127f
+route_file: /home/genta/slam_nodes_ws/sim/webots/config/route_slam_eval_rectangle.yaml
+route_sha256: 9e06fc3fa2850ff84e4267570cf7d118433b347e467b977600309ee15b14cf50
+laps: 3
+loop_closure: on
+install_space: /home/genta/slam_nodes_ws/ros2_ws/install_release/robotics_slam_ros
+scan_matcher_node_sha256: 4fbcdb69c42f7089b28d22d418e8a0cfa6d9615854bbf251f47d737285ec39d1
+pose_graph_node_sha256: abf6c6bbc32a1426603ac488d0e999974d78a89c45c82f84ae3a50f48d390f0b
+launch_file_sha256: 094331fb63e1b2de344be3e55662570a81e233bf2c340861c4c29dcdb886706e
+build_profile: release (install_release)
+source_git_commit: 619f81204163a3c07439573f7e1f6dab7e2e8a78
