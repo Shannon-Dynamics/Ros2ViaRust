@@ -75,10 +75,11 @@ export const PHASES: Phase[] = [
   {
     phase: 5,
     title: 'SLAM',
-    status: 'planned',
+    // Closed in docs/ROADMAP.md (2026-10-15, with carried-over items and an S5 caveat in its heading). Chapter 6 (design/TOC.md §3).
+    status: 'published',
     scope: 'Scan matching, pose graphs and the loop closure problem.',
     sources: 'Ch. 14–17',
-    chapters: [],
+    chapters: [{ n: 6, slug: 'ch06-slam', title: 'SLAM: Scan Matching, Pose Graphs and Loops You Can Trust' }],
   },
   {
     phase: 6,

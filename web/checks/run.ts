@@ -5,6 +5,7 @@ import { ch02Checks } from './ch02';
 import { ch03Checks } from './ch03';
 import { ch04Checks } from './ch04';
 import { ch05Checks } from './ch05';
+import { ch06Checks } from './ch06';
 import { katexChecks } from './katex';
 
 const rs = loadRobotics();
@@ -15,6 +16,7 @@ const results: CheckResult[] = [
   ...ch03Checks(rs),
   ...ch04Checks(rs),
   ...ch05Checks(rs),
+  ...ch06Checks(rs),
   ...katexChecks(),
 ];
 

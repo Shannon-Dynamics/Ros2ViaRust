@@ -2,8 +2,8 @@ import Link from 'next/link';
 import { CHAPTERS, PHASES } from '@/lib/book-structure';
 
 export default function HomePage() {
-  const currentParts = PHASES.filter((p) => p.phase <= 4);
-  const laterParts = PHASES.filter((p) => p.phase > 4);
+  const currentParts = PHASES.filter((p) => p.phase <= 5);
+  const laterParts = PHASES.filter((p) => p.phase > 5);
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:py-16">
       <p className="mb-3 text-sm font-medium tracking-wide text-fd-primary uppercase">
@@ -28,11 +28,11 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <h2 className="mt-14 text-2xl font-semibold tracking-tight">Parts 1–4</h2>
+      <h2 className="mt-14 text-2xl font-semibold tracking-tight">Parts 1–5</h2>
       <p className="mt-1 text-sm text-fd-muted-foreground">
-        Part 3 is localization and contains Chapter 5 (the EKF half); Part 4 is mapping and contains Chapter 4.
+        Part 3 is localization and contains Chapter 5 (the EKF half); Part 4 is mapping and contains Chapter 4; Part 5 is SLAM and contains Chapter 6.
       </p>
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {currentParts.map((part) => (
           <li key={part.phase} className="rounded-lg border border-fd-border bg-fd-card p-4">
             <p className="text-xs font-medium tracking-wide text-fd-muted-foreground uppercase">
@@ -45,7 +45,7 @@ export default function HomePage() {
 
       <h2 className="mt-12 text-2xl font-semibold tracking-tight">Published chapters</h2>
       <p className="mt-1 text-sm text-fd-muted-foreground">
-        Read Chapters 1–4 in order, from foundations through mapping.
+        Read Chapters 1 to 6 in the order of the parts: 1, 2, 3, 5 (localization), 4 (mapping), 6 (SLAM).
       </p>
       <ul className="mt-5 grid gap-4 sm:grid-cols-2">
         {CHAPTERS.map((chapter) => (

@@ -11,6 +11,8 @@
     "---Part 3 · Localization---",
     "ch05-ekf-localization",
     "---Part 4 · Mapping---",
-    "ch04-mapping"
+    "ch04-mapping",
+    "---Part 5 · SLAM---",
+    "ch06-slam"
   ]
 }

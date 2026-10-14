@@ -114,7 +114,7 @@ const files = readdirSync(CH_DIR).filter((f) => f.endsWith('.mdx') && f !== 'ind
 const slugs = new Set(CHAPTERS.map((c) => c.slug));
 for (const f of files) if (!slugs.has(f.replace(/\.mdx$/, ''))) fail(f, 'chapter file is not in book-structure.ts (a planned phase has no chapters, and nothing is pre-built)');
 const meta = JSON.parse(read(join(CH_DIR, 'meta.json')));
-const expectedPages = ['index', ...S.PHASES.filter((p) => p.phase <= 4).flatMap((p) => [
+const expectedPages = ['index', ...S.PHASES.filter((p) => p.phase <= 5).flatMap((p) => [
   `---Part ${p.phase} · ${p.title}${p.status === 'planned' ? ' (planned)' : ''}---`,
   ...p.chapters.map((c) => c.slug),
 ])];

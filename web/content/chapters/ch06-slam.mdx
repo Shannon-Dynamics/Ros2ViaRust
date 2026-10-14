@@ -1,0 +1,665 @@
+---
+title: "SLAM: Scan Matching, Pose Graphs and Loops You Can Trust"
+description: "How a robot that knows neither where it is nor what the room looks like builds both at once: scan matching, a pose graph, loop closures that are verified before they are believed, and why the answer to \"was that loop wrong?\" depends on what you grade it against."
+chapter: 6
+phase: 5
+phaseTitle: SLAM
+difficulty: Advanced
+readingTime: 90 min
+quote: "Simultaneous Localization and Mapping (SLAM) consists in the concurrent construction of a model of the environment (the map), and the estimation of the state of the robot moving within it."
+quoteAuthor: C. Cadena et al.
+quoteSource: Past, Present, and Future of Simultaneous Localization and Mapping (IEEE Transactions on Robotics, 2016), abstract
+---
+
+import { PipelineReplay } from '@/components/ch/ch06/pipeline-replay';
+import { ScanMatching } from '@/components/ch/ch06/scan-matching';
+import { LoopVerifier } from '@/components/ch/ch06/loop-verifier';
+import { Dashboard, StatTile } from '@/components/viz';
+
+<Overview
+  goals={[
+    'say why chaining scan matches is a trajectory and not yet a map, and what a loop closure adds to it',
+    'read the relative-pose residual and the cost a pose graph minimizes, and say what a Levenberg–Marquardt step does with them',
+    'say where point-to-plane ICP stops, and what it does not tell you when it stops in the wrong place',
+    'list the checks a loop candidate must pass before the graph believes it, and say which kind of false candidate each one can and cannot catch',
+    'explain why the count of wrong loop constraints depends on the ground truth it is graded against, and what the repository did about it',
+  ]}
+  prerequisites={[
+    'Chapter 1 (poses in SE(2), the idea of a belief) and Chapter 3 (the lidar model and the simulator Rusty)',
+    'Chapter 5 helps with covariances and the chi-squared test; Chapter 4 is not needed, because the graph keeps scans and not a grid',
+  ]}
+>
+
+The TurtleBot3 of the last three chapters was always told something: where the landmarks are (Chapter 5), where it is (Chapter 4). Put it in a room it has never seen and it has neither. It has the 360 ranges of its lidar,
+five times a second, and the wheel odometry, and it must produce both a trajectory and a map from them. Each is an input to the other: the map is only as good as the poses it is written at, and the poses can only be checked against the map.
+
+This chapter builds the part of that loop that finds the trajectory. It is the longest of the book so far, because the part that works (matching one scan to another) is the easy half, and the half that decides whether the result can be trusted is a decision
+about when to *believe* that the robot has come back to a place it has been. The chapter also tells how the repository learned that the answer to "was that decision wrong?" depends on a choice about ground truth that nobody had thought to make.
+
+</Overview>
+
+## The problem
+
+The robot drives three laps of a rectangle in a 6 m × 6 m room with four pillars. At every instant it has a scan $z_t$ and a wheel-odometry increment $u_t$, and it must estimate the full posterior over its whole trajectory and the map,
+
+$$
+p(x_{1:t},\, m \mid z_{1:t},\, u_{1:t}),
+$$
+
+where each pose $x_t = (x, y, \theta)$ is an element of SE(2). The method of this chapter keeps the trajectory only at *keyframes*, every half metre or so, turns scans into constraints between them, and finds the trajectory that satisfies the constraints best. Here is
+the answer running: a recorded run, scan by scan, through the repository's code compiled to WebAssembly. The orange line is what you get by trusting each scan match (the *chain*), the purple one is the optimized pose graph, the green lines are loop constraints the graph accepted, and the gray dashed line is the truth.
+
+<PipelineReplay />
+
+Watch the numbers on the first run, with no error injected. The chain is already good, 3.5 mm rms against the ground truth over the three laps. That is not an accident of the run, and it is not how SLAM is usually introduced: on this robot, in this room, with a lidar that returns 360 clean ranges, matching each scan to the recent past drifts by
+millimetres. The pose graph is not better. It is *worse*, 9.0 mm, 2.53 times the chain's error, and the repository's pre-registered check (the graph must not be worse than the chain by more than 5 %) says FAIL, on all four simulated routes it ran. The loop constraints that the graph accepted are correct, and a correct constraint of finite accuracy cannot improve a trajectory that is already more accurate than the constraint.
+
+So there is nothing to repair, and the graph has to be shown something to repair. The repository's evaluation injects a systematic yaw error of 0.004 rad into every odometry edge the graph is handed, and says so in every file it writes. Drag the slider of the widget to the right: the chain drifts to 242.5 mm rms, and the graph, with the same loop constraints, brings it back to 9.8 mm. Switch on the toggle that draws the scans at the chain's poses: the room turns into several rotated copies of itself. That is what a loop closure is for, and what it does not do when there is no drift to repair.
+
+Four things make it hard, and the rest of the chapter is about them in turn.
+
+1. **Odometry drifts, and the drift is not noise.** A heading error becomes a position error that grows with distance, and it is correlated along the whole path. A filter that forgets old poses (EKF-SLAM) can never repair it; a smoother that keeps them can.
+2. **A scan can only be compared with another scan through a pose, and the pose is the unknown.** Registering two scans estimates the pose between them from the scans alone, at the cost of local minima.
+3. **A loop closure is the only evidence that removes accumulated error, and a wrong one is worse than none.** A missed loop costs drift. A false one bends the whole map into a shape that is self-consistent and wrong, and nothing downstream can tell.
+4. **This room is a hard test for the verifier.** It is a square with four pillars; every wall is a long straight line, and the room has a fourfold near-symmetry, so a candidate that is rotated a quarter turn from the truth can fit nearly as well as the truth.
+
+### What "right" means
+
+SLAM has no single success rate, and the repository does not report one. It reports eight claims, named S1 to S8 so that they cannot be confused with the mapping claims of Chapter 4, each with the kind of evidence it rests on. Their limits were written into a script before the first run.
+
+| claim | what it asks | how it is reported |
+|---|---|---|
+| S1a | how accurate is a scan match? | translation and rotation error against the true relative pose, median and 95th percentile, over every registration of a run |
+| S1b | does ICP find the answer from a poor start? | a rate, over seeded trials at growing offsets, with a stated success criterion, on the simulator only |
+| S2 | does the information matrix of a registration tell the truth about its error? | the mean normalized error squared, labelled consistent, overconfident or conservative, never pass or fail |
+| S3 | is the optimizer correct? | tests: the Jacobians equal central differences, the dense and sparse solves agree, a robust kernel down-weights an outlier |
+| S4 | is the trajectory accurate? | the keyframes against the ground truth, for the chain and for the graph, next to each other |
+| S5 | is loop closure safe, and how much does it find? | the number of accepted constraints that are wrong, pre-registered to be zero; recall is reported and never required |
+| S6 | is it deterministic and cheap enough? | a bit-for-bit replay, and the time per registration and per optimization |
+| S7 | do the two other back ends work on the problem they were built for? | informative only, no ranking |
+| S8 | does SLAM produce a usable map? | **not claimable**: it waits on a real loop closure whose safety is measured and on a rendering node that this chapter does not cover |
+
+## Building intuition
+
+### Matching two scans
+
+The first ingredient is the one everything else is built on: given two scans, find the pose of one in the frame of the other. *Iterative closest point* (ICP) alternates two steps. Given a guess, pair every point of the second scan with its nearest neighbour in the first; then find the rigid motion that
+makes those pairs closest, apply it, and repeat. The crate minimizes the distance of each point to the *line* through its neighbours (point-to-plane), which lets one scan slide along a wall without paying for it, and weights the pairs so that one far-off pair does not decide the answer.
+
+The widget below runs it on two real scans, taken one second apart on the rectangle route. The first scan stays put in green; the orange dots are the second scan placed by ICP's pose after the iteration shown. It starts from a guess that is 0.4 rad (23°) wrong.
+
+<ScanMatching />
+
+Three things are worth taking from it. First, ICP *crawls*: from a start 0.4 rad off it takes eighteen iterations, because the correspondences it forms at a bad guess are mostly wrong and each step moves only a little. Second, the answer it gives is not marked as wrong when it is. From a start 0.7 rad off, the
+registration settles, with a tidy stop, 31 cm and 0.71 rad from the truth. The one thing that distinguishes it from the right answer is its residual: 140 mm, where the right one has 21 mm. A start 1 m ahead of the truth settles 0.95 m away with a residual of 50 mm. Third, how far from the truth ICP can start depends on the metric. Point-to-point, which pairs points and not points with lines, is lost from 0.3 rad.
+
+The repository measures this rather than reading it off a widget (claim S1b): on this pair of scans, 100 trials at each of six offset ranges, with a random translation and rotation drawn uniformly, and a trial counts as a success if the registration settles within 2 cm and 0.01 rad of the truth.
+
+| start offset (translation, rotation) | successes of 100 |
+|---|---|
+| 0.05 m, 0.05 rad | 100 |
+| 0.10 m, 0.10 rad | 100 |
+| 0.20 m, 0.15 rad | 100 |
+| 0.30 m, 0.25 rad | 100 |
+| 0.50 m, 0.40 rad | 100 |
+| 1.00 m, 0.80 rad | 40 |
+
+The last two ranges were added after the first run showed 100 of 100 at the largest range that had been fixed in advance, to find where the basin ends; they are reported and never graded. In use, the question is not whether ICP can recover from 1 m, but whether the starting guess is better than that. It is:
+the front end predicts each scan's pose from the previous increment (constant velocity per scan), and the correspondence threshold adapts to how wrong that prediction was last time. On the 843 consecutive pairs of the simulated rectangle run, started from zero motion, the error of the registration has a median of 2.5 mm and a 95th percentile of 5.4 mm in translation, and a median of 0.88 mrad in rotation.
+
+### From a chain to a graph
+
+Each registration gives an *increment*: where the robot is now, relative to where it was one scan ago, with an information matrix saying how well each direction is determined. Accumulated over about half a metre of travel (the `EdgeAccumulator` of the listing below composes the increments and their covariances), they become one *odometry edge* between two keyframes. The keyframes and their edges are a pose graph: a chain.
+
+A chain has no way to be wrong about itself: every edge is equally trusted, and the error of the last pose is the sum of everything before it. It becomes a graph when the robot returns to a place it has been and the two keyframes that see it are tied together by a *loop edge*, the registration of the later keyframe's scan against a submap of the earlier ones. The graph optimizer then
+finds the poses that violate all the edges the least, each weighted by its information. The constraint that the two keyframes are close spreads over the whole chain between them. In the widget above, each green line is such an edge, and the drift of the chain is what the purple trajectory removes.
+
+### A loop that fits is not a loop that is true
+
+A loop edge is only as good as the decision to add it. The detector proposes candidates: earlier keyframes, at least 6 m of path back, whose estimated position is within 1.5 m plus three standard deviations of the new one. That is geometry on the *estimated* trajectory, so it cannot find a loop that drift has carried out of its own covariance (place recognition could, and is not built).
+The verifier then decides, and the crate returns the *first* check a candidate fails, in this order: the two views overlap; ICP settles; the registration *fits*, meaning that at least half of the scan's points, and at least 80 of them, lie within 5 cm of the target; the fit is not degenerate (a corridor, or one wall in view, does not pin the motion along it); the registration is
+*consistent* with where the graph already believes the robot is; and, last, it is *unambiguous*.
+
+Consistency is a chi-squared test on the innovation, the disagreement between what ICP says and what the graph believed, in the units of their combined covariance. It rejects the large lies. It cannot reject a false candidate that lies inside the graph's own uncertainty, however wrong. The last check is for those: ICP is restarted from eleven other poses (the solution moved by 0.3 m along each axis and the diagonals, rotated by 0.25 rad, and rotated by a quarter turn either way and by a half turn, the symmetry of a square room), and if any restart settles on a *different* pose that also fits, and explains nearly as much of the scan as
+the main solution, the candidate is an alias and is refused. The widget below lets you see each of these in turn.
+
+<LoopVerifier />
+
+In the empty square room, the two views fit to about 2 cm at *every* rotation, and the verifier refuses every one of them: a room that looks the same turned by a quarter cannot tell you which of four places you are in. That is the correct decision, and it has a cost, a true loop is thrown away, which is why the repository counts both. Put one box in the room and the same candidate is accepted: the restarts that settle elsewhere now explain
+less of the scan than the true pose, by more than the margin of 5 % of the points. In the pillar room, with the views as they are, change how far off the graph believes the second view is. The fit does not move: it is 17 to 22 mm in every case this widget opens on, accepted or refused. What changes is the χ², and at about 15 cm, when the graph is sure to 5 cm, the gate stops it.
+
+The chi-squared gate of the verifier is 7.775. The exact 95 % point of a chi-squared distribution with three degrees of freedom is 7.815; the crate computes it by the Wilson–Hilferty approximation, which is 0.5 % low, so the gate is very slightly stricter than its name says. It was found by building this widget, which prints the number the verifier actually compares with.
+
+### What is the ground truth of a scan?
+
+Claim S5 counts accepted loop constraints that are *wrong*, and it needs a definition: an accepted constraint is wrong if its measurement differs from the true relative pose of the two scans by more than 0.05 m or 0.03 rad. Which means the true pose of each scan has to be known. In the simulator it is: the pose the scan was taken at. In Webots the ground truth is a 50 Hz track, and the question is *which instant of it* belongs to a scan.
+
+The obvious answer is the instant of the scan's time stamp. Chapter 4 found that this is wrong for the Webots lidar: the stamp lags the instant its beams were measured, by 0.061 s on average and up to 0.164 s, and the measurements lie on a regular 0.2 s lattice that the stamps do not follow. The mapper of Chapter 4 coped by integrating at the pose 0.06 s before the stamp, the mean lag, and by skipping scans taken while the robot turns. A SLAM run cannot skip them: the turns are where the front end is
+tested, and the loop closures happen in them. At 0.8 rad/s, being 0.1 s wrong is 0.08 rad wrong, nearly three times the 0.03 rad that S5 allows. So the label of a scan taken in a turn can be wrong by more than the tolerance of the claim it is used to grade.
+
+The repository found this by getting an answer it could not believe. On the first Webots recordings of the rectangle route, S5 failed: 54 accepted constraints out of 147 were wrong on the first recording, 63 of 157 on the second. The verifier's own decisions were the same under any labelling, since the verifier never reads the ground truth. Re-timing the labels of the second recording
+to the lattice made the count zero, and that was not believed either: the lattice had been estimated by agreement with the scan matcher's own rotations, so a bias shared by the matcher and the labels would have been absorbed, and the estimate disagreed with an earlier probe's. Both objections were right to be raised. The fresh run of the same route, driven live against the nodes, was set up so that neither could apply:
+
+* the timing of each scan is estimated from **its own ranges against the exact room**, with no output of the SLAM code anywhere in the estimate (the room is analytic: four walls and four pillars);
+* the estimate comes from the first three of the run's 13 turns (25 scans) and is **checked on the other ten** (83 scans), and the labels are used only if the check passes; the limits of the check were written down before the run;
+* the verifier's decisions are graded under **both** labellings, side by side.
+
+<Dashboard>
+  <StatTile label="recorded labels (stamp less 0.06 s)" value="54 wrong" hint="of 164 accepted constraints · S5 fails" role="prior" />
+  <StatTile label="measured-instant labels" value="0 wrong" hint="of the same 164 · S5 passes" role="posterior" />
+  <StatTile label="same decisions" value="182 / 164 / 18" hint="candidates, accepted, rejected at the gate, under both" />
+  <StatTile label="live nodes' own loops" value="50 → 0" hint="wrong of 156 accepted, recorded labels → measured-instant labels" />
+</Dashboard>
+
+The two estimates, from the first three turns and from the other ten, differ by 0.4 ms, with a resultant length of 0.99 for both, and the check passed. Against the exact room, the range residual of a scan taken in a turn, on the turns not used for the estimate, has a median of 53 mm at the recorded label (75 mm at the 95th percentile) and 17 mm (23 mm) at the measured instant, where a scan taken
+while driving straight has 14 mm and 13 mm: the label at the stamp explains a turning scan almost four times worse than a straight one, and the label at the measured instant explains it as well as a straight one. The scan matcher's information matrix says the same thing from the other side: its mean NEES, which is 3 for a consistent estimate, is 32.0 against the recorded labels and 1.06 against the measured ones. A NEES of 32 is not the information matrix's error: the same registrations, graded against the right ground truth, are, if anything, conservative.
+
+Toggle the Webots recording in the first widget between its two labels: the dashboard counts of wrong constraints change from 54 to 0 and the green lines do not move. That is the finding in one gesture, and what it does and does not establish is worth saying plainly.
+
+* **It is not a clean pass of S5 as the claim was first written.** Graded against the labels the first protocol used, the verifier fails, on every Webots recording. What passes is the claim graded against the ground truth at the instant of the measurement, which is the ground truth the claim always meant. The roadmap closed this part with that written in its heading, on the maintainer's delegation of the decision.
+* **The evidence that the second labelling is the right one is independent of the verifier**: the room explains the scans better at the measured instant, and the estimate was validated on turns it did not use.
+* **The mechanism behind the lattice is not understood.** The probe of the previous chapter's run found the lattice at a different alignment against the ground-truth clock (0.0603 s) from all three runs of this part (0.001 to 0.002 s); why is not known, and a different startup could produce another value. That is why the estimate is made for each run and checked for each run, not looked up.
+* **Zero wrong in 164 supports a rate below about 1.8 % at 95 % confidence, in this world.** It is a statement about the candidates the run produced: all 18 rejections were at the χ² gate, none for any other reason, so the checks that exist for aliases were never tested against Webots data. They are tested against the repository's own constructed candidates, which is the third widget.
+
+## The mathematics
+
+### The relative-pose residual
+
+A loop or odometry edge between keyframes $i$ and $j$ carries a measurement $Z_{ij} \in \mathrm{SE}(2)$ of the relative pose $X_i^{-1}X_j$, and an information matrix $\Lambda_{ij}$, the inverse of its covariance in the tangent space at the measurement (translation first, as everywhere in this book). The edge's residual and its cost are
+
+$$
+e_{ij} \;=\; \log\!\bigl(Z_{ij}^{-1}\, X_i^{-1} X_j\bigr), \qquad
+c_{ij} \;=\; \tfrac12\, e_{ij}^{\top}\Lambda_{ij}\, e_{ij}.
+$$
+
+It is zero exactly when the poses agree with the measurement. The cost of the graph is the sum over its edges, and a gauge prior on the first keyframe, tight but finite, fixes the otherwise free placement of the whole trajectory in the plane; without it the normal equations are singular and the crate refuses to solve, rather than nudging the diagonal.
+
+With a right perturbation $X \boxplus \delta = X\exp(\delta)$ the Jacobians are exact:
+
+$$
+\frac{\partial e}{\partial \delta_j} \;=\; J_r^{-1}(e), \qquad
+\frac{\partial e}{\partial \delta_i} \;=\; -J_r^{-1}(e)\,\mathrm{Ad}_{T^{-1}}, \qquad T = X_i^{-1}X_j,
+$$
+
+where $J_r$ is the right Jacobian of SE(2). Approximating $J_r^{-1}(e)$ by the identity is common and agrees with the exact form only where the residual is zero; the crate keeps the exact one, and its tests compare both with central differences.
+
+### The optimizer
+
+Stack every edge's residual and Jacobian into $r$ and $J$ with block-diagonal information $\Lambda$. Gauss–Newton solves
+
+$$
+\bigl(J^{\top}\Lambda J\bigr)\,\delta \;=\; -J^{\top}\Lambda\, r,
+$$
+
+and retracts every pose by its block of $\delta$. Levenberg–Marquardt, which is what the pose graph uses, solves the damped system $(H + \lambda\,\mathrm{diag}\,H)\,\delta = -b$ and accepts the step only if it lowers the cost, scaling $\lambda$ by how well the predicted fall in the cost matched the actual one (the gain ratio $\rho$, in the listing below). The system is sparse, since each edge touches two poses, and is solved by a sparse Cholesky factorization. A loop edge
+carries a Huber kernel at $\sqrt{\chi^2_{3,0.95}}$, which is convex, so it cannot trap the solver at a bad start, and which limits how hard a single constraint can pull; the odometry edges are plain least squares.
+
+### Point-to-plane ICP, and what it reports about itself
+
+For source points $p_k$, their target neighbours $q_k$ and the unit normals $n_k$ of the lines the neighbours lie on, one iteration of point-to-plane ICP minimizes
+
+$$
+\sum_k w_k \,\bigl(n_k^{\top}(T p_k - q_k)\bigr)^2 ,
+$$
+
+by a Gauss–Newton step on the SE(2) tangent at $T$, where the weights $w_k$ are Geman–McClure with a scale of a third of the correspondence threshold, so a pair at the rejection boundary has a weight of 1 %. A point whose neighbourhood is not a line (a corner, a pillar's edge) falls back to a point-to-point residual for that pair; a normal is never guessed. The *information* of the result is
+
+$$
+\Lambda \;=\; \frac{1}{\sigma^{2}\,\kappa}\sum_k w_k\, J_k^{\top}J_k ,
+$$
+
+at the final correspondences, where $\sigma$ is the residual's standard deviation floored at the lidar's noise and $\kappa$ is the `info_inflation`, 1.5, frozen from the development run. The matrix is overconfident, because the 360 beams are not independent and the sum treats them as if they were; S2 measures how much. On the simulated run the mean NEES of the registrations is 3.14, against the chi-squared(3) mean of 3: consistent after the inflation. On the Webots run it depends on the labels, as above.
+Its smaller eigenvalue over the larger decides whether the registration is flagged degenerate.
+
+### The consistency gate
+
+Let $T_\text{pred}$ be the graph's current estimate of the relative pose of the candidate pair, with the exact marginal covariance $\Sigma_\text{rel}$ from the sparse factorization, and let ICP return $Z_\text{icp}$ with information $\Lambda_\text{icp}$. The innovation and its covariance are
+
+$$
+\nu \;=\; \log\!\bigl(Z_\text{icp}^{-1}\,T_\text{pred}\bigr), \qquad
+S \;=\; \Sigma_\text{rel} + \Lambda_\text{icp}^{-1},
+$$
+
+and the candidate passes the gate if $\nu^{\top}S^{-1}\nu \le \chi^2_{3,\,0.95}$. Three degrees of freedom, because a pose in the plane has three. The test says: given what the graph already believes, and given how well ICP says it knows, are the two consistent? A candidate that the graph is *unsure* about passes whatever ICP says, within its own large uncertainty, which is why this check alone is not a verifier.
+
+<Derivation title="Why a clean fit cannot tell a true loop from its alias" result="the best fit has the same residual, up to the lidar noise, at every rotation that maps the room onto itself">
+
+Let the room be invariant under a rotation $R$ about its centre, as an empty square is under a quarter turn. A scan taken from the centre at heading $\theta$ is a function of bearing, $r_\theta(\varphi)$, and by the invariance $r_{\theta + \pi/2}(\varphi) = r_\theta(\varphi)$ for every bearing: the two scans are the *same* set of points in the sensor frame.
+
+ICP from the true pose and from the pose a quarter turn away therefore sees the same two point sets and the same correspondences up to the relabelling of the quarter turn, and minimizes the same cost, so it ends with the same residual. The residual of the fit, which is all the first three checks look at, is a function of the pair of scans and not of which of the four equivalent poses is chosen.
+
+Only a comparison across restarts can see the difference, and it has to see it as a difference *in the answer* (the poses are more than 5 cm or 0.02 rad apart) between fits that are *equally good* (the alias explains at least the main solution's share of the scan, less a margin of 5 % of the points). A single object that breaks the symmetry is enough to make the alias explain less of the scan than the true pose by more than the margin, and then the verifier accepts the candidate; that is what the third widget does when the box is added.
+
+The margin is chosen, not derived. A first version without it refused any alternative fit at all and refused a room whose symmetry was broken only by one small box, which is a good loop; the margin is the number to look at first if the verifier turns out too permissive.
+
+</Derivation>
+
+## The algorithm
+
+<Algorithm name="LidarOdometry.step(z_t)">
+
+1. downsample the scan to points $P_t$ on a 5 cm voxel grid, dropping returns at or beyond $r_\text{max}$
+2. $T_\text{guess} \leftarrow T_{t-1}\cdot \Delta_{t-1}$: the last per-scan increment, applied once
+3. $\tau \leftarrow$ the adaptive threshold, three times the root-mean-square of the model deviation of the previous predictions
+4. register $P_t$ against the local map from $T_\text{guess}$ at threshold $\tau$
+5. if it did not settle: register again from the same guess at the no-knowledge threshold $\tau_0$
+6. if it settled: $T_t \leftarrow$ the result, add $P_t$ to the local map; otherwise $T_t \leftarrow T_\text{guess}$, leave the map and the threshold alone and report a predicted step
+7. return the increment $\Delta_t = T_{t-1}^{-1}T_t$ and its information (a configured fallback if the step was predicted)
+
+</Algorithm>
+
+<Algorithm name="PoseGraph.process_loops(k)">
+
+1. for each earlier keyframe $j$ at least 6 m of path back, with $\lVert\hat t_{jk}\rVert \le \min(1.5\,\text{m} + 3\sigma_{jk},\, 3\,\text{m})$: propose $(j, k)$; keep the nearest three
+2. for each candidate: $\text{verdict} \leftarrow \text{Verify}(j, k)$
+3. for each accepted candidate: add the loop edge with the registration's information and a Huber kernel
+4. if any was accepted: optimize the graph by Levenberg–Marquardt; return every candidate with its verdict, accepted or the first failing check
+
+</Algorithm>
+
+<Algorithm name="Verify(j, k)">
+
+1. register keyframe $k$'s points against a submap of keyframes $j-1, j, j+1$, excluding $k$ and everything after it, starting from the graph's relative pose
+2. refuse unless at least 20 % of the points found a correspondence (*no overlap*), ICP settled (*not converged*), and at least half the points, and at least 80, lie within 5 cm of the target (*poor fit*)
+3. refuse if the information matrix is nearly rank one (*degenerate*)
+4. refuse if $\nu^{\top}S^{-1}\nu > \chi^2_{3,0.95}$ (*gate exceeded*)
+5. restart ICP from eleven other poses; refuse if one settles on another pose, more than 5 cm or 0.02 rad away, that explains at least the main fit's share of the scan less 5 % of the points (*ambiguous*)
+6. accept, with the registration as the measurement
+
+</Algorithm>
+
+## Implementation in Rust
+
+Everything above is `robotics_slam`, a crate with no ROS in it and no dependency on the occupancy grid of Chapter 4. The residual of one edge, with its exact Jacobians:
+
+```rust title="crates/robotics_slam/src/geom.rs"
+pub fn relative_pose_residual(xi: &Se2, xj: &Se2, z: &Se2) -> RelativePoseResidual {
+    let t = xi.between(xj);
+    let e = z.between(&t).log();
+    let jr_inv = right_jacobian_inverse(&e);
+    RelativePoseResidual {
+        error: e,
+        jac_i: -jr_inv * t.inverse().adjoint(),
+        jac_j: jr_inv,
+    }
+}
+```
+
+The registration is a loop that finds correspondences again at every iteration, solves for a step and stops when the step is smaller than the tolerance. What it returns includes `settled`, the answer the front end and the verifier believe, which is not the same as `converged`: nearest neighbours on a discrete map flip between iterations, so a registration that has reached the answer can jitter by a fraction of a millimetre for ever.
+
+```rust title="crates/robotics_slam/src/icp.rs"
+pub fn register(
+    source: &[Vector2<f64>],
+    target: &VoxelMap,
+    init: Se2,
+    cfg: &IcpConfig,
+) -> Result<IcpResult, SlamError> {
+// …
+    let k = cfg.threshold * cfg.kernel_ratio;
+    let mut t = init;
+    let mut converged = false;
+    let mut iterations = 0;
+    let (mut last_trans, mut last_rot) = (f64::INFINITY, f64::INFINITY);
+    for it in 0..cfg.max_iterations {
+        iterations = it + 1;
+        let corr = associate(source, target, &t, cfg);
+        if corr.len() < cfg.min_correspondences {
+            break;
+        }
+        let next = match cfg.metric {
+            IcpMetric::PointToPoint => solve_point_to_point(&corr, &t, k),
+            IcpMetric::PointToPlane => solve_point_to_plane(&corr, &t, k, cfg)?,
+        };
+        let step = t.between(&next).log();
+        t = next;
+        last_trans = step.xy().norm();
+        last_rot = step.z.abs();
+        if last_trans < cfg.trans_tol && last_rot < cfg.rot_tol {
+            converged = true;
+            break;
+        }
+    }
+// …
+    Ok(IcpResult {
+        pose: t,
+        converged: converged && enough,
+        settled: enough && last_trans < 10.0 * cfg.trans_tol && last_rot < 10.0 * cfg.rot_tol,
+```
+
+Scan-to-scan increments become one keyframe edge by composing them and their covariances. The accumulator keeps the covariance in the frame of the newest increment, which is what the adjoint in the second line does:
+
+```rust title="crates/robotics_slam/src/odometry.rs"
+    pub fn push(&mut self, delta: &Se2, information: &Matrix3<f64>) -> Result<(), SlamError> {
+        let cov = information
+            .try_inverse()
+            .ok_or(SlamError::SingularSystem("increment information"))?;
+        let ad = delta.inverse().adjoint();
+        self.cov = ad * self.cov * ad.transpose() + cov;
+        self.delta = self.delta.compose(delta);
+        Ok(())
+    }
+```
+
+The optimizer's acceptance rule, in the Levenberg–Marquardt branch of `optimize`: the predicted fall of the cost, the actual one, and the gain ratio that scales the damping.
+
+```rust title="crates/robotics_slam/src/factor_graph.rs"
+                Method::LevenbergMarquardt => {
+                    let predicted = 0.5
+                        * (lambda
+                            * delta
+                                .iter()
+                                .zip(a.diag.iter())
+                                .map(|(d, h)| d * d * h.max(1e-9))
+                                .sum::<f64>()
+                            - a.gradient.dot(&delta));
+                    let actual = a.cost - next.cost;
+                    if actual > 0.0 && predicted > 0.0 {
+                        let rho = actual / predicted;
+                        lambda *= (1.0f64 / 3.0).max(1.0 - (2.0 * rho - 1.0).powi(3));
+                        lambda = lambda.max(1e-12);
+```
+
+And the verifier's two checks that matter most for safety, the consistency gate on the exact marginal covariance and the restarts that look for an alias. The first failing check is the reason returned.
+
+```rust title="crates/robotics_slam/src/pose_graph.rs"
+        let nu = r.pose.between(&cand.predicted).log();
+        let sigma_rel = self.relative_covariance(cand.from, cand.to)?;
+        let info = r.information;
+        let s = sigma_rel
+            + info
+                .try_inverse()
+                .ok_or(SlamError::SingularSystem("registration information"))?;
+        let s_inv = s
+            .try_inverse()
+            .ok_or(SlamError::SingularSystem("innovation covariance"))?;
+        let chi2 = nu.dot(&(s_inv * nu));
+        let gate = chi2_quantile(3, lc.chi2_alpha).map_err(|_| SlamError::InvalidParameter {
+            what: "chi2_alpha",
+            value: lc.chi2_alpha,
+        })?;
+        if chi2 > gate {
+            return reject(Reason::GateExceeded { chi2 }, Some(r));
+// …
+        starts.extend([
+            Vector3::new(0.0, 0.0, q),
+            Vector3::new(0.0, 0.0, -q),
+            Vector3::new(0.0, 0.0, 2.0 * q),
+        ]);
+        for off in &starts {
+            let other = register(source, &target, r.pose.boxplus(off), &lc.icp)?;
+            if fit_ok(&other, source, &target, lc) {
+                let e = r.pose.between(&other.pose).log();
+                if e.xy().norm() > lc.ambiguity_tol_trans || e.z.abs() > lc.ambiguity_tol_rot {
+                    let main = support_fraction(source, &target, &r.pose, lc.support_radius);
+                    let alias = support_fraction(source, &target, &other.pose, lc.support_radius);
+                    if alias >= main - lc.ambiguity_margin {
+                        return reject(Reason::Ambiguous, Some(r));
+```
+
+### What the page runs
+
+The widgets do not contain a pipeline. The first one holds a recording and calls the crate once per scan, in the order the robot's node does: the front end, the accumulator, and, whenever the pose graph wants a keyframe, `process_loops`.
+
+```rust title="crates/robotics_wasm/src/ch06.rs"
+            let step = self.odo.step(&fr.scan).map_err(err)?;
+            self.next += 1;
+            if step.status == TrackingStatus::Predicted {
+                self.lost += 1;
+            }
+            if k == 0 {
+                self.graph
+                    .add_keyframe(points_of(&fr.scan), &Se2::IDENTITY, &info(0.03, 0.01))
+                    .map_err(err)?;
+                self.truth.push(self.frames[0].gt.between(&fr.gt));
+                self.dead.push(Se2::IDENTITY);
+                continue;
+            }
+            self.acc
+                .push(&step.delta, &step.information)
+                .map_err(err)?;
+            if self.graph.wants_keyframe(&self.acc.delta()) {
+                let (delta, chain_info) = self.acc.take().map_err(err)?;
+                let delta = delta.boxplus(&Vector3::new(0.0, 0.0, self.yaw_bias));
+                let chain_info = if self.yaw_bias != 0.0 {
+                    info(0.03, 0.01)
+                } else {
+                    chain_info
+                };
+                let id = self
+                    .graph
+                    .add_keyframe(points_of(&fr.scan), &delta, &chain_info)
+                    .map_err(err)?;
+                self.truth.push(self.frames[0].gt.between(&fr.gt));
+                let last = *self.dead.last().expect("the first keyframe exists");
+                self.dead.push(last.compose(&delta));
+                let out = self.graph.process_loops(id).map_err(err)?;
+                self.outcomes.extend(out);
+```
+
+The module's replay of a recorded run equals the native harness's, which wrote the repository's evidence files: the trajectory errors to better than a picometre, and the loop-closure counts exactly, on a recording of the simulator with no injected error, with 0.004 rad injected, and on the Webots run under both labellings. The two are not the same machine code: ICP, the optimizer and the verifier run on a different floating-point library in WebAssembly, and the agreement is a finding, not a promise. The recording contains the data and the replay draws no random number, so, unlike the chapters on simulated noise, no seed is involved in these three widgets' main results.
+The one exception is the verifier widget, which draws the lidar noise of two scans from a seeded generator; a seed names a different noise stream on the page than on the robot, and the verdicts shown above hold for six seeds, and are asserted by the build.
+
+**Worked example 1: ICP from a start 0.4 rad off.** The widget's opening state, point-to-plane, on scans 281 and 286 of the 844-scan recording. The residual is the root-mean-square distance of the final correspondences:
+
+```text
+iteration  from the truth  rotation error  residual  settled
+0            0.00 cm       0.4000 rad           –  no
+1            0.61 cm       0.3877 rad     162.4 mm  no
+2            1.45 cm       0.3723 rad     162.8 mm  no
+5            3.58 cm       0.3178 rad     148.6 mm  no
+10           4.91 cm       0.2200 rad     153.3 mm  no
+14           0.51 cm       0.0414 rad      52.1 mm  no
+18           0.16 cm       0.0006 rad      20.6 mm  yes
+50           0.16 cm       0.0005 rad      20.6 mm  yes
+```
+
+**Worked example 2: the χ² of a loop against the offset the graph believes.** The pillar room, a true loop, the graph sure to 5 cm, and the offset by which the graph is told the second view is further along x than it is. The seed is the one of the repository's own test of this case; the verdicts hold for six seeds.
+
+```text
+believed offset  chi-squared  verdict      (gate 7.775)
+0.00 m             0.00      accepted
+0.05 m             1.06      accepted
+0.10 m             4.12      accepted
+0.15 m             9.18      rejected at the gate
+0.20 m            16.23      rejected at the gate
+0.30 m            36.32      rejected at the gate
+```
+
+## Putting it together
+
+The problem of the opening, as numbers the runs produced: the repository's own, read out of the metrics files its harness wrote, and each asserted by the build against the file it comes from. The runs are in the repository's `evidence/` directory.
+
+### S4: is the trajectory accurate?
+
+The graph's error and the chain's, rms over the keyframes against the ground truth, on the four runs of the same route (the rectangle, three laps):
+
+| | simulated, natural | simulated, 0.004 rad injected | Webots, recorded labels | Webots, measured-instant labels |
+|---|---|---|---|---|
+| keyframes | 84 | 84 | 83 | 83 |
+| chain (odometry), ATE rms | 3.5 mm | 242.5 mm | 26.6 mm | 24.2 mm |
+| graph, ATE rms | 9.0 mm | 9.8 mm | 15.6 mm | 13.2 mm |
+| graph over chain (limit 1.05) | **2.53** | 0.040 | 0.59 | 0.54 |
+| S4 verdict | **FAIL** (the ratio only) | PASS | PASS | PASS |
+
+The simulated run fails its pre-registered ratio, as the first section said: there is no drift for the loop constraints to repair, and a graph that is built from correct constraints of finite accuracy is a little worse than a chain that is already accurate to millimetres. On the Webots run the chain has 24 mm of rms error, about seven times the simulator's, for reasons that were not tested (lidar noise, the beam layout and wheel slip are candidates), and the graph is 0.54 to 0.72 of it.
+The first two recordings (not in the table) give 0.60 and 0.72.
+
+### S5: is loop closure safe?
+
+| | simulated, natural | simulated, injected | Webots, recorded labels | Webots, measured-instant labels |
+|---|---|---|---|---|
+| candidates | 182 | 185 | 182 | 182 |
+| accepted | 181 | 185 | 164 | 164 |
+| accepted and wrong (limit 0) | 0 | 0 | **54** | 0 |
+| rejected at the χ² gate | 1 | 0 | 18 | 18 |
+| rejected for any other reason | 0 | 0 | 0 | 0 |
+| S5 verdict | PASS | PASS | **FAIL** | PASS |
+
+Two other recordings of the same route, graded the same way under recorded labels, have 54 and 63 wrong; one of them graded under labels corrected by an estimate fitted on the matcher's own rotations has none. The live nodes' own accepted loops (156, a slightly different run of the algorithm from the offline replay of the same scans) have 50 wrong under recorded labels and none under measured-instant ones, the worst accepted constraint 25.8 mm and 0.0142 rad off.
+Recall is reported and not required: of the loops the detector proposed that were true, the verifier accepted 181 of 182 (simulated) and 162 of 180 (Webots).
+
+### S1, S2, S6: cheap and honest
+
+* **S1a.** 843 registrations of the simulated run: translation error median 2.5 mm, 95th percentile 5.4 mm; rotation median 0.88 mrad.
+* **S1b.** The table of the previous section: 100 of 100 up to 0.5 m and 0.4 rad, 40 of 100 at 1 m and 0.8 rad.
+* **S2.** Mean NEES 3.14 on the simulated run (the chi-squared(3) mean is 3); 32.0 on the Webots run graded against recorded labels, and 1.06 against measured-instant ones.
+* **S6.** The replay is bit-identical, run twice. The registration of a scan takes 3.4 ms (median) and 8.3 ms (99th percentile) on a release build, against 200 ms between scans; an optimization takes 125 ms (median) and is run only when a loop is accepted.
+
+### The two other back ends (S7, informative)
+
+The crate also holds EKF-SLAM, with the robot and the landmarks in one Gaussian, and a grid Rao-Blackwellized particle filter. They were run on the simulated rectangle route with a *declared* synthetic odometry noise (the Webots odometry has none worth speaking of, so a comparison with it would measure nothing), and a systematic yaw error of 0.005 rad per metre. Dead reckoning of that odometry has 122.2 mm of rms error; EKF-SLAM, given the pillar detections of Chapter 5, 12.8 mm, with 27 landmarks for 4 distinct pillars (the detector's false positives
+create duplicates the filter keeps); the particle filter with 30 particles and no scan-matching proposal, 2.42 m. **No ranking is claimed**: the odometry noise is a setting of the simulator, and who wins is a statement about that setting. The point of having them is the contrast with the graph: neither can revise an old decision.
+
+### What this does not show
+
+The numbers above are real, and a reader should hold them at their size.
+
+* **S5 passes on one of two labellings.** It fails against the labels the first protocol used, on every Webots recording. The verifier's decisions do not depend on the labelling, and the independent evidence says the measured-instant labels are the right ones. The roadmap closed this part with the caveat in its heading.
+* **The pass is about the candidates this run produced**: 182, none of them rejected for any reason but the gate. The checks that exist for aliases (overlap, degenerate, ambiguous) have been tried on the repository's constructed candidates, not on Webots data.
+* **Why the lattice of the lidar sat at a different alignment in the earlier probe than in these runs is not known.** The estimate is therefore made per run.
+* **One room, one route, one simulated robot.** Four walls and four pillars, a fourfold near-symmetry. The nodes that run this pipeline were run live against Webots twice; the loop closure they carry is opt-in.
+* **On the simulator the graph is worse than the chain, on every natural run**, and the injected-error runs are evidence for the loop machinery and say nothing about the scan matcher's drift.
+* **No map is claimed.** The repository's pose-graph node renders a submap map and owns the `map → odom` transform, and both are built and checked in a replay, but no map is graded against the room here; claim S8 is not claimable.
+* **Not built:** place recognition (a loop carried outside the graph's own uncertainty is never proposed), landmark FastSLAM, the 2-D TSDF.
+
+## Exercises
+
+<Exercises>
+
+<Exercise level="F" difficulty={2} title="The residual of a loop edge">
+
+For keyframes $X_i$, $X_j$ and a measurement $Z$ of their relative pose, show that $e = \log(Z^{-1}X_i^{-1}X_j)$ is zero exactly when the graph agrees with the measurement, and that for two poses facing east and a measurement that is a pure translation along $x$ it is the difference of the poses' $x$ coordinates less the measurement, in its first component, and zero in the others.
+
+<details>
+<summary>Solution</summary>
+
+$E = Z^{-1}T$ with $T = X_i^{-1}X_j$ is the identity if and only if $T = Z$, and $\log$ of the identity is zero. For two poses with the same heading, $T$ is the translation $(x_j - x_i,\ y_j - y_i)$ rotated into the frame of $X_i$, which for heading zero is that difference itself, and a pure translation $Z$ composes with it by subtraction. The rotation component of $e$ is zero because every heading is the same.
+
+</details>
+
+</Exercise>
+
+<Exercise level="F" difficulty={3} title="Why a clean fit proves nothing about the alias">
+
+Take the empty square room and a lidar at its centre. Show that the scan facing east and the scan facing north are the same set of points in the sensor frame, so that ICP started from the true pose and from the pose a quarter turn away reaches the same residual. Say what the verifier's restarts compare, and why the margin of 5 % of the points exists. Read the ambiguity block of `PoseGraph::verify` and `LoopConfig::ambiguity_margin` in `crates/robotics_slam/src/pose_graph.rs`.
+
+<details>
+<summary>Solution</summary>
+
+The room is invariant under a quarter turn about its centre, so the range as a function of bearing relative to the sensor is the same at a heading $\theta$ and at $\theta + \pi/2$ (see the derivation in the chapter). The correspondences at the two starts differ by a relabelling of the points, so the cost is the same and the residual is the same. A fit-only verifier cannot choose. The restarts of `verify` run ICP again from the solution rotated by plus and minus a quarter turn and by a half turn, and ask whether any of them settles on a different pose that also fits; the margin separates "another fit exists" from "an equally good fit exists", so that a room whose symmetry is broken by one small box, where the alias explains a few per cent less of the scan, is not refused.
+
+</details>
+
+</Exercise>
+
+<Exercise level="C" difficulty={1} title="No error, no gain">
+
+<Predict
+  id="ch06-q-nogain"
+  question="In the first widget, on the simulated recording with no yaw error injected, is the optimized graph more accurate than the odometry chain?"
+  options={[
+    { label: 'Yes: it has loop closures, and the chain does not', because: 'A loop constraint repairs drift. On this run the chain has 3.5 mm of error, less than the constraints can resolve.' },
+    { label: 'No: it is a little worse', correct: true, because: 'The chain is 3.5 mm and the graph 9.0 mm, a ratio of 2.53. The accepted loop constraints are correct but each has an error of its own, and with nothing to repair the optimizer only spreads that error over the trajectory.' },
+    { label: 'They are identical, since the loops it accepted are all true', because: 'A true loop of finite accuracy still moves the keyframes by its own error; the graph equals the chain only if no loop is accepted at all.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Where does ICP stop">
+
+<Predict
+  id="ch06-q-stop"
+  question="In the second widget, give the starting offset along x a value of 1 m and the rotation error 0. Where does point-to-plane ICP end, and what in its output tells you?"
+  options={[
+    { label: 'On the truth: 1 m is within the basin', because: 'The widget shows otherwise; the correspondences at a metre away pair the scan with the wrong stretches of wall.' },
+    { label: 'About 0.95 m from the truth, settled, with a residual of about 50 mm', correct: true, because: 'It slides along the walls, which constrain it across and not along, and stops where the nearest walls agree; the residual, more than twice the right one, is the only sign.' },
+    { label: 'It never settles, and says so', because: 'It does settle, after four iterations, which is the difficulty: nothing in "settled" says it settled in the right place.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="C" difficulty={2} title="Add a box">
+
+<Predict
+  id="ch06-q-box"
+  question="In the third widget the empty square room at a quarter turn is rejected as ambiguous. What happens to the verdict if you switch to the room with one box?"
+  options={[
+    { label: 'Still rejected: the box is small', because: 'The box only has to make the aliases explain noticeably less of the scan than the true pose, by more than 5 % of the points.' },
+    { label: 'Accepted', correct: true, because: 'With the symmetry broken the restarts that settle elsewhere explain less of the scan than the true pose by more than the margin, so none of them is an equally good fit.' },
+    { label: 'Rejected at the χ² gate instead', because: 'The gate compares ICP with what the graph believed, and the graph was told the truth here; the χ² is small.' },
+  ]}
+/>
+
+</Exercise>
+
+<Exercise level="P" difficulty={2} title="The hall">
+
+In `crates/robotics_wasm/src/ch06.rs`, add the repository's long, narrow hall (`corridor` in `crates/robotics_slam/tests/common/mod.rs`, a rectangle 2 m wide and 40 m long) as a fourth room of `ch06_verify`, with view B two metres along it, and run it through the verifier for several seeds. Which reason do you get, and does it depend on the seed? Why is the room not in the widget?
+
+<details>
+<summary>Solution</summary>
+
+It is refused in every case, as *not converged* or as *degenerate*, depending on the noise realization: a hall constrains the motion across it and not along it, so ICP slides, and whether the slide is stopped by the iteration limit or by the information matrix being nearly rank one depends on which of the two happens first on a given pair of noisy scans. The repository's test pins the reason for the one seed it uses. A widget that offered the hall would show a reason that changes with the page's seed, which is not the robot's, so it does not.
+
+</details>
+
+</Exercise>
+
+</Exercises>
+
+## References
+
+<References>
+  <Reference authors="Cadena, C., Carlone, L., Carrillo, H., Latif, Y., Scaramuzza, D., Neira, J., Reid, I. and Leonard, J. J." year={2016}
+    title="Past, present, and future of simultaneous localization and mapping: toward the robust-perception age"
+    venue="IEEE Transactions on Robotics, 32(6), 1309–1332"
+    url="https://doi.org/10.1109/TRO.2016.2624754"
+    note="The survey whose first sentence is this chapter's epigraph: the map and the trajectory estimated together, and what thirty years of SLAM left open, including robustness and the cost of a wrong loop closure." />
+  <Reference authors="Besl, P. J. and McKay, N. D." year={1992}
+    title="A method for registration of 3-D shapes"
+    venue="IEEE Transactions on Pattern Analysis and Machine Intelligence, 14(2), 239–256"
+    url="https://doi.org/10.1109/34.121791"
+    note="Iterative closest point as this chapter's front end uses it: the alternation of finding correspondences and aligning, and its dependence on the starting guess that the second widget shows." />
+  <Reference authors="Chen, Y. and Medioni, G." year={1992}
+    title="Object modelling by registration of multiple range images"
+    venue="Image and Vision Computing, 10(3), 145–155"
+    url="https://doi.org/10.1016/0262-8856(92)90066-C"
+    note="The point-to-plane residual: the distance of a point to the tangent plane at its correspondence, which is what the crate minimizes by default." />
+  <Reference authors="Lu, F. and Milios, E." year={1997}
+    title="Globally consistent range scan alignment for environment mapping"
+    venue="Autonomous Robots, 4(4), 333–349"
+    url="https://doi.org/10.1023/A:1008854305733"
+    note="Where scan matches became constraints in a network that is solved together: the idea behind the pose graph of this chapter." />
+  <Reference authors="Grisetti, G., Kümmerle, R., Stachniss, C. and Burgard, W." year={2010}
+    title="A tutorial on graph-based SLAM"
+    venue="IEEE Intelligent Transportation Systems Magazine, 2(4), 31–43"
+    url="https://doi.org/10.1109/MITS.2010.939925"
+    note="The error function, the linearization, the information matrices and the gauge freedom, in the notation this chapter's mathematics follows." />
+  <Reference authors="Dellaert, F. and Kaess, M." year={2017}
+    title="Factor graphs for robot perception"
+    venue="Foundations and Trends in Robotics, 6(1–2), 1–139"
+    url="https://doi.org/10.1561/2300000043"
+    note="The factor-graph view of the same problem, with the sparse solvers and the marginal covariances the loop gate of this chapter uses." />
+  <Reference authors="Thrun, S., Burgard, W. and Fox, D." year={2005}
+    title="Probabilistic Robotics"
+    venue="MIT Press"
+    url="https://mitpress.mit.edu/9780262201629/probabilistic-robotics/"
+    note="Chapters 10, 11 and 13: EKF-SLAM, GraphSLAM and FastSLAM, the three back-end ideas of which this chapter keeps the first, the second and (as a grid particle filter) a variant of the third." />
+  <Reference authors="Vizzo, I., Guadagnino, T., Mersch, B., Wiesmann, L., Behley, J. and Stachniss, C." year={2023}
+    title="KISS-ICP: in defense of point-to-point ICP, simple, accurate, and robust registration if done the right way"
+    venue="IEEE Robotics and Automation Letters, 8(2), 1029–1036"
+    url="https://doi.org/10.1109/LRA.2023.3236571"
+    note="The adaptive correspondence threshold and the constant-velocity prediction that the crate's front end follows." />
+  <Reference authors="Kim, G. and Kim, A." year={2018}
+    title="Scan Context: egocentric spatial descriptor for place recognition within 3D point cloud map"
+    venue="IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 4802–4809"
+    url="https://doi.org/10.1109/IROS.2018.8593953"
+    note="What is not built here: a place-recognition descriptor, which would propose loops that a drift larger than the graph's own covariance hides from this chapter's detector." />
+  <Reference authors="Xu, W., Cai, Y., He, D., Lin, J. and Zhang, F." year={2022}
+    title="FAST-LIO2: fast direct LiDAR-inertial odometry"
+    venue="IEEE Transactions on Robotics, 38(4), 2053–2073"
+    url="https://doi.org/10.1109/TRO.2022.3141876"
+    note="Where scan-to-map registration goes when an inertial sensor and a real-time budget are added; the front end of this chapter is its simplest relative." />
+</References>

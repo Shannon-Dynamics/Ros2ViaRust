@@ -78,6 +78,9 @@ console.log(`robotics_wasm (wasm-bindgen ${locked}): ${OUT}  →  ${join(PUBLIC,
 const REPO = resolve(CRATE, '..', '..');
 const DATA = [
   ['evidence/phase-4-mapping/2026-10-11-evaluation-4-oblique/integrated-scans.csv', 'ch04-oblique-integrated-scans.csv'],
+  ['evidence/phase-5-slam/v2-synthetic-4-eval-rectangle/scans.csv', 'ch06-rusty-rectangle-scans.csv'],
+  ['evidence/phase-5-slam/2026-10-15-live-2-labels/integrated-scans.csv', 'ch06-webots-live-2-scans.csv'],
+  ['evidence/phase-5-slam/2026-10-15-live-source-live-2/integrated-scans.csv', 'ch06-webots-live-2-recorded-labels-scans.csv'],
 ];
 const DATA_OUT = join(WEB, 'public', 'data');
 mkdirSync(DATA_OUT, { recursive: true });
