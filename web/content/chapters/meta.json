@@ -3,16 +3,16 @@
   "root": true,
   "pages": [
     "index",
-    "---Part 1 · Foundation---",
+    "---Foundation---",
     "ch01-foundation",
-    "---Part 2 · State estimation, sensor models, simulation---",
+    "---State estimation, sensor models, simulation---",
     "ch02-state-estimation",
     "ch03-sensor-models",
-    "---Part 3 · Localization---",
+    "---Localization---",
     "ch05-ekf-localization",
-    "---Part 4 · Mapping---",
+    "---Mapping---",
     "ch04-mapping",
-    "---Part 5 · SLAM---",
+    "---SLAM---",
     "ch06-slam"
   ]
 }

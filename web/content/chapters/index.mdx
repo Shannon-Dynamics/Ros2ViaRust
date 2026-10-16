@@ -6,7 +6,7 @@ description: What a chapter contains, what runs where in the page, and how the n
 *ROS via Rust* teaches robotics by starting from a problem a robot actually has. One robot
 carries the whole book: a **TurtleBot3 Burger**, a differential-drive base with wheel encoders,
 an IMU and a 360° lidar. The repository this book belongs to builds the software that robot
-needs, in Rust, one part at a time. Each chapter picks the problem a part solved, states it
+needs, in Rust, one problem at a time. Each chapter picks a problem the repository has solved, states it
 as a number a run can produce, derives the theory the problem needs and nothing more, and then
 shows the Rust that solves it.
 
@@ -63,20 +63,20 @@ own documentation records a limitation, the chapter says so.
 
 ## What is here, and what is not yet
 
-This book is written incrementally, one chapter at a time. A part gets chapters only after it
-has closed in the repository: its code finished, its numbers measured, its documentation
-written and committed. A published part is listed on the home page with its chapters; a part
-that is finished in the repository but not yet written up here is listed as planned and is not
+This book is written incrementally, one chapter at a time. A topic gets a chapter only after
+its work has closed in the repository: its code finished, its numbers measured, its
+documentation written and committed. The home page lists the published chapters; a topic that
+is finished in the repository but not yet written up here is listed as planned and is not
 linked.
 
 Today six chapters are written:
 
-1. [Foundation: Poses, Odometry and the First Filters](/chapters/ch01-foundation) (Part 1)
-2. [State Estimation: Fusing Wheels and a Gyro](/chapters/ch02-state-estimation) (Part 2)
-3. [Sensor Models and the Simulator](/chapters/ch03-sensor-models) (Part 2)
-4. [Mapping: Occupancy Grids from Known Poses](/chapters/ch04-mapping) (Part 4)
-5. [EKF Localization: Tracking a Known Pose](/chapters/ch05-ekf-localization) (Part 3)
-6. [SLAM: Scan Matching, Pose Graphs and Loops You Can Trust](/chapters/ch06-slam) (Part 5)
+1. [Foundation: Poses, Odometry and the First Filters](/chapters/ch01-foundation)
+2. [State Estimation: Fusing Wheels and a Gyro](/chapters/ch02-state-estimation)
+3. [Sensor Models and the Simulator](/chapters/ch03-sensor-models)
+4. [Mapping: Occupancy Grids from Known Poses](/chapters/ch04-mapping)
+5. [EKF Localization: Tracking a Known Pose](/chapters/ch05-ekf-localization)
+6. [SLAM: Scan Matching, Pose Graphs and Loops You Can Trust](/chapters/ch06-slam)
 
-Part 3 (localization) has one chapter, on the Extended Kalman filter; its Monte Carlo half, though closed in the repository, is not yet written up here. Parts 6 to 9 (planning, control, exploration and the complete autonomy stack) are planned. None of those has a chapter, not even a draft, because a chapter written while its experiments are
+Localization has one chapter, on the Extended Kalman filter; its Monte Carlo half, though closed in the repository, is not yet written up here. Planning, control, exploration and the complete autonomy stack are planned. None of those has a chapter, not even a draft, because a chapter written while its experiments are
 still running would quote numbers that are not final.

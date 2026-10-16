@@ -35,9 +35,9 @@ export default function HomePage() {
       </section>
 
       <section className="mt-20 border-t border-fd-border pt-10">
-        <h2 className="font-display text-2xl font-semibold">Parts 1–5</h2>
+        <h2 className="font-display text-2xl font-semibold">What the chapters cover</h2>
         <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
-          Part 3 is localization and contains Chapter 5 (the EKF half); Part 4 is mapping and contains Chapter 4; Part 5 is SLAM and contains Chapter 6.
+          Five topics are published: localization holds Chapter 5 (the EKF half), mapping holds Chapter 4, SLAM holds Chapter 6.
         </p>
         <ul
           role="list"
@@ -45,9 +45,7 @@ export default function HomePage() {
         >
           {currentParts.map((part) => (
             <li key={part.phase} className="bg-fd-card p-5">
-              <p className="font-mono text-[0.7rem] tracking-widest text-fd-primary uppercase">
-                Part {part.phase} · {part.status}
-              </p>
+              <p className="font-mono text-[0.7rem] tracking-widest text-fd-primary uppercase">{part.status}</p>
               <h3 className="mt-1 font-display text-base font-semibold">{part.title}</h3>
             </li>
           ))}
@@ -57,7 +55,7 @@ export default function HomePage() {
       <section className="mt-16">
         <h2 className="font-display text-2xl font-semibold">Published chapters</h2>
         <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
-          Read Chapters 1 to 6 in the order of the parts: 1, 2, 3, 5 (localization), 4 (mapping), 6 (SLAM).
+          Read Chapters 1 to 6 in sidebar order: 1, 2, 3, then 5 (localization) before 4 (mapping), then 6 (SLAM).
         </p>
         <ul role="list" className="mt-4">
           {CHAPTERS.map((chapter) => (
@@ -77,14 +75,14 @@ export default function HomePage() {
       </section>
 
       <section className="mt-16">
-        <h2 className="font-display text-2xl font-semibold">Later parts</h2>
+        <h2 className="font-display text-2xl font-semibold">Later topics</h2>
         <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
-          Planned parts have no chapter link until their chapters are written.
+          Planned topics have no chapter link until their chapters are written.
         </p>
         <ul role="list" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {laterParts.map((p) => (
             <li key={p.phase} className="rounded-lg border border-dashed border-fd-border p-4 text-fd-muted-foreground">
-              <p className="font-mono text-[0.7rem] tracking-widest uppercase">Part {p.phase} · planned</p>
+              <p className="font-mono text-[0.7rem] tracking-widest uppercase">planned</p>
               <h3 className="mt-1 font-display text-base font-semibold text-fd-foreground/80">{p.title}</h3>
               <p className="mt-1 font-prose text-sm leading-snug">{p.scope}</p>
             </li>

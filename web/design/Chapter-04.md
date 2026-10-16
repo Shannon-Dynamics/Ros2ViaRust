@@ -1,6 +1,6 @@
 # Chapter 4: Mapping: Occupancy Grids from Known Poses (design doc)
 
-Part 4 of the book. Written from the repository's mapping documents (`docs/phase-4-mapping.md` and `docs/phase-4-mapping/{problem,implementation,benchmark}.md`,
+Chapter 4 of the book. Written from the repository's mapping documents (`docs/phase-4-mapping.md` and `docs/phase-4-mapping/{problem,implementation,benchmark}.md`,
 the roadmap's section on Mapping, closed 2026-10-11 with carried-over items), the source of `robotics_mapping::{occupancy, integrate, raycast, layout, entropy, esdf, eval, gate}`
 as committed (`bcdb84f` to `13e0076`), and the evidence under `evidence/phase-4-mapping/2026-10-11-*`. It covers problem **M1 to M4** of the mapping claims (accuracy against the analytic
 room, determinism, the rules of the grid, update cost) with the pose given by the simulator; **M5** (the map built from an estimated pose) is not covered and the chapter says so.

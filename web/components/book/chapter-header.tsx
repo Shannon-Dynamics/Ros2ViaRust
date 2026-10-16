@@ -5,23 +5,23 @@ function Tick() {
 
 /**
  * The metadata rail above the chapter title: a single hairline of provenance (which chapter,
- * which part, how hard, how long) and nothing else. Renders nothing when the frontmatter carries
- * none of it. The book's own word for a roadmap phase is "Part", so `phase` is shown as "Part N".
+ * its topic, how hard, how long) and nothing else. Renders nothing when the frontmatter carries
+ * none of it. Chapters are the book's only numbering: the frontmatter's `phase` number is
+ * structural (check-book.mjs verifies it against book-structure.ts) and is never displayed;
+ * `phaseTitle` is shown as the topic label.
  */
 export function ChapterHeader({
   chapter,
-  phase,
   phaseTitle,
   difficulty,
   readingTime,
 }: {
   chapter?: number;
-  phase?: number;
   phaseTitle?: string;
   difficulty?: string;
   readingTime?: string;
 }) {
-  const hasIdentity = chapter !== undefined || phase !== undefined || Boolean(phaseTitle);
+  const hasIdentity = chapter !== undefined || Boolean(phaseTitle);
   const hasMeasures = Boolean(difficulty) || Boolean(readingTime);
   if (!hasIdentity && !hasMeasures) return null;
 
@@ -33,11 +33,9 @@ export function ChapterHeader({
         </span>
       ) : null}
 
-      {chapter !== undefined && (phase !== undefined || phaseTitle) ? <Tick /> : null}
+      {chapter !== undefined && phaseTitle ? <Tick /> : null}
 
-      {phase !== undefined ? <span className="eyebrow">Part {phase}</span> : null}
-
-      {phaseTitle ? <span className="font-ui text-[0.8125rem] text-fd-muted-foreground">{phaseTitle}</span> : null}
+      {phaseTitle ? <span className="eyebrow">{phaseTitle}</span> : null}
 
       {hasMeasures ? (
         <span className="ms-auto flex items-center gap-x-3">

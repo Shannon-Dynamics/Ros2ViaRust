@@ -217,7 +217,7 @@ from, and says so.
 
 ## Implementation in Rust
 
-The EKF is `robotics_filters::ekf::Ekf`, generic over the manifold; Part 3 adds only the two models and the association. Everything below is `robotics_localization`, which does not know ROS exists. The node (`localization_node`) converts messages and calls it. Every
+The EKF is `robotics_filters::ekf::Ekf`, generic over the manifold; this chapter adds only the two models and the association. Everything below is `robotics_localization`, which does not know ROS exists. The node (`localization_node`) converts messages and calls it. Every
 listing is an excerpt of the file named in its title; the book's build fails if a line is not in that file, in that order.
 
 ### The prediction
@@ -533,9 +533,9 @@ It hardly does: on the 1176-scan grid the median bias in each metre of true rang
   <Reference authors="Macenski, S., Moore, T., Lu, D., Merzlyakov, A. and Ferguson, M." year={2023}
     title="From the desks of ROS maintainers: A survey of modern and capable mobile robotics algorithms in the Robot Operating System 2"
     venue="Robotics and Autonomous Systems 168, 104493" doi="10.1016/j.robot.2023.104493"
-    note="A survey organized by problem by the maintainers of the ROS 2 navigation stack: the context in which a ROS 2 reader will meet the localization methods of Part 3." />
+    note="A survey organized by problem by the maintainers of the ROS 2 navigation stack: the context in which a ROS 2 reader will meet the localization methods of this chapter." />
   <Reference authors="Macenski, S., Martín, F., White, R. and Ginés Clavero, J." year={2020}
     title="The Marathon 2: A navigation system"
     venue="2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), 2718–2725" doi="10.1109/IROS45743.2020.9341207"
-    note="Describes Navigation2, the ROS 2 navigation system whose nav2_amcl the repository's roadmap names as the benchmark reference for Part 3. Cited for that context, not for a result." />
+    note="Describes Navigation2, the ROS 2 navigation system whose nav2_amcl the repository's roadmap names as the benchmark reference for this chapter's localization. Cited for that context, not for a result." />
 </References>

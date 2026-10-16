@@ -1,11 +1,11 @@
 # Chapter 6: SLAM: Scan Matching, Pose Graphs and Loops You Can Trust (design doc)
 
-Part 5 of the book. Written from the repository's SLAM documents (`docs/phase-5-slam.md` and `docs/phase-5-slam/{problem,implementation,benchmark}.md`, the roadmap's section on SLAM, closed 2026-10-15 with
+Chapter 6 of the book. Written from the repository's SLAM documents (`docs/phase-5-slam.md` and `docs/phase-5-slam/{problem,implementation,benchmark}.md`, the roadmap's section on SLAM, closed 2026-10-15 with
 carried-over items), the source of `robotics_slam::{geom, icp, odometry, voxel, factor_graph, pose_graph, kernel, ekf_slam, rbpf}` as committed (`d74410a`, `77ef22a`, `619f812`, `568d42b`, `e3722d0`) and the evidence under
 `evidence/phase-5-slam/`. It covers claims **S1 to S7** of the repository (scan-matching accuracy and its basin, the honesty of the information matrix, the optimizer's tests, trajectory accuracy, loop-closure safety, determinism and cost,
 the two alternative back ends) on the Rusty simulator and on one recorded Webots run; **S8** (a usable map from SLAM) is not claimable and the chapter says so.
 
-> **A note on the number and the order.** Chapter numbers are book-wide and never reused (TOC §3): Chapters 1 to 5 exist, so this is Chapter 6, and the sidebar shows it after Part 4's Chapter 4 as Part 5. No published chapter was touched.
+> **A note on the number and the order.** Chapter numbers are book-wide and never reused (TOC §3): Chapters 1 to 5 exist, so this is Chapter 6, and the sidebar shows it last, after Chapter 4 (mapping), under the SLAM topic label. No published chapter was touched.
 > **A note on how the part closed.** The roadmap closed Phase 5 on 2026-10-15 on the maintainer's delegation of the decision, after the gate of that prompt was *not* met on the labels the first protocol used: claim S5's zero wrong loop constraints
 > holds only when the ground truth of a scan is its pose at the instant the lidar *measured* it, and fails (54 wrong of 164) when it is the pose at its time stamp less 0.06 s. The chapter tells that as part of its story (a section of its own) rather than in a footnote.
 

@@ -73,7 +73,7 @@ Rewrite nothing here without reading the reference component; the shapes are del
 
 | Component | Chrome |
 |---|---|
-| `ChapterHeader` | hairline rail: mono teal `CHAPTER 06`, tick, `PART n` eyebrow, part title; right: difficulty chip, reading time |
+| `ChapterHeader` | hairline rail: mono teal `CHAPTER 06`, tick, topic eyebrow (`phaseTitle`); right: difficulty chip, reading time |
 | `Epigraph` | hanging 1px rule, display italic, `— author  source`; `.pr-epigraph` keeps it at 46ch |
 | `Overview` | `border-y`; prose left, 15rem rail right (numbered goals, mono "assumed" chips) |
 | `KeyIdea` | teal inline-start rule, `bg-fd-primary/5`, teal eyebrow |
@@ -101,7 +101,7 @@ so a utility cannot recolour it; when you need a different colour, write the cla
 ## 5. Landing page and notation page
 
 Same chrome as the reference (eyebrow, display `h1` with a muted second line, serif intro, solid and
-outlined buttons, a hairline-divided tile grid for the parts, a ruled contents list with mono
+outlined buttons, a hairline-divided tile grid for the topics, a ruled contents list with mono
 numbers). The reference's landing page also carries a live Monte Carlo localization canvas; this
 book has none yet and the words are this book's own.
 
@@ -109,7 +109,7 @@ book has none yet and the words are this book's own.
 
 | Difference | Why |
 |---|---|
-| Brand and copy ("ROS via Rust", "Part n" not "Phase n", "Kills the idea that:") | different book; a check forbids the word "phase" in reader-facing text |
+| Brand and copy ("ROS via Rust", "Kills the idea that:"), and chapter-only numbering (the reference shows "Part I · Title"; here the sidebar groups carry plain topic labels and "Chapter N" is the only number) | different book; a check forbids the word "phase" in reader-facing text, and "Part N" was dropped as a second numbering scheme (2026-10-16) |
 | `ColorKey` swatch is a short stroke, truth dashed (the reference: a square) | design/TOC.md §2: ground truth is always dashed |
 | Axis legends, stat-tile labels and tooltip titles are **not** uppercased (`.eyebrow-plain`) | CSS uppercase turns `(m)` into `(M)`, `mrad/s` into `MRAD/S` and σ into Σ — a different quantity. The reference uppercases them. |
 | `ColorKey` has no `aria-label` | `scripts/smoke.mjs` counts `[aria-label] svg` as "the widget drew"; a labelled legend would make every keyed widget pass |

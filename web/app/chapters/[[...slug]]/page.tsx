@@ -7,6 +7,7 @@ import { ChapterNav } from '@/components/book/chapter-nav';
 
 interface ChapterData {
   chapter?: number;
+  /** Structural only (verified by check-book.mjs); never displayed. */
   phase?: number;
   phaseTitle?: string;
   difficulty?: string;
@@ -40,7 +41,6 @@ export default async function Page(props: { params: Promise<{ slug?: string[] }>
       <article id="nd-page" className="prose min-w-0 flex-1">
         <ChapterHeader
           chapter={fm.chapter}
-          phase={fm.phase}
           phaseTitle={fm.phaseTitle}
           difficulty={fm.difficulty}
           readingTime={fm.readingTime}

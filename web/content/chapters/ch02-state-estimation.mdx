@@ -276,7 +276,7 @@ wasteful. Inside, it is consistent. Now see all three.
 
 Three things to take from the dashboard. First, the raw odometry's mean NEES is over 100 against
 an expected 3 at the documented radius error, and moving the slider shows the reason: the repository's raw covariance
-(Part 1's `OdometryNoise`) models neither slip nor a radius mismatch, so it is an honest covariance
+(Chapter 1's `OdometryNoise`) models neither slip nor a radius mismatch, so it is an honest covariance
 for a robot that does not exist. Second, the fused filter is *conservative* on every seed, and the repository
 means it to be: real wheels slip more than a simulator's white noise, so its wheel noise is left wide.
 Third, consistency is a property of the model against the world, not of the algorithm. The fused filter is
@@ -594,7 +594,7 @@ late, and the filter lags it by that much (`docs/STATE_ESTIMATION.md` §6).
 
 A chapter that only shows the wins is half a chapter. The limits recorded in `docs/STATE_ESTIMATION.md`, §6, are these.
 There is no absolute measurement, so position drifts with slip and heading with the random walk of the bias; absolute corrections
-exist in the library (`update_position`, `update_heading`) and are what the localization of Part 3 uses. The filter is planar, with
+exist in the library (`update_position`, `update_heading`) and are what the localization of Chapter 5 uses. The filter is planar, with
 the gyro assumed aligned with the base. A late sample is rejected and not re-ordered, and the node reports
 `DEGRADED` for two seconds after one. And the fused covariance is conservative on purpose, which is
 a choice, not a theorem.

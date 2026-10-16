@@ -4,7 +4,7 @@ import { source } from '@/lib/source';
 
 /**
  * Previous / next links at the foot of a chapter, in the order of the sidebar (meta.json), not of
- * the chapter numbers: Chapter 5 sits before Chapter 4 because Part 3 comes before Part 4.
+ * the chapter numbers: Chapter 5 sits before Chapter 4 because localization comes before mapping.
  *
  * A book is read in order even when it is browsed out of order, so each link carries the
  * neighbour's one-line description and names where the argument goes next.
