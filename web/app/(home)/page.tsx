@@ -37,7 +37,7 @@ export default function HomePage() {
       <section className="mt-20 border-t border-fd-border pt-10">
         <h2 className="font-display text-2xl font-semibold">What the chapters cover</h2>
         <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
-          Five topics are published: localization holds Chapter 5 (the EKF half), mapping holds Chapter 4, SLAM holds Chapter 6.
+          Five topics are published: localization holds Chapter 4 (the EKF half), mapping holds Chapter 5, SLAM holds Chapter 6.
         </p>
         <ul
           role="list"
@@ -55,7 +55,7 @@ export default function HomePage() {
       <section className="mt-16">
         <h2 className="font-display text-2xl font-semibold">Published chapters</h2>
         <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
-          Read Chapters 1 to 6 in sidebar order: 1, 2, 3, then 5 (localization) before 4 (mapping), then 6 (SLAM).
+          Read Chapters 1 to 6 in order: 1, 2, 3, 4 (localization), 5 (mapping), 6 (SLAM).
         </p>
         <ul role="list" className="mt-4">
           {CHAPTERS.map((chapter) => (

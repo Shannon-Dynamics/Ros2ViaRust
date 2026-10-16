@@ -15,7 +15,7 @@ const W = 640;
 const H = 520;
 
 function Inner({ rs }: { rs: Robotics }) {
-  const seed = useSeed('w5.1');
+  const seed = useSeed('w4.1');
   const [radiusPct, setRadiusPct] = useState(0.2);
   const [slipPct, setSlipPct] = useState(2);
   const [correct, setCorrect] = useState(true);
@@ -25,7 +25,7 @@ function Inner({ rs }: { rs: Robotics }) {
   );
   const { sim, table, summary } = useRoute(rs, params);
   const pillars = useMemo(() => readPillars(rs), [rs]);
-  const half = useMemo(() => rs.ch05_room_half(), [rs]);
+  const half = useMemo(() => rs.ch04_room_half(), [rs]);
   const n = table.n;
   const k = n - 1;
 
@@ -120,7 +120,7 @@ function Inner({ rs }: { rs: Robotics }) {
 export function DriftVsCorrection() {
   return (
     <WidgetFrame
-      id="w5.1"
+      id="w4.1"
       title="Drift against correction"
       teaches="a filter that adds a second sensor to the wheels cannot do worse than the wheels alone"
       colorKey={['prediction', 'posterior', 'truth']}

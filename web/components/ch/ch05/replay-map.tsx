@@ -44,25 +44,25 @@ function Inner({ rs, csv }: { rs: Robotics; csv: string }) {
   const [probe, setProbe] = useState<{ i: number; j: number }>({ i: 129, j: 70 });
   const stepRef = useRef(step);
   stepRef.current = step;
-  const live = useRef<InstanceType<Robotics['Ch04Replay']> | null>(null);
+  const live = useRef<InstanceType<Robotics['Ch05Replay']> | null>(null);
 
   const total = useMemo(() => {
-    const r = new rs.Ch04Replay(csv);
+    const r = new rs.Ch05Replay(csv);
     const t = r.total();
     r.free();
     return t;
   }, [rs, csv]);
   const route = useMemo(() => {
-    const r = new rs.Ch04Replay(csv);
+    const r = new rs.Ch05Replay(csv);
     const out = r.route();
     r.free();
     return out;
   }, [rs, csv]);
 
-  const sim = useSimulation<InstanceType<Robotics['Ch04Replay']>>({
+  const sim = useSimulation<InstanceType<Robotics['Ch05Replay']>>({
     init: () => {
       live.current?.free();
-      const r = new rs.Ch04Replay(csv);
+      const r = new rs.Ch05Replay(csv);
       r.set_occupied_probability(HIT_STEPS[stepRef.current].p);
       live.current = r;
       return r;
@@ -97,7 +97,7 @@ function Inner({ rs, csv }: { rs: Robotics; csv: string }) {
   // The history of the probed cell over the whole recording, with the threshold now in force. One replay of 504 scans
   // (about 0.1 s) per change of probe or threshold, never per frame.
   const history = useMemo(() => {
-    const scratch = new rs.Ch04Replay(csv);
+    const scratch = new rs.Ch05Replay(csv);
     scratch.set_occupied_probability(HIT_STEPS[step].p);
     scratch.step(total);
     const h = Array.from(scratch.trace_cell(probe.i, probe.j));
@@ -256,7 +256,7 @@ function Inner({ rs, csv }: { rs: Robotics; csv: string }) {
 export function ReplayMap() {
   return (
     <WidgetFrame
-      id="w4.1"
+      id="w5.1"
       title="A map written one scan at a time"
       teaches="one lidar return is enough evidence to call a cell occupied"
       colorKey={['measurement', 'posterior', 'truth']}

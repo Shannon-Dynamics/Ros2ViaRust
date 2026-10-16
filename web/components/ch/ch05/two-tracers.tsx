@@ -31,7 +31,7 @@ function Inner({ rs }: { rs: Robotics }) {
     return [START + reach * Math.cos(a), START + reach * Math.sin(a)] as const;
   }, [deg]);
   const t = useMemo(() => {
-    const tr = rs.ch04_trace(START, START, end[0], end[1], 1);
+    const tr = rs.ch05_trace(START, START, end[0], end[1], 1);
     const out = {
       b: pairs(tr.bresenham),
       s: pairs(tr.supercover),
@@ -115,7 +115,7 @@ function Inner({ rs }: { rs: Robotics }) {
 export function TwoTracers() {
   return (
     <WidgetFrame
-      id="w4.3"
+      id="w5.3"
       title="Which cells does a beam cross?"
       teaches="every ray-tracing method marks the same free cells along a beam"
       colorKey={['measurement']}

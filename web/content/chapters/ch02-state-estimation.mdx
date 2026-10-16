@@ -594,7 +594,7 @@ late, and the filter lags it by that much (`docs/STATE_ESTIMATION.md` §6).
 
 A chapter that only shows the wins is half a chapter. The limits recorded in `docs/STATE_ESTIMATION.md`, §6, are these.
 There is no absolute measurement, so position drifts with slip and heading with the random walk of the bias; absolute corrections
-exist in the library (`update_position`, `update_heading`) and are what the localization of Chapter 5 uses. The filter is planar, with
+exist in the library (`update_position`, `update_heading`) and are what the localization of Chapter 4 uses. The filter is planar, with
 the gyro assumed aligned with the base. A late sample is rejected and not re-ordered, and the node reports
 `DEGRADED` for two seconds after one. And the fused covariance is conservative on purpose, which is
 a choice, not a theorem.

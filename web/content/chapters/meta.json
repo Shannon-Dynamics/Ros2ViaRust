@@ -9,9 +9,9 @@
     "ch02-state-estimation",
     "ch03-sensor-models",
     "---Localization---",
-    "ch05-ekf-localization",
+    "ch04-ekf-localization",
     "---Mapping---",
-    "ch04-mapping",
+    "ch05-mapping",
     "---SLAM---",
     "ch06-slam"
   ]

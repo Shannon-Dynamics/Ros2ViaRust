@@ -1,7 +1,7 @@
 ---
 title: "Mapping: Occupancy Grids from Known Poses"
 description: "How a robot that knows where it is writes down what its lidar saw: a log-odds occupancy grid, the rays that fill it, how it is judged against the true room, and the half-degree of beam bearing that made the first maps wrong."
-chapter: 4
+chapter: 5
 phase: 4
 phaseTitle: Mapping
 difficulty: Intermediate
@@ -11,9 +11,9 @@ quoteAuthor: H. P. Moravec and A. Elfes
 quoteSource: High Resolution Maps from Wide Angle Sonar (1985), abstract
 ---
 
-import { ReplayMap } from '@/components/ch/ch04/replay-map';
-import { TwoTracers } from '@/components/ch/ch04/two-tracers';
-import { BeamAngle } from '@/components/ch/ch04/beam-angle';
+import { ReplayMap } from '@/components/ch/ch05/replay-map';
+import { TwoTracers } from '@/components/ch/ch05/two-tracers';
+import { BeamAngle } from '@/components/ch/ch05/beam-angle';
 import { Dashboard, StatTile } from '@/components/viz';
 
 <Overview
@@ -399,7 +399,7 @@ And the distance field, with its half-cell:
 
 The widgets do not contain a mapper. The first one holds a recording and a few lines that build the model the robot ran, and then calls the integrator once per scan, which is the sentence the following code is:
 
-```rust title="crates/robotics_wasm/src/ch04.rs"
+```rust title="crates/robotics_wasm/src/ch05.rs"
 fn frozen_params(p_occupied: f64) -> OccupancyParams {
     OccupancyParams::from_probabilities(0.7, 0.4, 0.12, 0.99330715, p_occupied, 0.35)
 }
@@ -510,7 +510,7 @@ The range the mapper expects at the published bearing is $d/\cos(i+\varepsilon)$
 <Exercise level="C" difficulty={1} title="Four hits">
 
 <Predict
-  id="ch04-q-four"
+  id="ch05-q-four"
   question="At the occupied threshold of 0.95, with no free evidence at all, how many hits take an unknown cell to occupied?"
   options={[
     { label: 'One: a hit is a hit', because: 'One hit adds 0.847 to a threshold of 2.944. The robot ran with one hit at first and had 13 % phantom cells.' },
@@ -524,7 +524,7 @@ The range the mapper expects at the published bearing is $d/\cos(i+\varepsilon)$
 <Exercise level="C" difficulty={2} title="Where the phantoms stand">
 
 <Predict
-  id="ch04-q-phantoms"
+  id="ch05-q-phantoms"
   question="Before you lower the first widget to one hit: where do the false cells appear?"
   options={[
     { label: 'Scattered through the middle of the room, where the noise is', because: 'Noise there is crossed by many beams on the way past; a cell that is wrongly marked once is cleared by the next beams that cross it.' },
@@ -538,7 +538,7 @@ The range the mapper expects at the published bearing is $d/\cos(i+\varepsilon)$
 <Exercise level="C" difficulty={2} title="Which side of the wall">
 
 <Predict
-  id="ch04-q-sides"
+  id="ch05-q-sides"
   question="In the beam-angle widget, set the incidence to 60° and look at beams 0 and 359. Which statement is true?"
   options={[
     { label: 'Both put their hit beyond the wall', because: 'The two beams have bearing errors of opposite sign, so their hits are displaced in opposite directions.' },
@@ -551,7 +551,7 @@ The range the mapper expects at the published bearing is $d/\cos(i+\varepsilon)$
 
 <Exercise level="P" difficulty={2} title="A smaller clamp">
 
-In `crates/robotics_wasm/src/ch04.rs`, `frozen_params` builds the model with an upper clamp of probability 0.99330715. Change it to the library's default, 0.97, rebuild, and look at the first widget at four hits. What changes about the pillar cells, and how many misses does it now take to stop calling a saturated cell occupied? Read `OccupancyParams::default` in `crates/robotics_mapping/src/occupancy.rs` to check your answer.
+In `crates/robotics_wasm/src/ch05.rs`, `frozen_params` builds the model with an upper clamp of probability 0.99330715. Change it to the library's default, 0.97, rebuild, and look at the first widget at four hits. What changes about the pillar cells, and how many misses does it now take to stop calling a saturated cell occupied? Read `OccupancyParams::default` in `crates/robotics_mapping/src/occupancy.rs` to check your answer.
 
 <details>
 <summary>Solution</summary>

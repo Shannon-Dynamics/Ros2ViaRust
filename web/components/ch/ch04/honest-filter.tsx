@@ -18,7 +18,7 @@ const ALPHA = 0.05;
 const WINDOW = 0.1;
 
 function Inner({ rs }: { rs: Robotics }) {
-  const seed = useSeed('w5.4');
+  const seed = useSeed('w4.4');
   const [logScale, setLogScale] = useState(0);
   const scale = Math.pow(10, logScale);
   const params = useMemo(
@@ -123,13 +123,13 @@ function Inner({ rs }: { rs: Robotics }) {
 export function HonestFilter() {
   return (
     <WidgetFrame
-      id="w5.4"
+      id="w4.4"
       title="Is the filter honest?"
       teaches="a filter that reports a small covariance is a precise one"
       colorKey={['posterior', 'truth', 'measurement']}
       caption={
         <>
-          The same drive as w5.1, with the lidar&apos;s true noise fixed and the σ the filter <em>assumes</em> for a pillar observation under your hand.
+          The same drive as w4.1, with the lidar&apos;s true noise fixed and the σ the filter <em>assumes</em> for a pillar observation under your hand.
           The window is 20 cm across and follows the filter&apos;s estimate (purple); the purple ellipse is the 3σ region the filter claims, and the dashed gray circle is where the robot
           really is. At the node&apos;s setting the circle sits well inside the ellipse and the mean NEES is under its expected value of 3: the filter is pessimistic, and safe.
           Drag the slider left. The ellipse shrinks to a dot, the circle leaves it, the NEES climbs by orders of magnitude, and, the part that surprises, the filter is

@@ -23,14 +23,14 @@ function median(a: number[]) {
 }
 
 function Inner({ rs }: { rs: Robotics }) {
-  const seed = useSeed('w5.2');
+  const seed = useSeed('w4.2');
   const [pose, setPose] = useState({ x: -0.4, y: 0.6, theta: 0.8 });
   const [sigma, setSigma] = useState(0.015);
   const pillars = useMemo(() => readPillars(rs), [rs]);
-  const half = useMemo(() => rs.ch05_room_half(), [rs]);
-  const defaults = useMemo(() => rs.ch05_detector_defaults(), [rs]);
+  const half = useMemo(() => rs.ch04_room_half(), [rs]);
+  const defaults = useMemo(() => rs.ch04_detector_defaults(), [rs]);
   const scan = useMemo(() => {
-    const s = rs.ch05_scan(pose.x, pose.y, pose.theta, sigma, seed.seed);
+    const s = rs.ch04_scan(pose.x, pose.y, pose.theta, sigma, seed.seed);
     const out = { sensor: s.sensor, ranges: s.ranges, angleMin: s.angle_min, inc: s.angle_increment, detections: s.detections };
     s.free();
     return out;
@@ -145,7 +145,7 @@ function Inner({ rs }: { rs: Robotics }) {
 export function Detector() {
   return (
     <WidgetFrame
-      id="w5.2"
+      id="w4.2"
       title="What the detector reports"
       teaches="the lidar measures where a pillar's centre is, and every cluster it finds is a pillar"
       colorKey={['measurement']}

@@ -19,12 +19,12 @@ const cm = (m: number) => `${(100 * m).toFixed(2)} cm`;
 function Inner({ rs }: { rs: Robotics }) {
   const [distance, setDistance] = useState(1.0);
   const [degrees, setDegrees] = useState(65);
-  const maxDeg = Math.floor((rs.ch04_beam_wall_max_incidence(distance) * 180) / Math.PI) - 1;
+  const maxDeg = Math.floor((rs.ch05_beam_wall_max_incidence(distance) * 180) / Math.PI) - 1;
   const deg = Math.min(degrees, maxDeg);
 
-  const eps = useMemo(() => Array.from(rs.ch04_beam_error_table()), [rs]);
+  const eps = useMemo(() => Array.from(rs.ch05_beam_error_table()), [rs]);
   const wall = useMemo(() => {
-    const w = rs.ch04_beam_wall(distance, (deg * Math.PI) / 180);
+    const w = rs.ch05_beam_wall(distance, (deg * Math.PI) / 180);
     const out = {
       wall: Array.from(w.wall),
       ranges: Array.from(w.ranges),
@@ -42,7 +42,7 @@ function Inner({ rs }: { rs: Robotics }) {
   const curve = useMemo(() => {
     const pts: { x: number; range: number; offset: number }[] = [];
     for (let a = 0; a <= maxDeg; a += 1) {
-      const w = rs.ch04_beam_wall(distance, (a * Math.PI) / 180);
+      const w = rs.ch05_beam_wall(distance, (a * Math.PI) / 180);
       pts.push({ x: a, range: 100 * Math.abs(w.range_error[0]), offset: 100 * Math.abs(w.error_published[0]) });
       w.free();
     }
@@ -194,7 +194,7 @@ function Inner({ rs }: { rs: Robotics }) {
 export function BeamAngle() {
   return (
     <WidgetFrame
-      id="w4.2"
+      id="w5.2"
       title="Half a degree, and a wall at an angle"
       teaches="a calibration error of half a degree in a beam's bearing cannot matter to a map"
       colorKey={['prediction', 'measurement', 'truth']}

@@ -6,8 +6,9 @@
  * behind it: a phase is `published` only when the repository's docs/ROADMAP.md marks it
  * closed, and the navigation never shows more than has been written.
  *
- * Do not renumber chapters or reuse a slug. (One exception, on record: on 2026-10-11 the maintainer decided that Mapping takes
- * the number 4 that the EKF chapter had; design/TOC.md §3 says what happened to that chapter.)
+ * Do not renumber chapters or reuse a slug. (Two exceptions, on record, both the maintainer's decision: on 2026-10-11 Mapping
+ * took the number 4 the EKF chapter had and the EKF chapter was restored as 5; on 2026-10-16 those two numbers were swapped back
+ * so that ascending chapter order matches reading order. design/TOC.md §3 has the details.)
  */
 
 export type PhaseStatus = 'published' | 'planned';
@@ -55,22 +56,22 @@ export const PHASES: Phase[] = [
   {
     phase: 3,
     title: 'Localization',
-    // Closed in docs/ROADMAP.md (2026-10-10). Written as Chapter 5 (EKF localization); it was first written as Chapter 4, archived
-    // when that number went to Mapping (2026-10-11), and restored under the next free number the same day (design/TOC.md §3).
+    // Closed in docs/ROADMAP.md (2026-10-10). Chapter 4 (EKF localization): written as 4, archived and restored as 5 when Mapping took
+    // the number (2026-10-11), swapped back to 4 on 2026-10-16 so the numbers follow reading order (design/TOC.md §3).
     // The Monte Carlo chapter is not written.
     status: 'published',
     scope: 'EKF localization and Monte Carlo localization on the Webots TurtleBot3.',
     sources: 'Ch. 11–12',
-    chapters: [{ n: 5, slug: 'ch05-ekf-localization', title: 'EKF Localization: Tracking a Known Pose' }],
+    chapters: [{ n: 4, slug: 'ch04-ekf-localization', title: 'EKF Localization: Tracking a Known Pose' }],
   },
   {
     phase: 4,
     title: 'Mapping',
-    // Closed in docs/ROADMAP.md (2026-10-11, with carried-over items). Chapter 4 (design/TOC.md §3).
+    // Closed in docs/ROADMAP.md (2026-10-11, with carried-over items). Chapter 5 (written as 4, renumbered 2026-10-16; design/TOC.md §3).
     status: 'published',
     scope: 'Occupancy grids and distance fields from lidar scans at known poses.',
     sources: 'Ch. 13, 19',
-    chapters: [{ n: 4, slug: 'ch04-mapping', title: 'Mapping: Occupancy Grids from Known Poses' }],
+    chapters: [{ n: 5, slug: 'ch05-mapping', title: 'Mapping: Occupancy Grids from Known Poses' }],
   },
   {
     phase: 5,

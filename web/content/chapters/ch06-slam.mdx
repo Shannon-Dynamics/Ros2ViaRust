@@ -26,11 +26,11 @@ import { Dashboard, StatTile } from '@/components/viz';
   ]}
   prerequisites={[
     'Chapter 1 (poses in SE(2), the idea of a belief) and Chapter 3 (the lidar model and the simulator Rusty)',
-    'Chapter 5 helps with covariances and the chi-squared test; Chapter 4 is not needed, because the graph keeps scans and not a grid',
+    'Chapter 4 helps with covariances and the chi-squared test; Chapter 5 is not needed, because the graph keeps scans and not a grid',
   ]}
 >
 
-The TurtleBot3 of the last three chapters was always told something: where the landmarks are (Chapter 5), where it is (Chapter 4). Put it in a room it has never seen and it has neither. It has the 360 ranges of its lidar,
+The TurtleBot3 of the last three chapters was always told something: where the landmarks are (Chapter 4), where it is (Chapter 5). Put it in a room it has never seen and it has neither. It has the 360 ranges of its lidar,
 five times a second, and the wheel odometry, and it must produce both a trajectory and a map from them. Each is an input to the other: the map is only as good as the poses it is written at, and the poses can only be checked against the map.
 
 This chapter builds the part of that loop that finds the trajectory. It is the longest of the book so far, because the part that works (matching one scan to another) is the easy half, and the half that decides whether the result can be trusted is a decision
@@ -65,7 +65,7 @@ Four things make it hard, and the rest of the chapter is about them in turn.
 
 ### What "right" means
 
-SLAM has no single success rate, and the repository does not report one. It reports eight claims, named S1 to S8 so that they cannot be confused with the mapping claims of Chapter 4, each with the kind of evidence it rests on. Their limits were written into a script before the first run.
+SLAM has no single success rate, and the repository does not report one. It reports eight claims, named S1 to S8 so that they cannot be confused with the mapping claims of Chapter 5, each with the kind of evidence it rests on. Their limits were written into a script before the first run.
 
 | claim | what it asks | how it is reported |
 |---|---|---|
@@ -134,7 +134,7 @@ The chi-squared gate of the verifier is 7.775. The exact 95 % point of a chi-squ
 
 Claim S5 counts accepted loop constraints that are *wrong*, and it needs a definition: an accepted constraint is wrong if its measurement differs from the true relative pose of the two scans by more than 0.05 m or 0.03 rad. Which means the true pose of each scan has to be known. In the simulator it is: the pose the scan was taken at. In Webots the ground truth is a 50 Hz track, and the question is *which instant of it* belongs to a scan.
 
-The obvious answer is the instant of the scan's time stamp. Chapter 4 found that this is wrong for the Webots lidar: the stamp lags the instant its beams were measured, by 0.061 s on average and up to 0.164 s, and the measurements lie on a regular 0.2 s lattice that the stamps do not follow. The mapper of Chapter 4 coped by integrating at the pose 0.06 s before the stamp, the mean lag, and by skipping scans taken while the robot turns. A SLAM run cannot skip them: the turns are where the front end is
+The obvious answer is the instant of the scan's time stamp. Chapter 5 found that this is wrong for the Webots lidar: the stamp lags the instant its beams were measured, by 0.061 s on average and up to 0.164 s, and the measurements lie on a regular 0.2 s lattice that the stamps do not follow. The mapper of Chapter 5 coped by integrating at the pose 0.06 s before the stamp, the mean lag, and by skipping scans taken while the robot turns. A SLAM run cannot skip them: the turns are where the front end is
 tested, and the loop closures happen in them. At 0.8 rad/s, being 0.1 s wrong is 0.08 rad wrong, nearly three times the 0.03 rad that S5 allows. So the label of a scan taken in a turn can be wrong by more than the tolerance of the claim it is used to grade.
 
 The repository found this by getting an answer it could not believe. On the first Webots recordings of the rectangle route, S5 failed: 54 accepted constraints out of 147 were wrong on the first recording, 63 of 157 on the second. The verifier's own decisions were the same under any labelling, since the verifier never reads the ground truth. Re-timing the labels of the second recording
@@ -270,7 +270,7 @@ The margin is chosen, not derived. A first version without it refused any altern
 
 ## Implementation in Rust
 
-Everything above is `robotics_slam`, a crate with no ROS in it and no dependency on the occupancy grid of Chapter 4. The residual of one edge, with its exact Jacobians:
+Everything above is `robotics_slam`, a crate with no ROS in it and no dependency on the occupancy grid of Chapter 5. The residual of one edge, with its exact Jacobians:
 
 ```rust title="crates/robotics_slam/src/geom.rs"
 pub fn relative_pose_residual(xi: &Se2, xj: &Se2, z: &Se2) -> RelativePoseResidual {
@@ -507,7 +507,7 @@ Recall is reported and not required: of the loops the detector proposed that wer
 
 ### The two other back ends (S7, informative)
 
-The crate also holds EKF-SLAM, with the robot and the landmarks in one Gaussian, and a grid Rao-Blackwellized particle filter. They were run on the simulated rectangle route with a *declared* synthetic odometry noise (the Webots odometry has none worth speaking of, so a comparison with it would measure nothing), and a systematic yaw error of 0.005 rad per metre. Dead reckoning of that odometry has 122.2 mm of rms error; EKF-SLAM, given the pillar detections of Chapter 5, 12.8 mm, with 27 landmarks for 4 distinct pillars (the detector's false positives
+The crate also holds EKF-SLAM, with the robot and the landmarks in one Gaussian, and a grid Rao-Blackwellized particle filter. They were run on the simulated rectangle route with a *declared* synthetic odometry noise (the Webots odometry has none worth speaking of, so a comparison with it would measure nothing), and a systematic yaw error of 0.005 rad per metre. Dead reckoning of that odometry has 122.2 mm of rms error; EKF-SLAM, given the pillar detections of Chapter 4, 12.8 mm, with 27 landmarks for 4 distinct pillars (the detector's false positives
 create duplicates the filter keeps); the particle filter with 30 particles and no scan-matching proposal, 2.42 m. **No ranking is claimed**: the odometry noise is a setting of the simulator, and who wins is a statement about that setting. The point of having them is the contrast with the graph: neither can revise an old decision.
 
 ### What this does not show

@@ -23,13 +23,13 @@ const TRUTH = { x: 0, y: 0, theta: 0 };
 const triangle = (k: number) => MAX_OFFSET * (1 - Math.abs(1 - (2 * (k % PERIOD)) / PERIOD));
 
 function Inner({ rs }: { rs: Robotics }) {
-  const seed = useSeed('w5.3');
+  const seed = useSeed('w4.3');
   const [offset, setOffset] = useState(0);
   const [dir, setDir] = useState(0);
   const [sigma, setSigma] = useState(0.05);
   const pillars = useMemo(() => readPillars(rs), [rs]);
-  const half = useMemo(() => rs.ch05_room_half(), [rs]);
-  const gate = useMemo(() => rs.ch05_filter_defaults()[5], [rs]);
+  const half = useMemo(() => rs.ch04_room_half(), [rs]);
+  const gate = useMemo(() => rs.ch04_filter_defaults()[5], [rs]);
 
   const sim = useSimulation<{ k: number }>({
     init: () => ({ k: 0 }),
@@ -47,7 +47,7 @@ function Inner({ rs }: { rs: Robotics }) {
   const a = useMemo(() => {
     const dx = offset * Math.cos((dir * Math.PI) / 180);
     const dy = offset * Math.sin((dir * Math.PI) / 180);
-    const r = rs.ch05_associate(TRUTH.x, TRUTH.y, TRUTH.theta, dx, dy, 0, sigma, sigma, 0.99, seed.seed);
+    const r = rs.ch04_associate(TRUTH.x, TRUTH.y, TRUTH.theta, dx, dy, 0, sigma, sigma, 0.99, seed.seed);
     const out = { per: r.per_detection, before: r.before, after: r.after };
     r.free();
     return out;
@@ -169,7 +169,7 @@ function Inner({ rs }: { rs: Robotics }) {
 export function Association() {
   return (
     <WidgetFrame
-      id="w5.3"
+      id="w4.3"
       title="Which pillar is which"
       teaches="the filter knows which pillar each detection is, and keeps correcting itself back onto the map however far off it is"
       colorKey={['truth', 'prior', 'posterior', 'measurement']}

@@ -35,7 +35,7 @@ import { Landmark } from '@/components/ch/ch03/landmark';
 
 Chapter 2 ended with a pose that drifts, and a promise that a second kind of evidence would correct it. The
 evidence is a lidar: 360 distances, ten times a second. A distance means nothing to a probabilistic filter until a
-model says how probable it is, and the whole of localization, from Chapter 5 on, will lean on one function: the probability
+model says how probable it is, and the whole of localization, from Chapter 4 on, will lean on one function: the probability
 of a scan if the robot were at a given pose in a given map.
 
 That function has two ends and this chapter builds both. At one end is a *simulator* that produces scans a reader can
@@ -462,7 +462,7 @@ and this book's check compare it with a central difference of the prediction.
     }
 ```
 
-The model needs the landmark's identity: *which* landmark a detection belongs to is the data-association problem of Chapter 5, and a detection without one is an error here, not a guess.
+The model needs the landmark's identity: *which* landmark a detection belongs to is the data-association problem of Chapter 4, and a detection without one is an error here, not a guess.
 
 ## The algorithm
 
@@ -609,7 +609,7 @@ Build the mask with the four walls as occupied cells, call `DistanceGrid::from_o
   <Reference authors="Dellaert, F., Fox, D., Burgard, W. and Thrun, S." year={1999}
     title="Monte Carlo Localization for Mobile Robots"
     venue="Proceedings of the IEEE International Conference on Robotics and Automation (ICRA), vol. 2, 1322–1328" doi="10.1109/ROBOT.1999.772544"
-    note="The consumer of these models: particle-filter localization, the Monte Carlo half of localization that Chapter 5 points to, and the source of the epigraph." />
+    note="The consumer of these models: particle-filter localization, the Monte Carlo half of localization that Chapter 4 points to, and the source of the epigraph." />
   <Reference authors="Felzenszwalb, P. F. and Huttenlocher, D. P." year={2012}
     title="Distance Transforms of Sampled Functions"
     venue="Theory of Computing 8(19), 415–428" doi="10.4086/toc.2012.v008a019"

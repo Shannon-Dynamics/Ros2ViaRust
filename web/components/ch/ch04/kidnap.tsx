@@ -15,7 +15,7 @@ const W = 640;
 const H = 520;
 
 function Inner({ rs }: { rs: Robotics }) {
-  const seed = useSeed('w5.5');
+  const seed = useSeed('w4.5');
   const [carry, setCarry] = useState(true);
   const [when, setWhen] = useState(120);
   const params = useMemo(
@@ -24,7 +24,7 @@ function Inner({ rs }: { rs: Robotics }) {
   );
   const { sim, table, summary } = useRoute(rs, params);
   const pillars = useMemo(() => readPillars(rs), [rs]);
-  const half = useMemo(() => rs.ch05_room_half(), [rs]);
+  const half = useMemo(() => rs.ch04_room_half(), [rs]);
   const n = table.n;
   const k = n - 1;
   const d = useMemo(
@@ -129,7 +129,7 @@ function Inner({ rs }: { rs: Robotics }) {
 export function Kidnap() {
   return (
     <WidgetFrame
-      id="w5.5"
+      id="w4.5"
       title="Carried away"
       teaches="a filter that notices its observations stop fitting will sort itself out"
       colorKey={['prediction', 'posterior', 'truth']}

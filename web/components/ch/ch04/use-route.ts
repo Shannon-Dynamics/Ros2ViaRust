@@ -1,9 +1,9 @@
 'use client';
 /**
- * Chapter 5's data source: a drive of the 51 m route in Rusty with the localization node's
+ * Chapter 4's data source: a drive of the 51 m route in Rusty with the localization node's
  * EKF running on it, played a few scans per frame.
  *
- * Nothing here estimates anything. `robotics_wasm::ch05::Ch05Session` runs the simulator, the
+ * Nothing here estimates anything. `robotics_wasm::ch04::Ch04Session` runs the simulator, the
  * wheel odometry, the pillar detector and the filter; this file starts it, asks for the next
  * scans and copies its table out of WebAssembly memory.
  */
@@ -55,7 +55,7 @@ export class RouteTable {
 }
 
 interface RouteState {
-  session: InstanceType<Robotics['Ch05Session']>;
+  session: InstanceType<Robotics['Ch04Session']>;
   table: RouteTable;
   summary: Record<string, number>;
   done: boolean;
@@ -63,8 +63,8 @@ interface RouteState {
 
 export function useRoute(rs: Robotics, p: RouteParams) {
   const live = useRef<RouteState['session'] | null>(null);
-  const cols = useMemo(() => Object.fromEntries(rs.Ch05Session.columns().map((n, i) => [n, i])), [rs]);
-  const names = useMemo(() => rs.Ch05Session.summary_names(), [rs]);
+  const cols = useMemo(() => Object.fromEntries(rs.Ch04Session.columns().map((n, i) => [n, i])), [rs]);
+  const names = useMemo(() => rs.Ch04Session.summary_names(), [rs]);
   const params = useRef(p);
   params.current = p;
 
@@ -72,7 +72,7 @@ export function useRoute(rs: Robotics, p: RouteParams) {
     init: (seed) => {
       live.current?.free();
       const q = params.current;
-      const s = new rs.Ch05Session(
+      const s = new rs.Ch04Session(
         seed,
         q.slip,
         q.radius,

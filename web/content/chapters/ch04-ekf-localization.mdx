@@ -1,7 +1,7 @@
 ---
 title: "EKF Localization: Tracking a Known Pose"
 description: How a robot that knows roughly where it is keeps its error bounded by matching lidar clusters to a map of pillars, what the data association and the χ² gate decide, how to tell whether the filter is honest about its error, and why a single Gaussian cannot recover when it is carried away.
-chapter: 5
+chapter: 4
 phase: 3
 phaseTitle: Localization
 difficulty: Intermediate
@@ -11,11 +11,11 @@ quoteAuthor: R. Smith, M. Self and P. Cheeseman
 quoteSource: Estimating Uncertain Spatial Relationships in Robotics (1990), abstract
 ---
 
-import { DriftVsCorrection } from '@/components/ch/ch05/drift-vs-correction';
-import { Detector } from '@/components/ch/ch05/detector';
-import { Association } from '@/components/ch/ch05/association';
-import { HonestFilter } from '@/components/ch/ch05/honest-filter';
-import { Kidnap } from '@/components/ch/ch05/kidnap';
+import { DriftVsCorrection } from '@/components/ch/ch04/drift-vs-correction';
+import { Detector } from '@/components/ch/ch04/detector';
+import { Association } from '@/components/ch/ch04/association';
+import { HonestFilter } from '@/components/ch/ch04/honest-filter';
+import { Kidnap } from '@/components/ch/ch04/kidnap';
 
 <Overview
   goals={[
@@ -66,7 +66,7 @@ A correction is not free: it brings the detector's noise and bias into a pose th
 
 The Webots filter is *better than the odometry by a factor of 1.7* (RMSE ratio 0.589), not by the factor of 40 or more that Rusty's wheels give it, and the reason is in the left column of the first row: the odometry there is already good. The
 recorded growth factors are the honest summary: the filter's error is flat (×1.167), the odometry's is still climbing (×3.130). The repository's own verdict on this run is **PASS** for P1. Its NEES half is
-**not evaluated**: the evaluator's CSV carries only `sigma_xy`, not the full covariance NEES needs. This page can compute NEES in Rusty, because there the covariance is at hand (w5.4), and says so when it does.
+**not evaluated**: the evaluator's CSV carries only `sigma_xy`, not the full covariance NEES needs. This page can compute NEES in Rusty, because there the covariance is at hand (w4.4), and says so when it does.
 
 <Callout type="warn" title="Same Rust, different noise, again">
 
@@ -364,9 +364,9 @@ filter cannot tell a detection of a wall from a detection of a pillar the belief
 
 ### The harness, which is not crate code
 
-The page does not call the node. It calls the node's functions in the node's order, at the node's rates, on a simulated robot. That pipeline, from `ch05.rs` in the WebAssembly crate (a harness, marked as such in its header, and not code the robot runs):
+The page does not call the node. It calls the node's functions in the node's order, at the node's rates, on a simulated robot. That pipeline, from `ch04.rs` in the WebAssembly crate (a harness, marked as such in its header, and not code the robot runs):
 
-```rust title="crates/robotics_wasm/src/ch05.rs"
+```rust title="crates/robotics_wasm/src/ch04.rs"
         if let Some(w) = s.wheel {
             if self.odom.update_from_wheel_angles(w.left_angle, w.right_angle, w.stamp).is_some() {
                 let now = self.odom.pose();
@@ -383,7 +383,7 @@ The page does not call the node. It calls the node's functions in the node's ord
 
 and per scan:
 
-```rust title="crates/robotics_wasm/src/ch05.rs"
+```rust title="crates/robotics_wasm/src/ch04.rs"
         let scan = self.lidar.scan(&self.world, &truth, stamp);
         let detections = detect(&scan, &self.detector);
         let observations: Vec<RangeBearing> = detections.iter().map(|d| d.z).collect();
@@ -449,7 +449,7 @@ With a zero bearing residual $\mathrm{NIS} = \nu_r^2/0.0025$, and the gate is $9
 <Exercise level="C" difficulty={1} title="How far off can the belief be">
 
 <Predict
-  id="ch05-q-capture"
+  id="ch04-q-capture"
   question="In the association widget, leave the belief's σ at 0.05 m and drag the error up from 0. Roughly how far off can it be before the filter accepts nothing?"
   options={[
     { label: 'About 5 cm: the σ it assumes', because: 'The gate is on the innovation, not on the belief alone; the innovation also carries the observation noise Q, which is another 5 cm in each of range and bearing, and a bearing error grows with distance to the pillar.' },
@@ -463,7 +463,7 @@ With a zero bearing residual $\mathrm{NIS} = \nu_r^2/0.0025$, and the gate is $9
 <Exercise level="C" difficulty={2} title="Assuming less noise than there is">
 
 <Predict
-  id="ch05-q-overconfident"
+  id="ch04-q-overconfident"
   question="In the honesty widget, drag the assumed σ down to a tenth of the node's. Is the filter's error larger or smaller than with the node's setting?"
   options={[
     { label: 'Smaller: it trusts the sensor more', because: 'Trusting more helps only if it hears more. A smaller σ makes a smaller gate, and the filter rejects several times as many observations, which are the ones that would have corrected it.' },
@@ -477,7 +477,7 @@ With a zero bearing residual $\mathrm{NIS} = \nu_r^2/0.0025$, and the gate is $9
 <Exercise level="C" difficulty={2} title="Exact wheels">
 
 <Predict
-  id="ch05-q-exact"
+  id="ch04-q-exact"
   question="In the first widget, set the wheel radius error and the slip to 0. Which is closer to the truth, the wheel odometry or the filter?"
   options={[
     { label: 'The filter: it uses more information', because: 'More information helps only if it is better than what it replaces. Here the wheels are exact, and the extra information is a detector that is noisy and biased by about 3 cm.' },

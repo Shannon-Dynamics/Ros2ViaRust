@@ -3,8 +3,9 @@ import { findNeighbour } from 'fumadocs-core/page-tree';
 import { source } from '@/lib/source';
 
 /**
- * Previous / next links at the foot of a chapter, in the order of the sidebar (meta.json), not of
- * the chapter numbers: Chapter 5 sits before Chapter 4 because localization comes before mapping.
+ * Previous / next links at the foot of a chapter, in the order of the sidebar (meta.json). That order
+ * and the chapter numbers agree (1 to 6, since the 2026-10-16 renumbering), but the sidebar is the
+ * source: if they ever disagree again, the links follow the reader, not the numbers.
  *
  * A book is read in order even when it is browsed out of order, so each link carries the
  * neighbour's one-line description and names where the argument goes next.

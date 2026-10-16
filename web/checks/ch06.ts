@@ -222,7 +222,7 @@ export const ch06Checks: ChapterChecks = (rs) => {
   else {
     const lag = skew.split('stamp_lag_turning_phases:')[1] ?? '';
     const gl = (k: string) => Number(lag.match(new RegExp(`^\\s+${k}: ([-\\d.]+)`, 'm'))?.[1]);
-    out.push(check('ch6: evidence, the stamp lags the measurement by 0.061 s on average and by up to 0.164 s (Chapter 4\'s measurement, over 53 turning scans)', gl('mean').toFixed(3) === '0.061' && gl('max').toFixed(3) === '0.164' && gl('scans') === 53));
+    out.push(check('ch6: evidence, the stamp lags the measurement by 0.061 s on average and by up to 0.164 s (Chapter 5\'s measurement, over 53 turning scans)', gl('mean').toFixed(3) === '0.061' && gl('max').toFixed(3) === '0.164' && gl('scans') === 53));
   }
   // the two text blocks of the chapter's worked examples are what the module prints
   const chapterText = read(WEB, 'content/chapters/ch06-slam.mdx') ?? '';

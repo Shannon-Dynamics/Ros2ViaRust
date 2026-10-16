@@ -1,110 +1,152 @@
-# Chapter 4: Mapping: Occupancy Grids from Known Poses (design doc)
+# Chapter 4: EKF Localization: Tracking a Known Pose (design doc)
 
-Chapter 4 of the book. Written from the repository's mapping documents (`docs/phase-4-mapping.md` and `docs/phase-4-mapping/{problem,implementation,benchmark}.md`,
-the roadmap's section on Mapping, closed 2026-10-11 with carried-over items), the source of `robotics_mapping::{occupancy, integrate, raycast, layout, entropy, esdf, eval, gate}`
-as committed (`bcdb84f` to `13e0076`), and the evidence under `evidence/phase-4-mapping/2026-10-11-*`. It covers problem **M1 to M4** of the mapping claims (accuracy against the analytic
-room, determinism, the rules of the grid, update cost) with the pose given by the simulator; **M5** (the map built from an estimated pose) is not covered and the chapter says so.
-
-> **A note on the number.** This chapter took the number 4 on the maintainer's explicit decision of 2026-10-11 ("overwrite Chapter 4"), replacing the chapter on EKF localization that held it.
-> That chapter was copied, with its wasm bindings, checks, widgets and the TOC it was built against, to `../archive-ch04-ekf-localization-2026-10-11/` (outside the repository; `web/` is untracked, so that copy is the
-> only record). The localization part of the book is *planned* again (TOC §3) and will take the next free numbers when it is written. Chapters 1 to 3 are untouched.
+Implements the EKF half of Phase 3 of `docs/ROADMAP.md` (marked ✅, closed 2026-10-10). Written from
+`docs/phase-3-localization/{problem,theory,implementation,benchmark}.md`, `docs/ROADMAP.md` (Phase 3 section), the
+source of `robotics_localization::{map, pillars, ekf}` as it stands in the repository, and the verdict files
+under `evidence/phase-3-correctness/`. It covers problem P1 (position tracking) and the *structural* half of P2b (why one Gaussian
+cannot recover from a kidnapping). **Everything about particles, global localization from a uniform prior and the measured recovery
+of the Monte Carlo filter belongs to the Monte Carlo chapter, which is not written, and is not written here.**
 
 ## 1. Purpose and story arc
 
-**The problem.** The TurtleBot3 of Part 3 knew where it was and nothing about the room except four points. A planner needs more: which places are free, which are occupied, and which have never been looked at.
-The measurable form (claim M1 of the repository, seven checks whose limits were written before the first run): *a grid whose occupied cells lie within one 5 cm cell of the true surfaces
-(95th percentile of the surface error at most 1 cell, maximum at most 1.5), with at most 2 % false-occupied cells, completeness at least 0.95, at most 5 % false-free samples, coverage at least 0.9 and an observable fraction of at least 0.5*, given the robot's true
-pose at every scan. The chapter says plainly that this shows the *mapper* is implemented correctly: with the pose given, the only errors left are lidar noise and discretization.
+**The problem.** Chapters 1 and 2 ended with a pose that drifts: dead reckoning has no second opinion, so its error grows with the
+distance driven, forever. Phase 3 gives the TurtleBot3 a second opinion, the lidar against a map of four pillars, and a question that
+has to be answered with numbers: *does the error stay bounded while the robot drives, instead of growing with distance, and does the
+filter know how wrong it is?* (P1 of `problem.md` §3: "bounded over distance, and strictly better than the drift of `/odom` on the same
+run", plus NEES inside its 95 % band.) The measured answer in Webots, on the 51.540 m route of `route_long.yaml`
+(`2026-10-10T144153-final-global-reset/normal-verdict.yaml`): the EKF's position RMSE is 0.008945 m against the odometry's 0.015186 m (ratio 0.589),
+its error grows by a factor of 1.167 from the first quarter of the run to the last where the odometry's grows by 3.130, and the verdict is PASS. The NEES half of P1 is
+**not evaluated** in Webots, because the evaluator's CSV carries only `sigma_xy`; the chapter says so.
 
-**Arc.** *Problem → what we try first and why it fails → the idea → the Rust → the number again.* A scan is not a map (three reasons: it is in the sensor's frame, a beam says two things of unequal strength, evidence has to accumulate)
-and the first attempt, "mark where each beam ended", already fails on the first claim: it cannot tell *free* from *unknown* (w4.1 shows the map being written from real scans). The idea is the log-odds update, an addition, with a clamp
-so a cell can change its mind; four hits, not one, take a cell to occupied (the widget's foregrounded parameter, and the first thing the real runs changed). Which cells a beam crosses is a second decision (w4.3). Then comes the part of the story that makes this chapter
-a chapter of *Probabilistic Robotics* and not a recipe: **the first runs failed**, for reasons that were not in the algorithm: a lidar stamp that lags its measurement, and then, on the held-out routes, an error that appeared on some routes and not on others and turned out, after a
-root-cause investigation that falsified both of its leads, to be a mismatch between the bearings the Webots driver *publishes* for the lidar and the ones Webots *measures* at (pixel centres against N−1 intervals): half a degree at the ends of the scan, invisible at normal incidence, 6.8 cm of range at a wall seen at 70° (w4.2).
-The fix was a correction in the mapper's input, verified by replaying recorded scans (not by new simulator runs). The chapter ends with the number again, measured honestly: all seven checks pass on four runs, M2 holds byte for byte, M4 costs about a millisecond a scan, and **what that does not show**.
+**Arc.** *Problem → what we try first and why it fails → the idea → the Rust → the number again.* The problem is drift (w4.1), and
+w4.1 is also where the first honest surprise lives: the Webots odometry drifts by *centimetres* because upstream calibrated it against this
+world's slip (`theory.md` §6), while Rusty's is uncalibrated and drifts by tenths of a metre; and when the wheels are made exact the filter is the
+one that is off, because a correction is not free. The measurement is next: a lidar gives 360 distances and no labels, so a *detector* turns clusters
+of beams into range and bearing to a pillar's centre (w4.2), and the detector is wrong in two ways the chapter measures (it overshoots the centre by about
+3 cm, and it reports clusters on walls that are not pillars). A detection has no name, so the filter must decide which pillar it is: *maximum-likelihood
+association*, with a χ² gate that rejects what no pillar explains (w4.3), and the gate's reach is set by the belief's own uncertainty, not by the room. The
+update is then the Kalman correction on SE(2) with the landmark Jacobian of Chapter 3. Whether the filter is *honest* about its error is measured with NEES and
+NIS (w4.4), and the surprise is that overconfidence is not only a reporting error: it shrinks the gate, which throws away the observations that would have corrected it. The chapter
+ends where the Monte Carlo chapter would begin (w4.5): carry the robot away and the single Gaussian cannot represent "I am somewhere else"; the filter does notice (it rejects most of what it sees) but nothing in
+its update can *use* a rejected observation, so it stays wrong. In Webots the EKF recovered 0 of 20 kidnaps (Wilson 95 % interval 0.0000 to 0.1611, one fixed geometry).
 
-**Epigraph.** "The final map shows regions probably occupied, probably unoccupied, and unknown areas." H. P. Moravec and A. Elfes, *High Resolution Maps from Wide Angle Sonar* (1985), abstract
-(quoted from the CMU copy, https://frc.ri.cmu.edu/~hpm/project.archive/robot.papers/1985/al2.html; the paper is in the proceedings of the 1985 IEEE International Conference on Robotics and Automation, pp. 116–121, per https://www.ri.cmu.edu/publications/high-resolution-maps-from-wide-angle-sonar).
+**Epigraph** (verified verbatim, read in the abstract on arXiv, `https://arxiv.org/abs/1304.3111`): *"The estimates are probabilistic in nature, an advance over the previous, very conservative, worst-case approaches to the problem."* — R. Smith, M. Self and P. Cheeseman,
+*Estimating Uncertain Spatial Relationships in Robotics* (abstract of the paper reprinted in *Autonomous Robot Vehicles*, 1990).
 
 ## 2. Prerequisites and position
 
-* **Needs:** Chapter 1 (poses, `Se2`, the idea of a belief), Chapter 3 (the lidar model, ray casting, what a range reading means, the simulator Rusty). It does *not* need the localization part: the pose is handed to the mapper.
-* **Introduces:** `OccupancyGrid`, `OccupancyParams`, `ScanIntegrator`, the two traversals `Bresenham` and `Supercover`, `BeamLayout`, `grid_entropy`, `signed_esdf` (a section, no widget) and the map-accuracy evaluator `eval` (its metrics, in the benchmark section).
-* **Reuses:** `robotics_core::{Se2, LaserScan}`, `robotics_sim::World::raycast` (the beam-angle experiment), the color code (map belief is the *posterior*, a scan's returns the *measurement*).
-* **Derived from:** the four mapping documents named above and `docs/SOURCE_MAPPING.md` (*Probabilistic Robotics* Ch. 9, Table 9.1 and Eq. 9.7).
-* **Does not cover (and says so):** mapping with an estimated pose (M5, undecided in the repository); the rclpy and `nav2_costmap_2d` references (pending); 2-D TSDF and quadtrees (a later part); the ROS nodes beyond naming them; a more complex world; a real robot.
+Chapter 1 (SE(2), `⊞`/`⊟`, the Kalman filter on a hallway), Chapter 2 (the error-state idea, NEES/NIS and their χ² bands, drift; this chapter reuses
+`ch02_ellipse` and `ch02_chi2_mean_band` of its module) and Chapter 3 (the range–bearing landmark model, its Jacobian and the bearing seam, the lidar simulator).
+No ROS.
+
+**Introduces:** `robotics_localization::{MapFile, PillarDetector, detect, EkfLocalizer, OdometryMotion, LocalizerConfig, UpdateReport}`.
+**Reuses:** `Se2`, `Manifold`, `Ekf` (the generic filter, Joseph form), `LandmarkModel`, `consistency::nees`, `robotics_sim::{World, Lidar, RustySim}`,
+`robotics_models::WheelOdometry`.
+
+**Derived from:** `docs/phase-3-localization/problem.md` §§1–4, `theory.md` §§1–2 and 6, `implementation.md` §§1–5, `benchmark.md` §6 and the
+EKF files of `evidence/phase-3-correctness/`. `docs/SOURCE_MAPPING.md` row 11 (EKF localization, ML association, χ² gates) still says *planned*; it is a
+repository document outside `web/` and this chapter does not change it.
+
+**Does not cover (and says so):** particle filters, global localization, the kidnap recovery that works, and every number about them (the Monte Carlo chapter, not written);
+multi-hypothesis tracking (named, not built: `SOURCE_MAPPING.md` row 11 lists it); the ROS node's plumbing and TF (`ros-graph.md`: the node owns `map → odom`,
+and that is mentioned, not taught); the benchmark against `nav2_amcl` (`benchmarks/phase-3-localization.csv` is header-only).
 
 ## 3. Foundation
 
-Statement first, as in the chapter.
+1. **The problem, as a belief.** `bel(x_t) = p(x_t | z_{1:t}, u_{1:t}, m)` with the map `m` of four pillar centres (`landmarks.yaml`). P1: `bel(x_0) = N(x_0, Σ_0)` with small `Σ_0`
+   (σ = 0.05 m and 0.05 rad in the node) and the question is whether the error stays bounded.
+2. **The filter's state and its prediction.** The state is a pose on SE(2); the control is the *relative* motion of the odometry between two samples, `u = x̂_{k−1}⁻¹ x̂_k` (`EkfLocalizer::relative_motion`),
+   composed on the right: `x_k = x_{k−1} ∘ u`. With a right (body-frame) perturbation the error-state Jacobian of that composition is `Ad(u⁻¹)` (`OdometryMotion::jacobian`:
+   `u.inverse().adjoint()`), so `P_k = Ad(u⁻¹) P_{k−1} Ad(u⁻¹)ᵀ + R(u)`. The noise `R` is the odometry motion model of Thrun's chapter 5 in the body frame: along-track variance
+   `α₃ d² + α₄ θ² + σ²_min`, lateral variance a fraction (0.1) of it plus the floor, heading variance `α₁ θ² + α₂ d² + σ²_min`, with `α = (0.05, 0.02, 0.05, 0.02)`, `σ_min = 10⁻³`. **Worked number** (the crate's own test, `prediction_alone_keeps_the_mean_and_grows_the_covariance`: a 0.5 m step moves the mean to `x = 0.5` exactly and increases `P_xx`).
+   **A derivation** (`<Derivation>`): why the adjoint appears, in four steps.
+3. **The measurement.** For the laser mounted at `T_base_laser = (−0.03, 0, 0)` and a pillar centre `p_j`, `h(x, p_j) = (r, φ)`, `r = ‖p_j^{sensor}‖`, `φ = atan2(p_{j,y}^{sensor}, p_{j,x}^{sensor})` with
+   `p^{sensor} = (x ∘ T_base_laser)⁻¹ p_j`: Chapter 3's landmark model, reused (`LandmarkModel`, its Jacobian `H` for a right perturbation, the wrapped residual). Noise `Q = diag(σ_r², σ_φ²)`,
+   node default `σ_r = σ_φ = 0.05`.
+4. **The correction.** `S = H P Hᵀ + Q`, `K = P Hᵀ S⁻¹`, `x ← x ⊞ K ν`, `P ← (I − K H) P (I − K H)ᵀ + K Q Kᵀ` (Joseph form: `Ekf::correct`), with `ν = z ⊟ h` and the bearing wrapped.
+5. **Data association by maximum likelihood, with a gate.** The detector's clusters have no names. For each observation `z` the filter evaluates, for every landmark `j`, `ν_j`, `S_j` and
+   `NIS_j = ν_jᵀ S_j⁻¹ ν_j`, keeps the smallest, and accepts the observation only if `NIS ≤ γ`, where `γ = χ²₂(0.99) = −2 ln 0.01 = 9.2103` (closed form for two degrees of freedom; checked). An
+   observation that no pillar explains inside the gate is dropped and counted in `rejected` (Thrun, table 7.2 with unknown correspondences). The gate depends on `S`, which depends on `P`: a belief that claims
+   to be certain has a small gate. That is the mechanism of w4.3 and of w4.4's surprise.
+6. **What the detector gives the filter.** A scan is split into clusters of consecutive beams with no range jump above 0.12 m (the scan is circular); clusters under 2 beams or with a chord over 0.6 m (walls) are
+   dropped; each remaining cluster is reported as the centroid of its points pushed out along its bearing by the pillar radius, 0.15 m. **Measured, not stated in the repository** (`ch04.rs`, `native_table…` and
+   `the_detector_on_a_grid_of_poses_without_noise`; `checks/ch04.ts`): on a grid of 1176 scans without noise the detector reports 2823 pillar centres and 225 clusters that are not pillars; the reported
+   *range* is too long every time, by 2.5–3.0 cm in the median and 5.3 cm at most, because the centroid of the visible arc lies behind the near surface so adding the full radius overshoots the centre. With the lidar's
+   1.5 cm of noise the clusters that are not pillars rise to 1087 on this module's draw (short runs of a wall seen at a grazing angle). Neither is a defect of the filter: the 5 cm assumed σ covers the first, and
+   the gate is the answer to the second.
+7. **Consistency.** `NEES = eᵀ P⁻¹ e` with `e = x_true ⊟ x̂` (three degrees of freedom) and `NIS` (two); their means should be 3 and 2 and the running mean has a two-sided χ² band that shrinks with the number of samples
+   (`ch02_chi2_mean_band`; successive filter outputs are correlated, so the band is indicative, as `ConsistencyStats::report` says).
+8. **The limit.** The belief is one Gaussian. After a carry, `P` is small, every `NIS_j` exceeds `γ`, every observation is dropped, the mean stays where odometry takes it, and `P` grows slowly and never admits the truth.
+   That is a statement about the representation (`ekf.rs` says so at its head and tests it: `a_teleported_robot_is_not_recovered_by_a_single_gaussian`), not a tuning failure.
 
-1. **The belief.** `bel(m) = p(m | z_1:t, x_1:t) ≈ ∏_i p(m_i | z_1:t, x_1:t)`: one Bernoulli per cell. The product is an assumption (two cells of one wall are not independent) and it is what makes the update one addition.
-2. **Log-odds.** `l = ln(p/(1−p))`; Bayes' rule in odds form turns the recursive update into `l_t = l_{t−1} + l_inv − l_0` with prior `l_0 = 0` (probability one half): the update is a constant added to a number. *(Derivation, collapsed.)*
-3. **The inverse sensor model, hand-crafted.** A beam that ends in a cell adds `l_occ = ln(7/3) = 0.847`; every cell it crosses first adds `l_free = ln(2/3) = −0.405`; nothing is said of cells behind the end (that is what *unknown* means).
-   Values: the module's `model()` (asserted: `ln(0.7/0.3)`, `ln(0.4/0.6)`, lower clamp `ln(0.12/0.88)`, upper clamp 5.0, occupied threshold `ln 19`, free threshold `ln(0.35/0.65)`).
-4. **One update per cell per scan.** The scan's cells are collected first (occupied wins over free), then each cell is updated once; the result does not depend on beam order, bit for bit.
-5. **Thresholds and hits.** Three hits give 2.542, four give 3.389, against an occupied threshold of 2.944: four hits (asserted from `model()`). The upper clamp 5.0 means a saturated cell takes 6 misses to stop being occupied and 14 to be called free; the library's default clamp (probability 0.97) took 2 and 11.
-   **Worked example 1** (pinned by `checks/ch04.ts`). *The cost of the clamp is slower forgetting*; the room is static, so it cannot be priced here (said in the text).
-6. **No-return beams** clear free space up to `range_max` less 0.10 m (the margin and why).
-7. **Entropy:** `H(l)` per cell in bits; an unobserved cell is one bit; never a quality measure alone (a confidently wrong map has low entropy). **Worked example 2:** an empty 140 × 140 grid has 19 600 bits; after the oblique run 12 131, with 15 098 cells decided (asserted).
-8. **The bearing error.** Webots places column `j` of `N` at `fov/2 − (j + ½) fov/N`; the driver publishes `fov/2 − j fov/(N−1)`. The error `ε_j = j (fov/(N−1) − fov/N) − fov/(2N)`: −8.727 mrad at beam 0, −0.024 at beam 179, +8.727 at beam 359 (asserted for all 360 beams).
-   Two consequences, derived in a `<Derivation>`: the *range residual* of a beam at a wall is `r tan(i) ε` and the *distance of the mapped hit from the face* is `r sin(i) ε`. **Worked example 3:** a wall 1.0 m away at 70° incidence: beam 0 reads 2.855 m, its range is off by 6.84 cm, its hit lands 2.34 cm from the face (asserted).
-9. **The ESDF:** signed, positive in free space, zero level at the cell faces, `d − r/2` outside and `−(d − r/2)` inside, unknown counted as free; a short section with the listing, no widget and no number.
-10. **How the map is judged** (M1's metrics; the incidence limit of 60° and the closed-cell completeness lookup are *decisions*, stated as such).
+**Worked examples and the numbers each chapter claim rests on** (every one is asserted; the table is the index into `checks/ch04.ts` and the native tests in `crates/robotics_wasm/src/ch04.rs`):
+
+| Claim | Value | Asserted by |
+|---|---|---|
+| the map and the route are the repository's files | 4 pillars, 21 waypoints, spawn pose `(0, 0, 0)`, room ±3.0 m | `checks/ch04.ts` against `landmarks.yaml` and `route_long.yaml` |
+| the gate | `γ = −2 ln 0.01 = 9.21034` | `ch04_filter_defaults`, closed form |
+| the detector on 1176 noise-free scans | 2823 pillars, 225 other clusters; range bias 2.5–3.0 cm (median), ≤ 5.3 cm; centre error ≤ 5.1 cm | native test and `checks/ch04.ts` (no random stream: same on both targets) |
+| Rusty, eight seeds (module draw) | odometry RMSE 0.3762–0.4895 m, filter RMSE 0.0076–0.0080 m, filter max ≤ 0.0167 m, mean NEES 0.5–0.65, truth inside the 3σ ellipse at every scan | `checks/ch04.ts` (the native draw differs, pinned in `cargo test`) |
+| exact wheels | odometry RMSE < 1 mm, filter > 5 mm and > 5× the odometry's | both |
+| a tenth of the assumed σ | NEES > 20, truth inside the ellipse < 5 % of scans, RMSE > 2× the honest filter's | both |
+| the carry | error < 5 cm before, > 3 m in every scan after, rejects > 5× what it accepts | both |
+| Webots | the values of `normal-verdict.yaml`, `kidnap-verdict-ekf.yaml`, `kidnap-trials-summary.yaml` quoted in §1 | `checks/ch04.ts` reads the files under `evidence/` |
 
 ## 4. Conceptual
 
-In the order the reader meets them. The chapter opens with a measurable problem and *immediately* shows the answer running (w4.1 sits in "The problem"); the other two come where the reader needs them.
-
-1. **w4.1, "A map written one scan at a time"** (in *The problem*). The oblique evaluation route's 504 recorded Webots scans, replayed in order through the repository's mapper (compiled to wasm32), with the true pose. Autoplays (about 6 s). Foregrounded: the number of hits that calls a cell occupied.
-   Kills "one lidar return is enough evidence to call a cell occupied": at one hit, 29 of 986 occupied cells are farther than a cell from every true surface (2.94 %, over the 2 % limit); at four there is one. Click-to-probe shows a cell's log-odds history against the thresholds and the clamp.
-2. **w4.3, "Which cells does a beam cross?"** (in *Building intuition*, where free cells are first written). Both traversals of `robotics_mapping::raycast`, one beam, a draggable angle. Kills "every ray-tracing method marks the same free cells".
-   **Decision: does a third widget earn its place? Yes**, for three reasons, and the reasons are the bar for any later such widget: (a) the project's frozen choice (Bresenham, with the supercover as the measured alternative) rests on it, and a reader who does not see the two disagree cannot follow why the choice was a decision;
-   (b) the difference is a property of the beam's *angle*, which is exactly what a drag shows and a figure does not; (c) it is cheap and entirely crate code. What it does not claim: that the traversal matters much *here*. At the frozen clamp of 5.0 either traversal passes all seven checks on all four routes the project swept; below 5.0 the wall-lobes route fails a check with either (asserted from `30-stageC_clamp_sweep_new_evaluator.txt`).
-3. **w4.2, "Half a degree, and a wall at an angle"** (in the beam-angle section: the root-cause story, first-class). A wall, a draggable incidence; the module reads the same 360 true-bearing ranges with the published bearings and with the pixel-centre ones; a zoomed panel in 5 cm cells; a curve of beam 0's error against the wall's incidence.
-   Foregrounded: the incidence. Kills "a calibration error of half a degree cannot matter to a map". Honest limits stated in the caption: this table is the part the correction removes; the real sensor has about twice as much at its two ends, unexplained.
+* **w4.1, drift against correction.** The 51 m route in Rusty with the wheel odometry (orange), the filter (purple) and the truth (dashed gray); error against distance on a log axis; sliders for the wheel radius error and the
+  slip; a switch for the correction. Kills "a filter that adds a second sensor to the wheels cannot do worse than the wheels alone" (with exact wheels it does).
+* **w4.2, what the detector reports.** One scan from a pose you drag, the beams' end points, the detections as rings with a dotted line to the true centre, the clusters that are not pillars as crosses; noise and heading. Kills "the lidar measures where
+  a pillar's centre is, and every cluster it finds is a pillar".
+* **w4.3, which pillar is which.** The robot is at the origin; the belief is wrong by an amount that sweeps 0 → 1.5 m → 0 until you take a slider; each detection is drawn where the filter, believing its pose, would put it, with the line to the pillar the gate
+  allows, or a cross if it throws it away; the belief's own σ is a slider. Kills "the filter knows which pillar each detection is, and keeps correcting itself back onto the map however far off it is".
+* **w4.4, is the filter honest?** A zoomed window of the filter's 3σ ellipse and the truth, the running mean NEES against its band on a log axis, and a slider for the σ the filter assumes. Kills "a filter that reports a small covariance is a precise one".
+* **w4.5, carried away.** The Webots kidnap (−1.5, −1.5, 2.0) at a time you choose, or never; error against time; accepted and rejected observations since the carry. Kills "a filter that notices its observations stop fitting will sort itself out".
 
 ## 5. Practical
 
-Listings (each a literal excerpt, asserted by `check:book`; none of the lines printed contains the word that the book never says):
+Excerpts printed (every non-blank line is checked to occur, in order, in the named file; paths as written):
 
-* `crates/robotics_mapping/src/occupancy.rs`: `OccupancyParams`, `logit`, `OccupancyGrid::add_at` (the clamp), `classify`.
-* `crates/robotics_mapping/src/integrate.rs`: the beam loop and the one-update-per-cell pass of `ScanIntegrator::integrate`.
-* `crates/robotics_mapping/src/raycast.rs`: `Bresenham::next`.
-* `crates/robotics_mapping/src/layout.rs`: the `PixelCentres` branch of `BeamLayout::apply`.
-* `crates/robotics_mapping/src/esdf.rs`: the sign and the half-cell in `signed_esdf`.
-* `crates/robotics_wasm/src/ch04.rs`: `frozen_params` and `Ch04Replay::integrate_into` (the page runs the node's code path, in order).
-* A worked example with its expected output (a `text` block of the four hit counts, asserted).
-
-**Findings from compiling the algorithm crates (TOC §5).** `robotics_mapping` compiles to `wasm32-unknown-unknown` **with no source change** to it or to any crate it depends on. Its dependency on `robotics_core` brings in `rand`, so a standalone
-`cargo check --target wasm32-unknown-unknown -p robotics_mapping` stops at `getrandom`'s "enable the `wasm_js` feature" like every other crate; inside `robotics_wasm` the already-selected backend resolves it. There is no blocker and no hand-ported TypeScript.
-**Unlike Chapters 2 and 3 there is no seeded stream in this chapter's module**, so the native-versus-wasm32 `SmallRng` divergence of TOC §5 does not touch it; the proof is not an argument but a check: the module (wasm32) replaying the recorded scans four at a time writes **exactly** the `final-grid.txt` the node saved, byte for byte (169 953 characters), and the native `cargo test` says the same.
-**Data on the page.** The recording is not compiled into the module (1.5 MB); `npm run wasm` copies `integrated-scans.csv` of the oblique evaluation run to `public/data/` and the page fetches it; `checks/ch04.ts` asserts the copy equals the evidence file.
-The bindings are in the book's single module (`crates/robotics_wasm/src/ch04.rs`, output `lib/wasm/pkg/`), not in a separate `lib/wasm/mapping/` bundle: a second module would double the `.wasm` the reader downloads and break the one loader of TOC §4.
+* `crates/robotics_localization/src/ekf.rs`: `OdometryMotion::{propagate, process_noise}` and the process Jacobian (`u.inverse().adjoint()`); `EkfLocalizer::observe` (association, gate, correction).
+* `crates/robotics_localization/src/pillars.rs`: the last half of `detect` (the chord rule and the centroid with the radius pushed out).
+* `crates/robotics_localization/src/map.rs`: `MapFile::landmark_map` (the file becomes the model's map).
+* `crates/robotics_wasm/src/ch04.rs`: the *pipeline* of `Ch04Session::physics_step` and `scan_update`, to show that the page runs the node's calls in the node's order (marked as the harness, not as crate code).
+* A worked example with expected output as a `text` block: the association table of w4.3's default scene, every number asserted in `checks/ch04.ts`.
 
 ## 6. Widget manifest
 
 | Id | Component | Rust called (`robotics_wasm`) | Foregrounded parameter | Kills the misconception that |
 |---|---|---|---|---|
-| w4.1 | `ReplayMap` | `Ch04Replay::{new, step, set_occupied_probability, states, counts, entropy, phantom_cells, last_pose, last_points, route, trace_cell, model, geometry, hits_to_occupy}` | hits needed to call a cell occupied (1 to 6) | one lidar return is enough evidence to call a cell occupied |
-| w4.2 | `BeamAngle` | `ch04_beam_wall`, `ch04_beam_wall_max_incidence`, `ch04_beam_error_table` | incidence of the straight-behind beam on the wall | a calibration error of half a degree in a beam's bearing cannot matter to a map |
-| w4.3 | `TwoTracers` | `ch04_trace` | beam angle | every ray-tracing method marks the same free cells along a beam |
+| w4.1 | `DriftVsCorrection` (`drift-vs-correction.tsx`) | `Ch04Session` (`RustySim`, `WheelOdometry`, `Lidar`, `pillars::detect`, `EkfLocalizer::{predict, observe}`), `ch02_ellipse` | right wheel radius error | a filter that adds a second sensor to the wheels cannot do worse than the wheels alone |
+| w4.2 | `Detector` (`detector.tsx`) | `ch04_scan` (`Lidar::scan`, `pillars::detect`), `ch04_detector_defaults`, `ch04_landmarks`, `ch04_room_half` | the robot's position (drag) | the lidar measures where a pillar's centre is, and every cluster it finds is a pillar |
+| w4.3 | `Association` (`association.tsx`) | `ch04_associate` (`EkfLocalizer::observe`, `chi2_quantile`), `ch04_filter_defaults` | how far the belief is from the truth | the filter knows which pillar each detection is, and keeps correcting itself back onto the map however far off it is |
+| w4.4 | `HonestFilter` (`honest-filter.tsx`) | `Ch04Session`, `ch02_ellipse`, `ch02_chi2_mean_band` | the σ the filter assumes for a pillar | a filter that reports a small covariance is a precise one |
+| w4.5 | `Kidnap` (`kidnap.tsx`) | `Ch04Session` (with the carry) | when the robot is carried | a filter that notices its observations stop fitting will sort itself out |
 
 ## 7. Exercises
 
-1. **F, difficulty 2, "From odds to an addition".** Derive `l_t = l_{t−1} + ln(p(m|z)/(1−p(m|z))) − l_0` from Bayes' rule for a cell, and say what `l_0` is. *Sketch:* Bayes in odds form; independence of the measurements given the cell; take logs.
-2. **F, difficulty 3, "The offset is not the residual".** Show that the range residual of a beam at a wall is `r tan(i) ε` and the hit's distance from the face is `r sin(i) ε`, and explain the factor `cos(i)`. *Sketch:* `r = d / cos(i)`; rotate the bearing by `ε`; project on the normal.
-3. **C, difficulty 1, "Four hits".** Predict how many hits take an unknown cell to occupied at probability 0.95 (w4.1). *Answer:* four (3.389 ≥ 2.944 > 2.542).
-4. **C, difficulty 2, "Where do the phantoms stand".** Predict, before lowering w4.1 to one hit, where the false cells appear. *Answer:* in the row just outside the walls, where a hit lands past the face and no later beam crosses the cell to clear it.
-5. **C, difficulty 2, "Which end of the scan".** Predict which of beams 0 and 359 puts its hit beyond the wall for a wall tilted to the left (w4.2). *Answer:* read off the widget; they miss on opposite sides, and only one side creates a cell outside the wall.
-6. **P, difficulty 2, "A smaller clamp".** Change the upper clamp in `frozen_params` (`crates/robotics_wasm/src/ch04.rs`) to the library default, probability 0.97, and say what happens to the pillar cells in w4.1 and how many misses it now takes to un-occupy a saturated cell (answer: 2, against 6).
+1. **F, difficulty 2.** Show that composing on the right, `x_k = x_{k−1} ∘ u`, gives the error-state Jacobian `Ad(u⁻¹)` with respect to the previous right perturbation and the identity with respect to the noise in the *new* body frame.
+   *Sketch:* `x_{k−1} ⊞ δ ∘ u = x_{k−1} ∘ u ∘ (u⁻¹ exp(δ) u)` and `u⁻¹ exp(δ) u = exp(Ad(u⁻¹) δ)`.
+2. **F, difficulty 2.** If the belief were perfectly certain, `S = Q = diag(0.05², 0.05²)`. How far in range can an observation differ from the prediction before the 99 % gate rejects it, with a zero bearing residual? *Sketch:*
+   `ν_r²/0.0025 ≤ 9.21034`, so `|ν_r| ≤ √(9.21034 × 0.0025) = 0.1517 m` (the check reproduces the hand value).
+3. **C, difficulty 1.** Predict, then check in w4.3: with σ = 0.05 m, about how far off can the belief be before the gate rejects every detection? *Sketch:* a few tens of centimetres: at the widget's default scene and seed the number accepted is 4, 2, 0 as the error grows from 0.2 to 0.3 to 0.4 m (asserted); each option has a `because`.
+4. **C, difficulty 2.** Predict, then check in w4.4: if the filter assumes a tenth of the real noise, is the error larger or smaller than with the honest setting? *Sketch:* larger by a factor above two on every seed tried, because the gate shrinks with `S` and rejects the observations that would have corrected it.
+5. **C, difficulty 2.** Predict, then check in w4.1: with exact wheels, which is closer to the truth, the odometry or the filter? *Sketch:* the odometry; the filter's error is its own detector noise and bias.
+6. **P, difficulty 2.** In `crates/robotics_localization/src/pillars.rs`, add a test that places a pillar at 1, 2 and 3 m from a noise-free sensor and asserts that the reported range is longer than the true range by between 2 and 4 cm at each. Does the bias depend on the distance?
+   *Sketch:* it hardly does (medians of 2.3 to 3.1 cm in each metre of range, asserted); the cause is the centroid of the visible arc, not the distance.
 
 ## 8. Modernization notes
 
-* **Against the 2005 text.** *Probabilistic Robotics* Table 9.1 updates every cell in the perceptual field of the measurement once, with an inverse sensor model; so does the crate, and for the same reason (the update is order-independent). The book's `l_0` is zero here. Differences: a clamp (OctoMap's policy), a hand-crafted model with no beam width, an explicit
-  no-return policy, a motion gate and a repeat filter for a lidar whose time stamp lags its measurement, and a beam-bearing correction for one sensor. Thrun's later work learns the inverse model with forward sensor models (a reference); this chapter does not.
-* **Limitations carried from the repository, repeated and not hidden.** The parameters were chosen on the four runs the first analysis burned; the evaluator's two rules (60° incidence limit, closed-cell completeness) changed between round one and round two, so round two is graded against the metric of 2026-10-11 and the old metric would still have failed one stream;
-  three routes in one room are rows and not a rate; the maximum surface error is exactly on its limit (1.5 cells) in two runs; nothing here concerns an estimated pose, another world or a real robot; about −9 and +10 mrad of beam error at the two ends of the scan is unexplained; a higher clamp trades slower forgetting for stability and a static room cannot price it.
-* **The benchmark section ships honestly incomplete.** The M1, M2 and M4 numbers are the repository's own, from the verdict files, every one asserted. The comparison of the Rust mapper with an rclpy port and with `nav2_costmap_2d` is **pending**: no number, no placeholder.
-  The update latencies were measured on a debug build.
-* **References** (all verified, see the chapter): Moravec and Elfes 1985; Elfes 1989; Thrun, Burgard and Fox 2005; Thrun 2003; Hornung et al. 2013; Amanatides and Woo 1987; Bresenham 1965; Millane et al. 2024.
+* **Finding (same as Chapters 2 and 3): a seed names a different noise stream on WebAssembly.** Every noisy quantity on the page is this module's draw. `cargo test` in `crates/robotics_wasm` pins the native realization of
+  eight seeds (odometry RMSE 0.3884–0.5068 m, filter RMSE 0.0076–0.0079 m); `checks/ch04.ts` pins this module's (0.3762–0.4895 m, 0.0076–0.0080 m) and asserts that seed 1 differs (0.4383 here, 0.4179 natively).
+  Quantities with no random stream (the files, the defaults, the noise-free detector grid, the gate, the association properties that do not depend on the noise draw) are the same on both and are asserted on both.
+* **The page runs Rusty; Webots is not in the browser.** Rusty's odometry is deliberately uncalibrated (2 % slip per step, 0.2 % right-wheel radius error: Chapter 2's values) so that its drift is visible, and its detector sees polygon pillars through
+  a ray caster. The Webots numbers are recorded evidence, read by `checks/ch04.ts` from the verdict files, and the chapter always says which one a number is. The two odometries differ in kind: the Webots one
+  was calibrated upstream against this world's slip (`theory.md` §6), so its drift is centimetres, and the repository's own record is that a short route cannot compare a filter with it (`theory.md` §6: a 0.9 m square made the filter look five times worse).
+* **Not crate code, each marked where it lives in `ch04.rs`:** the route follower (a restatement of `route_driver.rs`'s control law, because that node is an rclrs process); the 24-gon that stands in for each round pillar (Rusty's world holds segments); the carry
+  (a rigid transform on the truth, as the Webots supervisor's teleport, with the simulator and odometry unaware).
+* **Findings the chapter reports that the repository's docs do not:** the detector's range bias (2.5–3.0 cm median), the count of clusters that are not pillars and how noise multiplies it, the gate's reach as a function of the belief's σ, and that an assumed σ of a tenth makes the
+  filter less accurate and not only mis-calibrated. Each is asserted by `checks/ch04.ts` and by a native test.
+* **Known limitations, stated and not hidden:** the NEES half of P1 is not evaluated in Webots (`nees_in_95_band: not_evaluated`); the EKF kidnap result is one fixed geometry (seed-independent by construction, since the EKF has no random stream);
+  the benchmark against `nav2_amcl` does not exist; the detector assumes free-standing round pillars and straight walls, which is this world's whole map.
+* **Cross-chapter dependency:** the widgets call `ch02_ellipse` and `ch02_chi2_mean_band` from Chapter 2's module rather than duplicate them. `web/lib/use-simulation.ts` gained a `play()` so a widget can restart itself when a parameter changes; nothing else shared was changed.

@@ -3,8 +3,8 @@ import { commonChecks } from './common';
 import { ch01Checks } from './ch01';
 import { ch02Checks } from './ch02';
 import { ch03Checks } from './ch03';
-import { ch04Checks } from './ch04';
 import { ch05Checks } from './ch05';
+import { ch04Checks } from './ch04';
 import { ch06Checks } from './ch06';
 import { katexChecks } from './katex';
 
@@ -14,8 +14,8 @@ const results: CheckResult[] = [
   ...ch01Checks(rs),
   ...ch02Checks(rs),
   ...ch03Checks(rs),
-  ...ch04Checks(rs),
   ...ch05Checks(rs),
+  ...ch04Checks(rs),
   ...ch06Checks(rs),
   ...katexChecks(),
 ];
