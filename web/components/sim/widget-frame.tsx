@@ -4,12 +4,22 @@ import { ColorKey } from '@/components/book/color-key';
 import type { Role } from '@/lib/roles';
 
 /**
- * The frame every widget lives in: id, title, the misconception it kills (`teaches`), the
- * roles it uses, and a caption saying what to notice and what to try.
+ * The chrome around every interactive figure: a hairline border, the widget id in mono, the
+ * title, and one line of intent (`teaches`, the misconception it kills), then the widget, then
+ * the roles it uses. The caption sits beneath the box, not inside it, and says what to notice and
+ * what to try. Deliberately quiet: the simulation is the thing the reader looks at.
+ *
+ * Layout of the body is the frame's job. Each direct child of the body (the canvas, a dashboard,
+ * a chart, the controls, the transport bar) is a panel: a hairline above it and 0.75rem inside,
+ * except a `.pr-flush` child (the canvas), which runs edge to edge. See `.pr-widget-body` in
+ * app/global.css.
  *
  * `id` must match a row of the chapter's widget manifest in design/Chapter-NN.md;
  * scripts/check-book.mjs enforces that. The widget mounts when it nears the viewport, so a
  * chapter with several simulations does not start them all at page load.
+ *
+ * The title is a <span>, not a heading: inside a chapter `#nd-page h3` would drag it into the
+ * display face and into the table of contents, neither of which a widget wants.
  */
 export function WidgetFrame({
   id,
@@ -53,22 +63,38 @@ export function WidgetFrame({
       ref={ref}
       id={id}
       data-widget-id={id}
-      className="widget-frame not-prose my-8 overflow-hidden rounded-lg border border-fd-border bg-fd-card"
+      aria-labelledby={`${id}-title`}
+      className="widget-frame not-prose my-8"
     >
-      <header className="flex flex-wrap items-baseline justify-between gap-2 border-b border-fd-border px-4 py-2">
-        <h3 className="text-sm font-semibold">
-          <span className="me-2 font-mono text-xs text-fd-muted-foreground">{id}</span>
-          {title}
-        </h3>
-        <p className="text-xs text-fd-muted-foreground">
-          <span className="font-medium">Kills the idea that:</span> {teaches}
-        </p>
-      </header>
-      <div className="space-y-3 p-4">
-        {near ? children : <div className="h-64 animate-pulse rounded bg-fd-muted/40" aria-hidden="true" />}
-        {colorKey?.length ? <ColorKey roles={colorKey} /> : null}
+      <div className="overflow-hidden rounded-md border border-fd-border bg-fd-card">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-fd-border px-3 py-2">
+          <span className="font-mono text-[0.7rem] font-medium text-fd-primary">{id}</span>
+          <span id={`${id}-title`} className="font-display text-sm font-semibold">
+            {title}
+          </span>
+          <span className="w-full font-ui text-xs text-fd-muted-foreground sm:w-auto sm:flex-1">
+            <span className="font-medium">Kills the idea that:</span> {teaches}
+          </span>
+        </div>
+
+        <div className="pr-widget-body">
+          {near ? (
+            children
+          ) : (
+            <div className="flex min-h-64 items-center justify-center" aria-hidden="true">
+              <span className="font-ui text-xs text-fd-muted-foreground">Loading interactive figure…</span>
+            </div>
+          )}
+        </div>
+
+        {colorKey?.length ? (
+          <div className="border-t border-fd-border px-3 py-2">
+            <ColorKey roles={colorKey} className="my-0" />
+          </div>
+        ) : null}
       </div>
-      <figcaption className="border-t border-fd-border px-4 py-2 text-sm leading-relaxed text-fd-muted-foreground">
+
+      <figcaption className="pr-caption mt-2 font-ui text-[0.8rem] leading-relaxed text-fd-muted-foreground">
         {caption}
       </figcaption>
     </figure>

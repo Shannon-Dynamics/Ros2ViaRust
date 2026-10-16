@@ -1,6 +1,52 @@
 'use client';
 import { ResponsiveLine, type LineCustomSvgLayerProps } from '@nivo/line';
+import type { PartialTheme } from '@nivo/theming';
 import { roleVar, type Role } from '@/lib/roles';
+import { TooltipCard } from './tooltip-card';
+
+/**
+ * The book's Nivo theme (the reference's): a recessive hairline grid, no tick marks, tabular mono
+ * numerals on every axis, small semibold axis legends (the reference's eyebrow style, minus the capitals), and a transparent background so a chart
+ * takes the color of the panel that holds it. Every value is a CSS variable, so the chart follows
+ * the light/dark theme with no JavaScript; the tooltip container is flattened because
+ * <TooltipCard> draws the real one.
+ */
+const CHART_THEME: PartialTheme = {
+  background: 'transparent',
+  text: { fontFamily: 'var(--font-ui)', fontSize: 11, fill: 'var(--color-fd-muted-foreground)' },
+  axis: {
+    domain: { line: { stroke: 'var(--color-fd-border)', strokeWidth: 1 } },
+    ticks: {
+      // Gridlines carry the reading; tick marks would just add ink.
+      line: { stroke: 'transparent', strokeWidth: 0 },
+      text: { fontFamily: 'var(--font-mono)', fontSize: 10, fill: 'var(--color-fd-muted-foreground)', fontVariantNumeric: 'tabular-nums' },
+    },
+    legend: {
+      text: {
+        fontFamily: 'var(--font-ui)',
+        fontSize: 10,
+        fontWeight: 600,
+        // Not uppercased as in the reference: an axis legend carries units, and "(m)" is not "(M)".
+        letterSpacing: '0.03em',
+        fill: 'var(--color-fd-muted-foreground)',
+      },
+    },
+  },
+  grid: { line: { stroke: 'var(--pr-grid)', strokeWidth: 1 } },
+  crosshair: { line: { stroke: 'var(--color-fd-foreground)', strokeWidth: 1, strokeOpacity: 0.3, strokeDasharray: 'none' } },
+  tooltip: {
+    container: { background: 'transparent', boxShadow: 'none', border: 'none', borderRadius: 0, padding: 0, color: 'inherit', fontFamily: 'var(--font-ui)' },
+  },
+};
+
+/** Compact fixed-point formatting for tooltips: enough digits to tell a value from zero, few enough to scan. */
+function formatNumber(value: number): string {
+  if (!Number.isFinite(value)) return '—';
+  const magnitude = Math.abs(value);
+  if (magnitude !== 0 && (magnitude >= 1e6 || magnitude < 1e-4)) return value.toExponential(2);
+  const fixed = value.toFixed(magnitude >= 100 ? 1 : magnitude >= 1 ? 2 : 3);
+  return fixed.replace(/0+$/, '').replace(/\.$/, '');
+}
 
 export interface Series {
   id: string;
@@ -8,7 +54,7 @@ export interface Series {
   data: { x: number; y: number | null }[];
   /** Dashed stroke. Ground truth is always dashed (design/TOC.md §2); so are bounds. */
   dashed?: boolean;
-  /** Stroke width in px (default 1.75). */
+  /** Stroke width in px (default 2). */
   width?: number;
 }
 
@@ -70,7 +116,7 @@ export function LineChart({
             d={d}
             fill="none"
             stroke={colorOf.get(String(s.id)) ?? roleVar('truth')}
-            strokeWidth={spec?.width ?? 1.75}
+            strokeWidth={spec?.width ?? 2}
             strokeDasharray={spec?.dashed ? '6 4' : undefined}
           />
         ) : null;
@@ -85,7 +131,7 @@ export function LineChart({
           // A log axis cannot place 0 (Nivo throws), and a running mean is 0 at its first sample: leave a gap.
           data: yLog ? s.data.map((d) => (d.y !== null && d.y <= 0 ? { x: d.x, y: null } : d)) : s.data,
         }))}
-        margin={{ top: 12, right: 16, bottom: 44, left: 56 }}
+        margin={{ top: 14, right: 22, bottom: 46, left: 58 }}
         xScale={{ type: 'linear', min: 'auto', max: 'auto' }}
         yScale={
           yLog
@@ -98,23 +144,25 @@ export function LineChart({
         enableGridX={false}
         useMesh
         animate={false}
-        axisBottom={{ legend: xLabel, legendOffset: 36, legendPosition: 'middle', tickSize: 4 }}
-        axisLeft={{ legend: yLabel, legendOffset: -46, legendPosition: 'middle', tickSize: 4, tickValues: yTicks }}
+        axisTop={null}
+        axisRight={null}
+        axisBottom={{ tickSize: 0, tickPadding: 8, legend: xLabel, legendOffset: 36, legendPosition: 'middle' }}
+        axisLeft={{ tickSize: 0, tickPadding: 8, legend: yLabel, legendOffset: -46, legendPosition: 'middle', tickValues: yTicks }}
         markers={refLines.map((r) => ({
           axis: 'y' as const,
           value: r.y,
           legend: r.label,
           legendPosition: r.side === 'left' ? ('top-left' as const) : ('top-right' as const),
-          lineStyle: { stroke: roleVar(r.role ?? 'truth'), strokeWidth: 1.25, strokeDasharray: '5 4' },
-          textStyle: { fill: 'var(--ink-muted)', fontSize: 11 },
+          lineStyle: { stroke: roleVar(r.role ?? 'truth'), strokeWidth: 1.5, strokeOpacity: 0.7, strokeDasharray: '5 4' },
+          textStyle: { fill: roleVar(r.role ?? 'truth'), fontFamily: 'var(--font-ui)', fontSize: 10 },
         }))}
-        theme={{
-          text: { fill: 'var(--ink-muted)', fontSize: 11 },
-          axis: { legend: { text: { fill: 'var(--ink-muted)', fontSize: 12 } }, ticks: { line: { stroke: 'var(--grid)' } }, domain: { line: { stroke: 'var(--grid)' } } },
-          grid: { line: { stroke: 'var(--grid)', strokeWidth: 1 } },
-          crosshair: { line: { stroke: 'var(--ink-muted)' } },
-          tooltip: { container: { background: 'var(--surface-raised)', color: 'var(--ink)', fontSize: 12, border: '1px solid var(--grid)' } },
-        }}
+        tooltip={({ point }) => (
+          <TooltipCard
+            title={`${xLabel} ${formatNumber(Number(point.data.x))}`}
+            rows={[{ color: point.seriesColor, label: String(point.seriesId), value: formatNumber(Number(point.data.y)) }]}
+          />
+        )}
+        theme={CHART_THEME}
       />
     </div>
   );

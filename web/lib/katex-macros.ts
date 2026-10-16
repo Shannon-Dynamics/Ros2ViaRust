@@ -49,5 +49,8 @@ export function katexOptions() {
     strict: 'ignore' as const,
     throwOnError: false,
     output: 'htmlAndMathml' as const,
+    // Fraction bars and radical rules no thinner than 0.06em, as in the reference: at body size
+    // KaTeX's default rounds them down to a hairline that vanishes on a low-density display.
+    minRuleThickness: 0.06,
   };
 }

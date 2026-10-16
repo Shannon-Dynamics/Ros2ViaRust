@@ -13,10 +13,18 @@ export function WasmGate({ children }: { children: (rs: Robotics) => ReactNode }
   if (state.status === 'ready') return <>{children(state.rs)}</>;
   if (state.status === 'error') {
     return (
-      <div role="alert" className="rounded border border-red-500/50 bg-red-500/10 p-3 text-sm">
+      <div role="alert" className="rounded-sm border border-red-500/50 bg-red-500/10 p-3 font-ui text-sm">
         Could not load the Rust module (<code>robotics_wasm</code>): {state.message}
       </div>
     );
   }
-  return <div className="h-64 animate-pulse rounded bg-fd-muted/40" aria-busy="true" aria-label="Loading the Rust module" />;
+  return (
+    <div
+      className="flex min-h-64 items-center justify-center"
+      aria-busy="true"
+      aria-label="Loading the Rust module"
+    >
+      <span className="font-ui text-xs text-fd-muted-foreground">Loading the Rust module…</span>
+    </div>
+  );
 }

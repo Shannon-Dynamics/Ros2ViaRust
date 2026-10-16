@@ -75,13 +75,13 @@ export function SimCanvas({
   );
 
   return (
-    <div ref={wrap} className="w-full">
+    <div ref={wrap} className="pr-flush w-full">
       <canvas
         ref={canvas}
         role="img"
         aria-label={ariaLabel}
         style={{ width: '100%', aspectRatio: `${width} / ${height}`, touchAction: onPointer ? 'none' : undefined }}
-        className="rounded border border-fd-border bg-[var(--surface)]"
+        className="sim-canvas"
         onPointerDown={onPointer ? (e) => { e.currentTarget.setPointerCapture(e.pointerId); onPointer({ ...toLogical(e), kind: 'down' }); } : undefined}
         onPointerMove={onPointer ? (e) => { if (e.buttons) onPointer({ ...toLogical(e), kind: 'move' }); } : undefined}
         onPointerUp={onPointer ? (e) => onPointer({ ...toLogical(e), kind: 'up' }) : undefined}

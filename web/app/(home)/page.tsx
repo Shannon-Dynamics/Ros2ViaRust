@@ -1,78 +1,96 @@
 import Link from 'next/link';
 import { CHAPTERS, PHASES } from '@/lib/book-structure';
 
+/** The landing page. Chrome follows the reference's front door (design/STYLE_PARITY.md §5); the words are this book's. */
 export default function HomePage() {
   const currentParts = PHASES.filter((p) => p.phase <= 5);
   const laterParts = PHASES.filter((p) => p.phase > 5);
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:py-16">
-      <p className="mb-3 text-sm font-medium tracking-wide text-fd-primary uppercase">
-        Problem-based robotics · Rust · ROS 2
-      </p>
-      <h1 className="text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">ROS via Rust</h1>
-      <p className="mt-5 max-w-2xl text-lg leading-relaxed text-fd-foreground/85">
-        One robot, a TurtleBot3 in the Webots simulator, and one rule: each chapter opens with a
-        concrete problem the robot has, derives only the theory that problem needs, and then shows the
-        Rust that solves it. The widgets in the pages run that same Rust, compiled to WebAssembly.
-        Nothing is a re-implementation in JavaScript.
-      </p>
-      <div className="mt-7 flex flex-wrap gap-3">
-        <Link
-          href="/chapters/ch01-foundation"
-          className="rounded-md bg-fd-primary px-4 py-2 text-sm font-medium text-fd-primary-foreground hover:opacity-90"
+    <main className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:py-16">
+      <section className="max-w-3xl">
+        <p className="eyebrow mb-4">Problem-based robotics · Rust · ROS 2</p>
+        <h1 className="font-display text-4xl leading-[1.08] font-semibold tracking-tight sm:text-5xl">
+          ROS <span className="block text-fd-muted-foreground">via Rust</span>
+        </h1>
+        <p className="mt-5 max-w-xl font-prose text-lg leading-relaxed text-fd-foreground/85">
+          One robot, a TurtleBot3 in the Webots simulator, and one rule: each chapter opens with a
+          concrete problem the robot has, derives only the theory that problem needs, and then shows the
+          Rust that solves it. The widgets in the pages run that same Rust, compiled to WebAssembly.
+          Nothing is a re-implementation in JavaScript.
+        </p>
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <Link
+            href="/chapters/ch01-foundation"
+            className="rounded-md bg-fd-primary px-4 py-2 font-ui text-sm font-medium text-fd-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Start with Chapter 1
+          </Link>
+          <Link
+            href="/chapters"
+            className="rounded-md border border-fd-border px-4 py-2 font-ui text-sm font-medium transition-colors hover:bg-fd-accent"
+          >
+            Reading guide
+          </Link>
+        </div>
+      </section>
+
+      <section className="mt-20 border-t border-fd-border pt-10">
+        <h2 className="font-display text-2xl font-semibold">Parts 1–5</h2>
+        <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
+          Part 3 is localization and contains Chapter 5 (the EKF half); Part 4 is mapping and contains Chapter 4; Part 5 is SLAM and contains Chapter 6.
+        </p>
+        <ul
+          role="list"
+          className="mt-6 grid gap-px overflow-hidden rounded-lg border border-fd-border bg-fd-border sm:grid-cols-2 lg:grid-cols-5"
         >
-          Start with Chapter 1
-        </Link>
-        <Link href="/chapters" className="rounded-md border border-fd-border px-4 py-2 text-sm font-medium hover:bg-fd-accent">
-          Reading guide
-        </Link>
-      </div>
+          {currentParts.map((part) => (
+            <li key={part.phase} className="bg-fd-card p-5">
+              <p className="font-mono text-[0.7rem] tracking-widest text-fd-primary uppercase">
+                Part {part.phase} · {part.status}
+              </p>
+              <h3 className="mt-1 font-display text-base font-semibold">{part.title}</h3>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <h2 className="mt-14 text-2xl font-semibold tracking-tight">Parts 1–5</h2>
-      <p className="mt-1 text-sm text-fd-muted-foreground">
-        Part 3 is localization and contains Chapter 5 (the EKF half); Part 4 is mapping and contains Chapter 4; Part 5 is SLAM and contains Chapter 6.
-      </p>
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {currentParts.map((part) => (
-          <li key={part.phase} className="rounded-lg border border-fd-border bg-fd-card p-4">
-            <p className="text-xs font-medium tracking-wide text-fd-muted-foreground uppercase">
-              Part {part.phase} · {part.status}
-            </p>
-            <h3 className="mt-1 font-semibold">{part.title}</h3>
-          </li>
-        ))}
-      </ul>
-
-      <h2 className="mt-12 text-2xl font-semibold tracking-tight">Published chapters</h2>
-      <p className="mt-1 text-sm text-fd-muted-foreground">
-        Read Chapters 1 to 6 in the order of the parts: 1, 2, 3, 5 (localization), 4 (mapping), 6 (SLAM).
-      </p>
-      <ul className="mt-5 grid gap-4 sm:grid-cols-2">
-        {CHAPTERS.map((chapter) => (
-          <li key={chapter.slug} className="rounded-lg border border-fd-border bg-fd-card p-5">
-            <p className="text-xs font-medium tracking-wide text-fd-muted-foreground uppercase">Chapter {chapter.n}</p>
-            <h3 className="mt-1 text-lg font-semibold">
-              <Link href={`/chapters/${chapter.slug}`} className="text-fd-primary hover:underline">
-                {chapter.title}
+      <section className="mt-16">
+        <h2 className="font-display text-2xl font-semibold">Published chapters</h2>
+        <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
+          Read Chapters 1 to 6 in the order of the parts: 1, 2, 3, 5 (localization), 4 (mapping), 6 (SLAM).
+        </p>
+        <ul role="list" className="mt-4">
+          {CHAPTERS.map((chapter) => (
+            <li key={chapter.slug} className="border-b border-fd-border/60 last:border-0">
+              <Link
+                href={`/chapters/${chapter.slug}`}
+                className="group grid grid-cols-[2rem_1fr] gap-3 py-2.5 transition-colors hover:bg-fd-accent/40"
+              >
+                <span className="pt-0.5 font-mono text-xs text-fd-muted-foreground tabular-nums">
+                  {String(chapter.n).padStart(2, '0')}
+                </span>
+                <span className="font-ui text-sm font-medium group-hover:text-fd-primary">{chapter.title}</span>
               </Link>
-            </h3>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <h2 className="mt-12 text-2xl font-semibold tracking-tight">Later parts</h2>
-      <p className="mt-1 text-sm text-fd-muted-foreground">
-        Planned parts have no chapter link until their chapters are written.
-      </p>
-      <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {laterParts.map((p) => (
-          <li key={p.phase} className="rounded-lg border border-dashed border-fd-border p-4 text-fd-muted-foreground">
-            <p className="text-xs font-medium tracking-wide uppercase">Part {p.phase} · planned</p>
-            <h3 className="mt-1 font-semibold text-fd-foreground/80">{p.title}</h3>
-            <p className="mt-1 text-sm">{p.scope}</p>
-          </li>
-        ))}
-      </ul>
+      <section className="mt-16">
+        <h2 className="font-display text-2xl font-semibold">Later parts</h2>
+        <p className="mt-1 font-prose text-sm leading-relaxed text-fd-muted-foreground">
+          Planned parts have no chapter link until their chapters are written.
+        </p>
+        <ul role="list" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {laterParts.map((p) => (
+            <li key={p.phase} className="rounded-lg border border-dashed border-fd-border p-4 text-fd-muted-foreground">
+              <p className="font-mono text-[0.7rem] tracking-widest uppercase">Part {p.phase} · planned</p>
+              <h3 className="mt-1 font-display text-base font-semibold text-fd-foreground/80">{p.title}</h3>
+              <p className="mt-1 font-prose text-sm leading-snug">{p.scope}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
     </main>
   );
 }

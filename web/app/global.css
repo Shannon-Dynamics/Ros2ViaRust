@@ -5,20 +5,35 @@
 
 @source '../node_modules/fumadocs-ui/dist/**/*.js';
 
+/* ==========================================================================
+   ROS via Rust — design tokens
+   --------------------------------------------------------------------------
+   The visual layer matches the reference book (Probabilistic Robotics via Rust);
+   design/STYLE_PARITY.md says what must stay matched and what differs on purpose.
+
+   Identity: "instrument panel". Cool neutrals, a phosphor-teal chrome accent,
+   and — the load-bearing rule — the five estimation colors are RESERVED for
+   data. Chrome never borrows them, so blue always means prior, orange always
+   means prediction, green always measurement, purple always posterior, gray
+   always ground truth, whether the reader is looking at a figure, an equation
+   term, or a sentence.
+   ========================================================================== */
+
 @theme {
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-prose: var(--font-source-serif), Georgia, 'Times New Roman', serif;
   --font-ui: var(--font-plex-sans), system-ui, sans-serif;
   --font-sans: var(--font-ui);
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
-  --font-sans: var(--font-ui);
 
-  /* Estimation colors are reserved for data; chrome uses instrument teal. */
+  /* Tailwind-side spellings of the color code; no component reads these. */
   --color-prior: #3b82f6;
   --color-prediction: #f97316;
   --color-measurement: #22c55e;
   --color-posterior: #a855f7;
   --color-truth: #6b7280;
+
+  /* Chrome accent: instrument phosphor, deliberately outside the data hues. */
   --color-instrument: #0d9488;
 }
 
@@ -40,7 +55,7 @@
   --color-fd-primary: #0d9488;
   --color-fd-ring: #0d9488;
 
-  /* Compatibility aliases for the existing ROS role and canvas API. */
+  /* Local aliases (not in the reference): the older ROS role and canvas API. Prefer --pr-*. */
   --belief-prior: var(--pr-prior);
   --belief-prediction: var(--pr-prediction);
   --belief-measurement: var(--pr-measurement);
@@ -55,6 +70,7 @@
 }
 
 .dark {
+  /* Slightly lifted hues so each stays legible on a dark ground. */
   --pr-prior: #60a5fa;
   --pr-prediction: #fb923c;
   --pr-measurement: #4ade80;
@@ -72,38 +88,179 @@
   --color-fd-primary: #2dd4bf;
   --color-fd-ring: #2dd4bf;
   --color-instrument: #2dd4bf;
-
-  --ink: var(--pr-canvas-ink);
-  --ink-muted: var(--pr-truth);
-  --grid: var(--pr-grid);
-  --surface: var(--pr-free);
-  --surface-raised: var(--pr-canvas-bg);
-  --accent: var(--color-instrument);
 }
+
+/* --------------------------------------------------------------------------
+   Reading surface
+   -------------------------------------------------------------------------- */
 
 body {
-  background: var(--color-fd-background);
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-prose: var(--font-source-serif), Georgia, 'Times New Roman', serif;
-  --font-ui: var(--font-plex-sans), system-ui, sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
   font-family: var(--font-ui);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-:is(h1, h2, h3, .font-display) {
+/* Running text is serif. (The reference states this in its own TOC but its selector,
+   `#nd-page article`, never matches — #nd-page *is* the article — so the reference renders
+   prose in the UI sans. We apply the rule it meant: STYLE_PARITY.md §2.) */
+#nd-page,
+.prose-book {
+  font-family: var(--font-prose);
+  font-size: 1.0625rem;
+  line-height: 1.72;
+}
+
+/* Chrome inside the article — widget frames, key ideas, tables, chart text — is UI sans,
+   whatever the prose around it is. In the base layer on purpose: an unlayered rule would beat
+   the `font-mono` / `font-display` utilities a component puts on the same element. */
+@layer base {
+  #nd-page .not-prose,
+  #nd-page table {
+    font-family: var(--font-ui);
+  }
+}
+
+#nd-page h1,
+#nd-page h2,
+#nd-page h3,
+#nd-page h4,
+.font-display {
   font-family: var(--font-display);
+  font-weight: 550;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
 }
 
-:is(code, kbd, samp, pre, .font-mono) {
+#nd-page h2 {
+  margin-top: 2.75rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--color-fd-border);
+}
+
+/* --------------------------------------------------------------------------
+   The reading column
+   --------------------------------------------------------------------------
+   Two widths, one column. Running text is held to a comfortable measure —
+   roughly 70 characters, which is where long-form reading stops being work —
+   while figures, simulations, tables and code use the column's full width,
+   because a floorplan or a covariance matrix needs the room.
+
+   Figures never bleed *outside* the column: this page has a sidebar on one
+   side and a table of contents on the other, and a negative margin large
+   enough to be useful is also large enough to slide underneath them.
+   -------------------------------------------------------------------------- */
+
+/* The shell sits in a grid track that sizes to its content, so it must be
+   told it may shrink — otherwise a single unbreakable equation widens the
+   whole page and the reader gets a horizontal scrollbar on a phone. */
+.pr-chapter-shell {
+  width: 100%;
+  max-width: min(72rem, 100%);
+  min-width: 0;
+}
+
+#nd-page {
+  --pr-measure: 40rem;
+  max-width: 54rem;
+  min-width: 0;
+}
+
+/* Nothing in the column may force the page wider than the screen; wide
+   material scrolls inside its own box instead. */
+#nd-page > * {
+  min-width: 0;
+}
+
+/* Everything follows the measure by default, so the right edge stays even… */
+#nd-page > * {
+  max-width: var(--pr-measure);
+}
+
+/* …except the things that genuinely need room: simulations, figures, code
+   blocks, tables, and the chapter-opening grid. A floorplan, a covariance
+   matrix or a line of Rust is not running text and should not be squeezed to
+   the same measure as a sentence. */
+#nd-page > figure,
+#nd-page > table,
+#nd-page > .pr-figure-wide,
+#nd-page > .pr-full,
+#nd-page > .fd-codeblock,
+#nd-page > [data-rehype-pretty-code-figure],
+#nd-page > div:has(> table),
+#nd-page > div:has(> pre),
+#nd-page > .pr-linked-math,
+#nd-page > .katex-display {
+  max-width: 100%;
+}
+
+/* A caption is prose, even when it belongs to a wide figure. */
+#nd-page figure > figcaption,
+#nd-page figure .pr-caption {
+  max-width: var(--pr-measure);
+}
+
+/* The epigraph is a narrow quotation, not a wide figure: it keeps its own measure, and its
+   attribution wraps inside it instead of running past the column by the figure's padding. */
+#nd-page > figure.pr-epigraph {
+  max-width: 46ch;
+}
+
+#nd-page figure.pr-epigraph > figcaption {
+  max-width: none;
+}
+
+#nd-page code,
+#nd-page kbd {
   font-family: var(--font-mono);
 }
 
-/* Equation terms tinted with \htmlClass{term-<role>}{...}. */
-.katex .term-prior { color: var(--pr-prior); }
-.katex .term-prediction { color: var(--pr-prediction); }
-.katex .term-measurement { color: var(--pr-measurement); }
-.katex .term-posterior { color: var(--pr-posterior); }
-.katex .term-truth { color: var(--pr-truth); }
+/* Small caps eyebrow used by section labels and widget captions. */
+.eyebrow {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* The same label without the capitals, for text that carries notation or units: CSS uppercase
+   turns "(m)" into "(M)", "mrad/s" into "MRAD/S" and σ into Σ, which is a different quantity.
+   Used wherever the label is data (a stat tile's name, an axis legend, a tooltip title). */
+.eyebrow-plain {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--color-fd-muted-foreground);
+}
+
+/* --------------------------------------------------------------------------
+   Math
+   -------------------------------------------------------------------------- */
+
+.katex { font-size: 1.045em; }
+
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35rem 0;
+}
+
+/* KaTeX 0.18 renumbers equations page-globally; we number per chapter in the
+   text itself, and suppress the desynced MathML counter so screen readers do
+   not announce a different number than the one on screen. */
+.katex .mml-eqn-num::before {
+  content: none;
+  counter-increment: none;
+}
+
+/* Color-coded equation terms: \htmlClass{term-prior}{...} in MDX. */
+.term-prior { color: var(--pr-prior); }
+.term-prediction { color: var(--pr-prediction); }
+.term-measurement { color: var(--pr-measurement); }
+.term-posterior { color: var(--pr-posterior); }
+.term-truth { color: var(--pr-truth); }
 
 /* Role text in prose: <RoleTag role="prior">…</RoleTag> */
 .role-prior { color: var(--pr-prior); }
@@ -112,76 +269,51 @@ body {
 .role-posterior { color: var(--pr-posterior); }
 .role-truth { color: var(--pr-truth); }
 
-/* Match the reference's 40rem reading measure inside a 54rem chapter shell. */
-.pr-chapter-shell {
-  --pr-measure: 40rem;
+/* --------------------------------------------------------------------------
+   Simulation chrome
+   -------------------------------------------------------------------------- */
+
+.sim-canvas {
+  display: block;
   width: 100%;
-  max-width: 54rem;
+  max-width: 100%;
+  height: auto;
+  touch-action: none;
+  background: var(--pr-canvas-bg);
+}
+
+/* The body of a widget frame is a stack of panels: a hairline above each one and 0.75rem inside
+   it. The canvas (`.pr-flush`) runs edge to edge and has no hairline above it. */
+.pr-widget-body > * {
   min-width: 0;
-  margin-inline: auto;
+  padding: 0.75rem;
 }
 
-#nd-page {
-  --pr-measure: 40rem;
-  width: 100%;
-  max-width: 54rem;
-  min-width: 0;
-  margin-inline: auto;
+.pr-widget-body > * + * {
+  border-top: 1px solid var(--color-fd-border);
 }
 
-.chapter-prose {
-  width: 100%;
-  min-width: 0;
-  max-width: var(--pr-measure, 40rem);
-  margin-inline: auto;
-  font-family: var(--font-prose);
-  font-size: 1.0625rem;
-  line-height: 1.7;
+.pr-widget-body > .pr-flush {
+  padding: 0;
 }
 
-.chapter-prose :is(h1, h2, h3, h4, table, pre, figure, .not-serif) {
-  font-family: var(--font-ui);
-}
-
-.chapter-prose :is(pre, code, kbd, samp) {
-  font-family: var(--font-mono);
-}
-
-.chapter-prose :is(h1, h2, h3) {
-  font-family: var(--font-display);
-}
-
-.chapter-prose h2 { margin-top: 2.75rem; }
-
-/* Figures, tables and code can use the full chapter shell width. */
-.chapter-prose :is(figure, table, pre) {
-  position: relative;
-  left: 50%;
-  width: min(54rem, calc(100vw - var(--fd-sidebar-width, 0px) - var(--fd-toc-width, 0px)));
-  max-width: 54rem;
-  transform: translateX(-50%);
-}
-
-.chapter-prose table { display: block; overflow-x: auto; }
-.chapter-prose pre { overflow-x: auto; }
-.chapter-prose .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
-
-@media (max-width: 767px) {
-  .chapter-prose :is(figure, table, pre) { width: min(54rem, calc(100vw - 2rem)); }
-}
-
-/* Widgets must never force the page to scroll sideways on a phone. */
-.widget-frame canvas { max-width: 100%; height: auto; display: block; }
-
-.eyebrow {
-  color: var(--color-fd-primary);
-  font-family: var(--font-ui);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+input[type='range'] {
+  accent-color: var(--color-fd-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { scroll-behavior: auto !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Wide content never scrolls the page sideways. */
+#nd-page table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
 }

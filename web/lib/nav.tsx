@@ -11,8 +11,8 @@ export const bookNav: BaseLayoutProps = {
           <ellipse cx="10" cy="10" rx="4.6" ry="2.4" transform="rotate(-28 10 10)" stroke="currentColor" strokeWidth="1.3" />
           <circle cx="10" cy="10" r="1.7" fill="currentColor" />
         </svg>
-        <span className="text-[0.95rem] font-semibold tracking-tight">
-          ROS via Rust
+        <span className="font-display text-[0.95rem] font-semibold tracking-tight">
+          ROS <span className="text-fd-muted-foreground">via Rust</span>
         </span>
       </span>
     ),

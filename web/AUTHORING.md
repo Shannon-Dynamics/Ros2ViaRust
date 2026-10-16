@@ -140,6 +140,8 @@ Rules, in priority order:
    forbidden anywhere in `components/` and `lib/` (the gate greps for it): all randomness is
    Rust's, seeded from `lib/seed.ts`.
 4. **The color code, only via `var(--pr-*)` / `palette.prior` etc.** (`--belief-*` are aliases of the same values; prefer `--pr-*`.) No hex data colors.
+   How a widget is laid out inside `WidgetFrame`, and which chrome is shared with the reference
+   book, is in `design/STYLE_PARITY.md` §4: read it before writing one.
    Neutral ink for anything that is not one of the five roles. Truth is dashed.
 5. **`teaches` names the misconception the widget kills**, phrased as the wrong belief
    ("…so the step length does not matter"). It is not a title.
