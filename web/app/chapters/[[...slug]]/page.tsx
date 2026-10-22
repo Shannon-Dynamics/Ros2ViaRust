@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { source } from '@/lib/source';
+import { source, withTrailingSlash } from '@/lib/source';
 import { getMDXComponents } from '@/mdx-components';
 import { ChapterHeader } from '@/components/book/chapter-header';
 import { Epigraph } from '@/components/book/epigraph';
@@ -93,5 +93,9 @@ export async function generateMetadata(props: { params: Promise<{ slug?: string[
   const { slug } = await props.params;
   const page = source.getPage(slug);
   if (!page) notFound();
-  return { title: page.data.title, description: page.data.description };
+  return {
+    title: page.data.title,
+    description: page.data.description,
+    alternates: { canonical: withTrailingSlash(page.url) },
+  };
 }

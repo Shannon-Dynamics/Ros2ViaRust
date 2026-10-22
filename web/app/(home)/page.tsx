@@ -1,5 +1,10 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { CHAPTERS, PHASES } from '@/lib/book-structure';
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 /** The landing page. Chrome follows the reference's front door (design/STYLE_PARITY.md §5); the words are this book's. */
 export default function HomePage() {

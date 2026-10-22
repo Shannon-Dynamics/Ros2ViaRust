@@ -3,7 +3,7 @@ import { bookNav } from '@/lib/nav';
 import { NotationTable } from '@/components/book/notation-table';
 import { ColorKey } from '@/components/book/color-key';
 
-export const metadata = { title: 'Notation' };
+export const metadata = { title: 'Notation', alternates: { canonical: '/notation/' } };
 
 export default function NotationPage() {
   return (

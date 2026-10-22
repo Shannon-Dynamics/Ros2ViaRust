@@ -35,6 +35,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://ros.shannon.id'),
   title: { default: 'ROS via Rust', template: '%s · ROS via Rust' },
   description:
     'Problem-based robotics in Rust: each chapter opens with a problem a TurtleBot3 has, derives the theory it needs, and runs the real Rust, compiled to WebAssembly, in the page.',
