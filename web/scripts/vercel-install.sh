@@ -11,15 +11,17 @@
 #     Cargo.lock, as the prebuilt release binary (compiling it would add
 #     several minutes to every build)
 #
-# The build step runs in a fresh shell, so vercel.json's buildCommand puts
-# ~/.cargo/bin first on PATH itself.
+# The build step runs in a fresh shell, so vercel.json's buildCommand sets
+# CARGO_HOME, RUSTUP_HOME and PATH itself.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# Vercel's image can carry a cargo of its own, without rustup or the wasm32
-# target, so do not reuse whatever is on PATH: install a toolchain under
-# ~/.cargo and put it first.
+# Vercel's image carries a cargo of its own and points CARGO_HOME at it
+# (/rust), without the wasm32 target. Do not reuse it: pin both homes under
+# $HOME, install a toolchain there and put it first on PATH. vercel.json's
+# buildCommand sets the same three variables.
+export CARGO_HOME="$HOME/.cargo" RUSTUP_HOME="$HOME/.rustup"
 if [ ! -x "$HOME/.cargo/bin/rustup" ]; then
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
     RUSTUP_INIT_SKIP_PATH_CHECK=yes sh -s -- -y --no-modify-path --profile minimal \
