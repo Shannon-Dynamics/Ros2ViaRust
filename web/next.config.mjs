@@ -19,10 +19,23 @@ const config = {
   // A static site: every chapter renders at build time; readers download HTML, the
   // widget bundles and one .wasm module.
   output: 'export',
+  // Every page is emitted as <route>/index.html and linked with a trailing
+  // slash, matching the canonical URLs and the sitemap.
+  trailingSlash: true,
   basePath,
   assetPrefix: basePath || undefined,
   images: { unoptimized: true },
   typescript: { ignoreBuildErrors: false },
+
+  experimental: {
+    /**
+     * Bound the prerender workers. Vercel's basic build machine has 8 GB, and
+     * left to itself Next sizes the pool from the host's core count, each worker
+     * holding its own copy of the chapter bundles (MDX, KaTeX, widgets). The
+     * sister books needed this to build there at all.
+     */
+    cpus: 2,
+  },
 };
 
 export default withMDX(config);
