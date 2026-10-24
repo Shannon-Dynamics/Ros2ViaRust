@@ -2,8 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "bash scripts/vercel-install.sh",
-  "buildCommand": ". \"$HOME/.cargo/env\" && npm run build",
-  "ignoreCommand": "if [ -z \"$VERCEL_GIT_PREVIOUS_SHA\" ]; then exit 1; fi; git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ../crates ../evidence",
+  "buildCommand": "PATH=\"$HOME/.cargo/bin:$PATH\" npm run build",
+  "ignoreCommand": "if [ -z \"$VERCEL_GIT_PREVIOUS_SHA\" ]; then exit 1; fi; git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ../crates ../evidence ../Cargo.toml ../Cargo.lock",
   "build": {
     "env": {
       "NODE_OPTIONS": "--max-old-space-size=4096"

@@ -11,18 +11,21 @@
 #     Cargo.lock, as the prebuilt release binary (compiling it would add
 #     several minutes to every build)
 #
-# The build step runs in a fresh shell, so vercel.json's buildCommand sources
-# ~/.cargo/env itself.
+# The build step runs in a fresh shell, so vercel.json's buildCommand puts
+# ~/.cargo/bin first on PATH itself.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-if ! command -v cargo >/dev/null 2>&1; then
+# Vercel's image can carry a cargo of its own, without rustup or the wasm32
+# target, so do not reuse whatever is on PATH: install a toolchain under
+# ~/.cargo and put it first.
+if [ ! -x "$HOME/.cargo/bin/rustup" ]; then
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
-    sh -s -- -y --profile minimal --default-toolchain stable --target wasm32-unknown-unknown
+    RUSTUP_INIT_SKIP_PATH_CHECK=yes sh -s -- -y --no-modify-path --profile minimal \
+      --default-toolchain stable --target wasm32-unknown-unknown
 fi
-# shellcheck source=/dev/null
-. "$HOME/.cargo/env"
+export PATH="$HOME/.cargo/bin:$PATH"
 rustup target add wasm32-unknown-unknown
 
 LOCK=../crates/robotics_wasm/Cargo.lock
